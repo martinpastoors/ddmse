@@ -66,8 +66,8 @@ if ("try-error"%in%is(dropboxdir))
 # Mackerel
 
 ```{r, mac.data}
-load("/home/laurie/Dropbox/pelagics/data/om/mac.RData")
-ts =as.data.frame(read_excel("/home/laurie/Desktop/projects/ddmse/data/inputs/dat.xlsx",3))
+load(file.path(dropboxdir,"data/om/mac.RData"))
+ts =as.data.frame(read_excel("../data/inputs/dat.xlsx",3))
 
 wt =transform(as.data.frame(stock.wt(mac),drop=TRUE),cohort=year-as.numeric(age))
 wt =merge(wt,ts,by="year")
@@ -225,7 +225,7 @@ plot(gmr)
 # Blue whiting
 
 ```{r, whb.data}
-load("/home/laurie/Dropbox/pelagics/data/om/whb.RData")
+load(file.path(dropboxdir,"data/om/whb.RData"))
 ts=model.frame(FLQuants(whb,tb=biomass,ssb=ssb),drop=T)
 ts$tb=ts$tb/1e6
 
