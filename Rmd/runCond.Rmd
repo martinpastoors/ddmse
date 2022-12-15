@@ -3,7 +3,7 @@ title: "**Density Dependence**"
 subtitle: "Summary"
 author: "L Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: pdf_document
+output: html_document
 mathjax: TRUE
 
 tags: FLR FLCore introduction
@@ -52,11 +52,14 @@ library(mgcv)
 library(mgcViz)
   
 theme_set(theme_bw(16))
+
+source("../R/get_dropbox.R")
+
 ```
 
 
 ```{r, dbox}
-dropboxdir<-try(file.path(get_dropbox(), "dd"))
+dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
@@ -67,7 +70,7 @@ if ("try-error"%in%is(dropboxdir))
 
 ```{r, mac.data}
 load(file.path(dropboxdir,"data/om/mac.RData"))
-ts =as.data.frame(read_excel("../data/inputs/dat.xlsx",3))
+ts =as.data.frame(read_excel(file.path(dropboxdir,"data/inputs/dat.xlsx"),3))
 
 wt =transform(as.data.frame(stock.wt(mac),drop=TRUE),cohort=year-as.numeric(age))
 wt =merge(wt,ts,by="year")
