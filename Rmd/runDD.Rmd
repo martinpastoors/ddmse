@@ -1,0 +1,178 @@
+---
+title: "**Density Dependence**"
+subtitle: "Simulations"
+author: "L Kell"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+mathjax: TRUE
+
+tags: FLR FLCore introduction
+license: Creative Commons Attribution-ShareAlike 4.0 International Public License
+# bibliography: refs.bib
+---
+
+This document provides an example of how to model density dependence in mass-at-age and M-at-age.
+
+The life history parameters of mackerel are used to construct an `FLBRP` object that represents the equilibrium dynamics, this is then used to construct an `FLStock` object that models the time series dynamics.
+
+The Lorenzen relationship between mass-at-age and M is used to link M and weight-at-age. For example, lorenzen M = a*300^-0.288, so if you want M=0.2 at 300g then a= 0.2 /(300^-0.288)
+
+
+```{r, knitr, eval=TRUE, echo=FALSE, warning=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+# getwd()
+library(knitr)
+
+opts_chunk$set(cache     =TRUE, 
+               comment   =NA, 
+               warning   =FALSE, 
+               message   =FALSE, 
+               error     =FALSE, 
+               echo      =FALSE, 
+               eval      =TRUE,cache   =TRUE,
+               cache.path="../cache/dd/",
+               fig.path  ="../tex/figs/dd/",
+               fig.width =8,
+               fig.height=6,
+               dev       ="png")
+
+iFig=0
+iTab=0
+```
+
+```{r, pkgs}
+library(FLCore)
+library(FLBRP)
+library(FLasher)
+library(FLife)
+library(ggplotFL)
+
+library(popbio)
+
+library(GGally)
+library(ggpubr)
+
+library(rjson) # install.packages("rjson"); used for dropbox function
+library(RJSONIO)
+
+library(plyr)
+library(dplyr)
+library(reshape)
+
+library(readxl)
+  
+library(mgcv)
+library(mgcViz)
+  
+theme_set(theme_bw(16))
+```
+
+
+```{r, dbox}
+dropboxdir<-try(file.path(get_dropbox(), "dd"))
+
+if ("try-error"%in%is(dropboxdir))
+  dropboxdir="~/Dropbox/pelagics"
+```
+
+
+# Mackerel
+
+```{r, mac.data}
+load(file.path(dropboxdir,"data/om/mac.RData"))
+ts =as.data.frame(read_excel("../data/inputs/dat.xlsx",3))
+```
+
+
+ 
+ 
+```{r eq}
+par=teleost[c("linf","k","t0","l50","a","b"),dimnames(teleost)$iter=="Scomber scombrus"]
+par=lhPar(par,m1=0.2/(300^-0.288),m2=-0.28,m3=NA)
+eq =lhEql(par,m="lorenzen")
+
+plot(eq,refpt="msy")
+```
+
+**Figure `r iFig=iFig+1; iFig`** Equilibrium dynamics
+
+
+```{r}
+om=as(eq,"FLStock")
+om=fwd(om,fbar=fbar(om)[,-1],sr=eq)
+
+plot(om)
+```
+
+**Figure `r iFig=iFig+1; iFig`** Time series dynamics
+
+```{r}
+plot(qmax((biomass(eq)%/%biomass(eq)[,c(14)])^0.3,0.5))+
+  scale_y_continuous(labels = scales::percent)+
+  xlab("Biomass")+ylab("% Change in mass-at-age")
+```
+
+**Figure `r iFig=iFig+1; iFig`** Density dependence multiplier
+
+
+```{r}
+ddWt<-function(wt,biomass, bmsy)
+  wt%*%qmax((biomass/bmsy)^0.3,0.5)
+
+wt=ddWt(stock.wt(eq),biomass(eq),refpts(eq)["msy","biomass"])
+
+ggplot(as.data.frame(wt))+           
+    geom_line(aes(age,data,col=factor(year)))+
+    theme(legend.position="none")+
+    scale_x_continuous(limits=c(0,15))+
+    xlab("Age")+ylab("NMass-at-age")
+```
+
+**Figure `r iFig=iFig+1; iFig`** Simulation of density dependence in mass-at-age
+
+```{r}
+m=par["m1"]%*%(wt%^%par["m2"])
+
+ggplot(as.data.frame(m))+           
+    geom_line(aes(age,data,col=factor(year)))+
+    theme(legend.position="none")+
+    scale_x_continuous(limits=c(0,15))+
+    xlab("Age")+ylab("M-at-age")
+```
+
+**Figure `r iFig=iFig+1; iFig`** Simulation of density dependence in M-at-age
+
+
+```{r}
+x=propagate(eq,length(dimnames(eq)$year))
+fbar(x)=fbar(x)[,1]
+fbar(x)=c(fbar(eq))
+
+for (i in seq(20)){
+stock.wt(x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"])
+m(       x)=par["m1"]%*%(stock.wt(x)%^%par["m2"])
+x=brp(x)}
+
+ggplot()+
+  geom_line(aes(biomass,catch),
+            data=model.frame(FLQuants(x,biomass=function(x) biomass(x) ,catch=function(x) catch(x)),drop=T))+
+  geom_line(aes(biomass,catch),
+            data=model.frame(FLQuants(eq,biomass=function(x) biomass(x) ,catch=function(x) catch(x)),drop=T),col="red")
+```
+
+**Figure `r iFig=iFig+1; iFig`** Comparison of equilibrium curves with (black) and without (red) density dependence.
+
+```{r}
+ggplot()+
+  geom_line(aes(ssb,catch),
+            data=model.frame(FLQuants(x,ssb=function(x) ssb(x) ,catch=function(x) catch(x)),drop=T))+
+  geom_line(aes(ssb,catch),
+            data=model.frame(FLQuants(eq,ssb=function(x) ssb(x) ,catch=function(x) catch(x)),drop=T),col="red")
+```
+
+**Figure `r iFig=iFig+1; iFig`** Comparison of equilibrium curves with (black) and without (red) density dependence.
+
+
+# Funding
+
+# References
