@@ -108,10 +108,11 @@ plot(om)
 ```{r}
 plot(qmax((biomass(eq)%/%biomass(eq)[,c(14)])^0.3,0.5))+
   scale_y_continuous(labels = scales::percent)+
+  geom_vline(aes(xintercept=14),col="red")+
   xlab("Biomass")+ylab("% Change in mass-at-age")
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Density dependence multiplier
+**Figure `r iFig=iFig+1; iFig`** Density dependence multiplier, red is $B_{MSY}$
 
 
 ```{r}
@@ -124,7 +125,7 @@ ggplot(as.data.frame(wt))+
     geom_line(aes(age,data,col=factor(year)))+
     theme(legend.position="none")+
     scale_x_continuous(limits=c(0,15))+
-    xlab("Age")+ylab("NMass-at-age")
+    xlab("Age")+ylab("Mass-at-age")
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Simulation of density dependence in mass-at-age
