@@ -10,11 +10,12 @@ tags: FLR FLCore introduction
 license: Creative Commons Attribution-ShareAlike 4.0 International Public License
 # bibliography: refs.bib
 ---
-  
+
 ```{r, knitr, eval=TRUE, echo=FALSE, warning=FALSE, cache=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 # getwd()
 library(knitr)
+
 opts_chunk$set(cache     =TRUE, 
                comment   =NA, 
                warning   =FALSE, 
@@ -27,6 +28,7 @@ opts_chunk$set(cache     =TRUE,
                fig.width =8,
                fig.height=6,
                dev       ="png")
+
 iFig=0
 iTab=0
 ```
@@ -36,27 +38,29 @@ library(FLCore)
 library(ggplotFL)
 library(GGally)
 library(ggpubr)
+
 library(rjson) # install.packages("rjson"); used for dropbox function
 library(RJSONIO)
+
 library(plyr)
 library(dplyr)
 library(reshape)
-library(readxl)
 
+library(readxl)
+  
 library(mgcv)
 library(mgcViz)
-
+  
 theme_set(theme_bw(16))
-```
 
-
-```{r, eval=FALSE}
 source("../R/get_dropbox.R")
+
 ```
 
 
 ```{r, dbox}
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
+
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
 ```
@@ -67,22 +71,29 @@ if ("try-error"%in%is(dropboxdir))
 ```{r, mac.data}
 load(file.path(dropboxdir,"data/om/mac.RData"))
 ts =as.data.frame(read_excel(file.path(dropboxdir,"data/inputs/dat.xlsx"),3))
+
 wt =transform(as.data.frame(stock.wt(mac),drop=TRUE),cohort=year-as.numeric(age))
 wt =merge(wt,ts,by="year")
 wt=ddply(wt,.(age), transform, rsdl =data/mean(data))
 wt=ddply(wt,.(age), transform, rsdl_=rsdl/var(data)^0.5)
 wt$age=factor(wt$age,levels=sort(unique(wt$age)))
+
 mat=transform(as.data.frame(mat(mac),drop=TRUE),cohort=year-as.numeric(age))
 mat=merge(mat,ts)
 mat=ddply(mat,.(age), transform, rsdl =data/mean(data))
 mat=ddply(mat,.(age), transform, rsdl_=rsdl/var(data)^0.5) 
 mat$age=factor(mat$age,levels=sort(unique(mat$age)))
+
 m  =transform(as.data.frame(m(mac),drop=TRUE),cohort=year-as.numeric(age))  
 m  =merge(m,ts)
 m  =ddply(m,.(age), transform, rsdl =data/mean(data))
 m  =ddply(m,.(age), transform, rsdl_=rsdl/var(data)^0.5) 
 m$age=factor(m$age,levels=sort(unique(m$age))) 
 ```
+
+**Biomass trends**
+
+[Just to check: what is meant by ICES biomass? ]
 
 ```{r, mac.ts, fig.width=8,fig.height=4}
 ggplot(transform(melt(ts,id="year"),year=year,quant=variable,data=value))+
@@ -94,6 +105,9 @@ ggplot(transform(melt(ts,id="year"),year=year,quant=variable,data=value))+
 
 **Figure `r iFig=iFig+1; iFig`** Time series
 
+**Weight at age**
+
+Yearclasses connected via dotted lines. 
 
 ```{r, mac.wt, fig.width=8,fig.height=4}
 ggplot(wt)+  
@@ -102,55 +116,74 @@ ggplot(wt)+
   geom_point(aes(year,data,col=age))+
   xlab("Year")+ylab("Mass-at-age")+
   theme(legend.position="bottom")+
-  scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
+  scale_color_manual("Age",values=rainbow(length(unique(wt$age)))) +
+  guides(color = guide_legend(nrow = 1))
+
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Mass-at-age
 
+**Maturity at age**
+
+Most of the variability is in the maturity at age 2 and, to a lesser extent, age 3. 
 
 ```{r, mac.m, fig.width=8,fig.height=4}
 ggplot(mat)+  
   geom_line(aes(year,data,group=cohort),linetype=3,colour="grey10")+ 
   geom_line(aes(year,data,group=age,col=age))+
   geom_point(aes(year,data,col=age))+
-  xlab("Year")+ylab("Mass-at-age")+
+  xlab("Year")+ylab("Maturity-at-age")+
   theme(legend.position="bottom")+
-  scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
+  scale_color_manual("Age",values=rainbow(length(unique(wt$age)))) +
+  guides(color = guide_legend(nrow = 1))
+
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Maturity-at-age
+
+**Natural mortality at age**
+
+Constant by age and by year
 
 ```{r, mac.mat, fig.width=8,fig.height=4}
 ggplot(m)+  
   geom_line(aes(year,data,group=cohort),linetype=3,colour="grey10")+ 
   geom_line(aes(year,data,group=age,col=age))+
   geom_point(aes(year,data,col=age))+
-  xlab("Year")+ylab("Mass-at-age")+
+  xlab("Year")+ylab("M-at-age")+
   theme(legend.position="bottom")+
-  scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
+  scale_color_manual("Age",values=rainbow(length(unique(wt$age)))) +
+  guides(color = guide_legend(nrow = 1))
+
 ```
 
 **Figure `r iFig=iFig+1; iFig`** M-at-age
 
+**Weight at age vs. biomass**
+
+Boxplot of weight at age and [xxxx]
 
 ```{r, mac.wt2, fig.width=8,fig.height=5}
 #wt$age=factor(wt$age,levels=rev(levels(wt$age)))
 #ggbivariate(subset(wt,rsdl<5&rsdl>0), outcome="data", explanatory=c("age", "tb"))
+
 a=ggplot(wt)+
   geom_boxplot(aes(age,data))+
   xlab("Mass-at-age")+ylab("Age")
+
 b=ggplot(subset(wt,rsdl<3&rsdl>0))+
   geom_point(aes(tb,rsdl))+
   geom_smooth(aes(tb,rsdl),method="lm")+
   facet_wrap(age~.)+
   xlab("Biomass")+ylab("Residual")
+
 ggarrange(a,b ,label.y=1,  
           widths = c(4,6), heights = c(1,1,1),
           nrow   = 1,          ncol    = 2)+
-  theme_bw(16)+
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.title.y = element_blank())
+          theme_bw(16)+
+          theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.title.y = element_blank())
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Mass-at-age, summary 
@@ -170,21 +203,24 @@ ggplot(subset(wt,age!=0),aes(tb,data))+
 ```{r, mac.mat2, fig.width=8,fig.height=5}
 #wt$age=factor(wt$age,levels=rev(levels(wt$age)))
 #ggbivariate(subset(wt,rsdl<5&rsdl>0), outcome="data", explanatory=c("age", "tb"))
+
 a=ggplot(mat)+
   geom_boxplot(aes(age,data))+
   xlab("Mass-at-age")+ylab("Age")
+
 b=ggplot(mat)+
   geom_point(aes(tb,rsdl))+
   geom_smooth(aes(tb,rsdl),method="lm")+
   facet_wrap(age~.)+
   xlab("Biomass")+ylab("Residual")
+
 ggarrange(a,b ,label.y=1,  
           widths = c(4,6), heights = c(1,1,1),
           nrow   = 1,          ncol    = 2)+
-  theme_bw(16)+
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.title.y = element_blank())
+          theme_bw(16)+
+          theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.title.y = element_blank())
 ```
 
 
@@ -205,7 +241,9 @@ ggplot(subset(mat,age%in%(1:5)),aes(tb,data))+
 
 ```{r}
 gmr=gammV(data~s(tb, bs="tp")+age, data=wt)
+
 summary(gmr)
+
 plot(gmr)
 ```
 
@@ -216,16 +254,19 @@ plot(gmr)
 load(file.path(dropboxdir,"data/om/whb.RData"))
 ts=model.frame(FLQuants(whb,tb=biomass,ssb=ssb),drop=T)
 ts$tb=ts$tb/1e6
+
 wt =transform(as.data.frame(stock.wt(whb),drop=TRUE),cohort=year-as.numeric(age))
 wt =merge(wt,ts,by="year")
 wt=ddply(wt,.(age), transform, rsdl =data/mean(data))
 wt=ddply(wt,.(age), transform, rsdl_=rsdl/var(data)^0.5)
 wt$age=factor(wt$age,levels=sort(unique(wt$age)))
+
 mat=transform(as.data.frame(mat(whb),drop=TRUE),cohort=year-as.numeric(age))
 mat=merge(mat,ts)
 mat=ddply(mat,.(age), transform, rsdl =data/mean(data))
 mat=ddply(mat,.(age), transform, rsdl_=rsdl/var(data)^0.5) 
 mat$age=factor(mat$age,levels=sort(unique(mat$age)))
+
 m  =transform(as.data.frame(m(whb),drop=TRUE),cohort=year-as.numeric(age))  
 m  =merge(m,ts)
 m  =ddply(m,.(age), transform, rsdl =data/mean(data))
@@ -287,21 +328,24 @@ ggplot(m)+
 ```{r, whb.wt2, fig.width=8,fig.height=5}
 #wt$age=factor(wt$age,levels=rev(levels(wt$age)))
 #ggbivariate(subset(wt,rsdl<5&rsdl>0), outcome="data", explanatory=c("age", "tb"))
+
 a=ggplot(wt)+
   geom_boxplot(aes(age,data))+
   xlab("Mass-at-age")+ylab("Age")
+
 b=ggplot(subset(wt,rsdl<3&rsdl>0))+
   geom_point(aes(tb,rsdl))+
   geom_smooth(aes(tb,rsdl),method="lm")+
   facet_wrap(age~.,ncol=3)+
   xlab("Biomass")+ylab("Residual")
+
 ggarrange(a,b ,label.y=1,  
           widths = c(4,6), heights = c(1,1,1),
           nrow   = 1,          ncol    = 2)+
-  theme_bw(16)+
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.title.y = element_blank())
+          theme_bw(16)+
+          theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.title.y = element_blank())
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Mass-at-age, summary 
@@ -321,21 +365,24 @@ ggplot(wt,aes(tb,data))+
 ```{r, whb.mat2, fig.width=8,fig.height=5}
 #wt$age=factor(wt$age,levels=rev(levels(wt$age)))
 #ggbivariate(subset(wt,rsdl<5&rsdl>0), outcome="data", explanatory=c("age", "tb"))
+
 a=ggplot(mat)+
   geom_boxplot(aes(age,data))+
   xlab("Mass-at-age")+ylab("Age")
+
 b=ggplot(mat)+
   geom_point(aes(tb,rsdl))+
   geom_smooth(aes(tb,rsdl),method="lm")+
   facet_wrap(age~.,ncol=3)+
   xlab("Biomass")+ylab("Residual")
+
 ggarrange(a,b ,label.y=1,  
           widths = c(4,6), heights = c(1,1,1),
           nrow   = 1,          ncol    = 2)+
-  theme_bw(16)+
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.title.y = element_blank())
+          theme_bw(16)+
+          theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.title.y = element_blank())
 ```
 
 
@@ -355,11 +402,13 @@ ggplot(subset(mat,age%in%1:5),aes(tb,data))+
 
 ```{r}
 gmr=gammV(data~s(tb)+age, data=wt)
+
 summary(gmr)
+
 plot(gmr)
+
 ```
 
 # Funding
 
 # References
-
