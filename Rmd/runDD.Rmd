@@ -11,11 +11,11 @@ license: Creative Commons Attribution-ShareAlike 4.0 International Public Licens
 # bibliography: refs.bib
 ---
 
-This document provides an example of how to model density dependence in mass-at-age and M-at-age.
+This document provides an example of how to model density dependence in mass and M-at-age.
 
 The life history parameters of mackerel are used to construct an `FLBRP` object that represents the equilibrium dynamics, this is then used to construct an `FLStock` object that models the time series dynamics.
 
-The Lorenzen relationship between mass-at-age and M is used to link M and weight-at-age. For example, lorenzen M = a*300^-0.288, so if you want M=0.2 at 300g then a= 0.2 /(300^-0.288)
+The Lorenzen relationship between mass-at-age and M can model M as a function of weight-at-age. For example, lorenzen M = a*300^-0.288, so if you want M=0.2 at 300g then a= 0.2 /(300^-0.288)
 
 
 ```{r, knitr, eval=TRUE, echo=FALSE, warning=FALSE, cache=FALSE}
@@ -75,8 +75,7 @@ if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
 ```
 
-
-# Mackerel
+# Sumulations
 
 ```{r, mac.data}
 load(file.path(dropboxdir,"data/om/mac.RData"))
