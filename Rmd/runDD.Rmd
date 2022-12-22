@@ -3,7 +3,7 @@ title: "**Density Dependence**"
 subtitle: "Simulations"
 author: "L Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: pdf_document
+output: html_document
 mathjax: TRUE
 
 tags: FLR FLCore introduction
