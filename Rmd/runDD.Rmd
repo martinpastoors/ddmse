@@ -11,7 +11,7 @@ license: Creative Commons Attribution-ShareAlike 4.0 International Public Licens
 bibliography: refs.bib
 ---
 
-Mackerel life history parameters are used to construct an `FLBRP` object to represent the equilibrium dynamics and then an `FLStock` object models the time series dynamics.
+Mackerel life history parameters are used to construct an example of modelling density dependence, first an `FLBRP` object is used  represent the equilibrium dynamics and then an `FLStock` object is constructed to models the time series dynamics.
 
 Mass-at-age is assumed to vary with total biomass, we assume that estimates of mass-at-age ({W_t}^\prime) are based on observations around $B_{MSY}$ and if total biomass increased density dependence results in a decline in the expected value of $W_a$, i.e. $W_t = {W_t}^\prime a(B_t/B_{MSY})^b$  
 
