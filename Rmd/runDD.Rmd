@@ -1,6 +1,6 @@
 ---
 title: "**Density Dependence**"
-subtitle: "Simulations"
+subtitle: "Example of modellimng density dependence in mass, maturity and M-at-age"
 author: "L Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: html_document
@@ -8,14 +8,52 @@ mathjax: TRUE
 
 tags: FLR FLCore introduction
 license: Creative Commons Attribution-ShareAlike 4.0 International Public License
-# bibliography: refs.bib
+bibliography: refs.bib
 ---
 
-This document provides an example of how to model density dependence in mass and M-at-age.
+Mackerel life history parameters are used to construct an `FLBRP` object to represent the equilibrium dynamics and then an `FLStock` object models the time series dynamics.
 
-The life history parameters of mackerel are used to construct an `FLBRP` object that represents the equilibrium dynamics, this is then used to construct an `FLStock` object that models the time series dynamics.
+## Natural mortality
 
-The Lorenzen relationship between mass-at-age and M can model M as a function of weight-at-age. For example, lorenzen M = a*300^-0.288, so if you want M=0.2 at 300g then a= 0.2 /(300^-0.288)
+@lorenzen2000allometry noted that theoretical and empirical studies point to the existence of an allometric relationship between natural mortality $M_a$ and body mass ($W_a$) at-age in fish of the form:
+
+  $M_a \propto {W_a}^{d}$
+  
+i.e. 
+
+  $M_W=M_uW^d$
+
+where $M_W$ is $M$ at weight $W$, $M_u$ is $M$ at unit weight, and $d$ is the allometric exponent from empirical relationships shown to range from –0.3 to –0.37, e.g. if $M_t=0.2$ at a weight when $50\%$ of individuals reach maturity $W_{50}$ then 
+
+  $M_u = 0.2/({W_{50}}^{d})$
+
+Since weight is approximately proportional to the third power of length  values of $d$ of approximately –1/3 imply that $M$ is inversely proportional to body length. @10.1093/icesjms/fst226 recognised that for ($L$) if the von Bertalanffy and length–weight parameters are known, then the mortality schedule can be defined by
+
+$L_t=L_{\infty}{(1-e^{(1-k(t-t_0))})}^{b(-0.305)}$
+
+where $L_{\infty}$ is the asmypotopic length,  $k$ growth rate, and $t_0$ is the age at which length is zero of the von Bertalanffy growth equation,  and the allometric relationship $W = a L^b$.
+
+
+This gives 
+
+$M_t = M_{\infty}{(W_t/W_{\infty})}^{-0.3}$
+
+where $M_t$ is the instantaneous $M$ rate per year at age $t$ and $M_{\infty}$ is the asymptotic $M$ rate at the asymptotic weight $W_{\infty}$, derived from life history characteristics @hoenig1992empirical
+
+## Multispecies modelling of predation mortality (M2)
+
+@pope2006modelling (doi:10.1016/j.icesjms.2006.04.015) proposed a way of modelling predation mortality (M2) based on size spectra, e.g. 
+
+$N(L) = \Omega L^{\kappa}$
+
+where $N$ is numbers at length $L$ and $\Omega$ is a prefactor and $\kappa$ the scaling by length 
+
+This was further developed by @POPE2021105952 (https://doi.org/10.1016/j.fishres.2021.105952) by assuming that predation by all fish in the spectrum is mediated through a feeding relationship with mean $\mu$ and standard deviation $\sigma$, both common to all predators and that UM2 is a constant that relates predation pressure to mortality, and where $\lambda$ is the scaling of the feeding rate of predators by length then the predation mortality on a prey species of length $L^{\prime}$ can be written as
+
+$M2(L^\prime) = \Omega \times UM2(L^\prime)^{(\kappa + \lambda)} e^{(\mu((\kappa + \lambda)/3))} \times e^{({\sigma}^2((\kappa+\lambda)^2)/18)}$
+
+<!-- Another insight derived from size spectra studies comes from the work of Andersen et al. (2009). They derive a formulation for the predation mortality to be expected from a size spectrum with a given slope and intercept in terms of mass. However, the CSM is a rather different model to theirs since it only considers the fish part of the ecosystem and is framed in terms of length rather than mass. Moreover, it treats predation mortality as a top-down process rather than in terms of mass balance. Predation mortality is defined on a simple UM2*predation pressure basis. Here, UM2 is defined as a constant M2 per unit of predation pressure. The predation pressure is summed over all predator lengths with a weighting for the feeding relationship between specific prey and predator lengths. For a particular length L of predator, predation pressure is taken to be their numbers times their length to a power $\gamma$ (if $\gamma=3$), this would be equivalent to biomass except that the condition factor linking $L^3$ to mass is included into the UM2 constant to simplify the equations). Hence, assuming a numbers size spectrum described by -->
+
 
 
 ```{r, knitr, eval=TRUE, echo=FALSE, warning=FALSE, cache=FALSE}
@@ -67,6 +105,26 @@ library(mgcViz)
 theme_set(theme_bw(16))
 ```
 
+```{r}
+ddWt<-function(wt,biomass, bmsy)
+  wt%*%qmax((biomass/bmsy)^0.3,0.5)
+
+matFn<-function(wt,x) 
+   1/(1+exp(-x[1]*(wt-x[2])))
+
+ddFn<-function(year,x,par){
+  lsr=landings.wt(x)[,year]/stock.wt(x)[,year]
+  dsr=discards.wt(x)[,year]/stock.wt(x)[,year]
+
+  stock.wt(   x)[,year]=ddWt(stock.wt(x)[,year],biomass(x)[,ac(an(year)-1)],par["bmsy"])
+  landings.wt(x)[,year]=stock.wt(x)[,year]*lsr
+  discards.wt(x)[,year]=stock.wt(x)[,year]*dsr
+
+  mat(x)[,year]=matFn(stock.wt(x)[,year],par[c("k","w50")])
+  m(  x)[,year]=par["m1"]%*%(stock.wt(x)[,year]%^%par["m2"])
+
+  fwd(x,f=f[,year],sr=eq)}
+```
 
 ```{r, dbox}
 dropboxdir<-try(file.path(get_dropbox(), "dd"))
@@ -116,9 +174,6 @@ plot(qmax((biomass(eq)%/%biomass(eq)[,c(14)])^0.3,0.5))+
 
 
 ```{r}
-ddWt<-function(wt,biomass, bmsy)
-  wt%*%qmax((biomass/bmsy)^0.3,0.5)
-
 wt=ddWt(stock.wt(eq),biomass(eq),refpts(eq)["msy","biomass"])
 
 ggplot(as.data.frame(wt))+           
@@ -129,6 +184,20 @@ ggplot(as.data.frame(wt))+
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Simulation of density dependence in mass-at-age
+
+```{r}
+parMat=FLPar(c(k=0.1, w5=111.0)) 
+mat=1/(1+exp(-parMat[1]*(wt-parMat[2])))
+
+ggplot(as.data.frame(mat))+           
+    geom_line(aes(age,data,col=factor(year)))+
+    theme(legend.position="none")+
+    scale_x_continuous(limits=c(0,15))+
+    xlab("Age")+ylab("M-at-age")
+```
+
+**Figure `r iFig=iFig+1; iFig`** Simulation of density dependence in maturity-at-age
+
 
 ```{r}
 m=par["m1"]%*%(wt%^%par["m2"])
@@ -144,34 +213,126 @@ ggplot(as.data.frame(m))+
 
 
 ```{r}
+save(eq,file="/home/laurie/Desktop/tmp/t.RData")
+```
+
+```{r}
 x=propagate(eq,length(dimnames(eq)$year))
 fbar(x)=fbar(x)[,1]
 fbar(x)=c(fbar(eq))
 
+lsr=landings.wt(eq)/stock.wt(eq)
+dsr=discards.wt(eq)/stock.wt(eq)
+# iterate
 for (i in seq(20)){
-stock.wt(x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"])
-m(       x)=par["m1"]%*%(stock.wt(x)%^%par["m2"])
-x=brp(x)}
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"])
+  landings.wt(x)=stock.wt(x)*lsr
+  discards.wt(x)=stock.wt(x)*dsr
+  x=brp(x)}
 
 ggplot()+
-  geom_line(aes(biomass,catch),
-            data=model.frame(FLQuants(x,biomass=function(x) biomass(x) ,catch=function(x) catch(x)),drop=T))+
-  geom_line(aes(biomass,catch),
-            data=model.frame(FLQuants(eq,biomass=function(x) biomass(x) ,catch=function(x) catch(x)),drop=T),col="red")
+  geom_line(aes(ssb,catch),
+            data=model.frame(FLQuants(x, ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T))+
+  geom_line(aes(ssb,catch),
+            data=model.frame(FLQuants(eq,ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T),col="red")+
+  xlab("SSB")+ylab("Catch")
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Comparison of equilibrium curves with (black) and without (red) density dependence.
+**Figure `r iFig=iFig+1; iFig`** Mass-at-age: Comparison of equilibrium curves with (black) and without (red) density dependence.
+
 
 ```{r}
+x=propagate(eq,length(dimnames(eq)$year))
+fbar(x)=fbar(x)[,1]
+fbar(x)=c(fbar(eq))
+
+lsr=landings.wt(eq)/stock.wt(eq)
+dsr=discards.wt(eq)/stock.wt(eq)
+# iterate
+for (i in seq(20)){
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"])
+  landings.wt(x)=stock.wt(x)*lsr
+  discards.wt(x)=stock.wt(x)*dsr
+
+    mat(     x)=1/(1+exp(-parMat[1]*(stock.wt(x)-parMat[2])))
+  x=brp(x)}
+
 ggplot()+
   geom_line(aes(ssb,catch),
-            data=model.frame(FLQuants(x,ssb=function(x) ssb(x) ,catch=function(x) catch(x)),drop=T))+
+            data=model.frame(FLQuants(x, ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T))+
   geom_line(aes(ssb,catch),
-            data=model.frame(FLQuants(eq,ssb=function(x) ssb(x) ,catch=function(x) catch(x)),drop=T),col="red")
+            data=model.frame(FLQuants(eq,ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T),col="red")+
+  xlab("SSB")+ylab("Catch")
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Comparison of equilibrium curves with (black) and without (red) density dependence.
+**Figure `r iFig=iFig+1; iFig`** Mass and maturity-at-age: Comparison of equilibrium curves with (black) and without (red) density dependence.
 
+
+```{r}
+x=propagate(eq,length(dimnames(eq)$year))
+fbar(x)=fbar(x)[,1]
+fbar(x)=c(fbar(eq))
+
+lsr=landings.wt(eq)/stock.wt(eq)
+dsr=discards.wt(eq)/stock.wt(eq)
+# iterate
+for (i in seq(20)){
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"])
+  landings.wt(x)=stock.wt(x)*lsr
+  discards.wt(x)=stock.wt(x)*dsr
+
+  mat(     x)=1/(1+exp(-parMat[1]*(stock.wt(x)-parMat[2])))
+  m(       x)=par["m1"]%*%(stock.wt(x)%^%par["m2"])
+  x=brp(x)}
+
+ggplot()+
+  geom_line(aes(ssb,catch),
+            data=model.frame(FLQuants(x, ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T))+
+  geom_line(aes(ssb,catch),
+            data=model.frame(FLQuants(eq,ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T),col="red")+
+  xlab("SSB")+ylab("Catch")
+```
+
+**Figure `r iFig=iFig+1; iFig`** Mass, maturity and M-at-age: Comparison of equilibrium curves with (black) and without (red) density dependence.
+
+
+```{r}
+save(eq,parMat,par,sr,file="/home/laurie/Desktop/tmp/t.RData")
+```
+
+```{r}
+load("/home/laurie/Desktop/tmp/t.RData")
+
+par=FLPar(c(m1=0.2/(300^-0.288),m2=-0.28,bmsy=c(refpts(eq)["msy","ssb"]),b=0.3,k=0.1, w50=111.0)) 
+
+f=FLQuant(c(rep(seq(0,1,length.out=101),each=51),rep(seq(1,5,length.out=101),each=51)[-1]),
+          dimnames=list(year=dimnames(om)$year,iter=seq(101)))%*%refpts(eq)["msy","harvest"]
+fbar(eq)=f
+
+eq=brp(eq)
+om=as(eq,"FLStock")
+om=fwd(om,f=f[,-1],sr=eq)
+
+om2=om
+for (year in dimnames(om2)$year[-1]){
+#  lsr=landings.wt(om2)[,year]/stock.wt(om2)[,year]
+#  dsr=discards.wt(om2)[,year]/stock.wt(om2)[,year]
+
+#  stock.wt(   om2)[,year]=ddWt(stock.wt(om2)[,year],biomass(om2)[,ac(an(year)-1)],par["bmsy"])
+#  landings.wt(om2)[,year]=stock.wt(om2)[,year]*lsr
+#  discards.wt(om2)[,year]=stock.wt(om2)[,year]*dsr
+
+#  mat(om2)[,year]=1/(1+exp(-par["k"]*(stock.wt(om2)[,year]-par["w50"])))
+#  m(  om2)[,year]=par["m1"]%*%(stock.wt(om2)[,year]%^%par["m2"])
+  
+#  om2=fwd(om2,f=f[,year],sr=eq)
+  
+om2=ddFn(year,om2,par)}
+
+plot(window(FLStocks("OM"=om,DD=om2),start=11))
+```
+
+**Figure `r iFig=iFig+1; iFig`** Mass, maturity and M-at-age: Comparison of projections with  and without density dependence.
 
 # Funding
 
