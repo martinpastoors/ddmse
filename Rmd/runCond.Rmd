@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ---
 title: "**Density Dependence**"
 subtitle: "Summary"
@@ -78,11 +77,13 @@ wt =merge(wt,ts,by="year")
 wt=ddply(wt,.(age), transform, rsdl =data/mean(data))
 wt=ddply(wt,.(age), transform, rsdl_=rsdl/var(data)^0.5)
 wt$age=factor(wt$age,levels=sort(unique(wt$age)))
+
 mat=transform(as.data.frame(mat(mac),drop=TRUE),cohort=year-as.numeric(age))
 mat=merge(mat,ts)
 mat=ddply(mat,.(age), transform, rsdl =data/mean(data))
 mat=ddply(mat,.(age), transform, rsdl_=rsdl/var(data)^0.5) 
 mat$age=factor(mat$age,levels=sort(unique(mat$age)))
+
 m  =transform(as.data.frame(m(mac),drop=TRUE),cohort=year-as.numeric(age))  
 m  =merge(m,ts)
 m  =ddply(m,.(age), transform, rsdl =data/mean(data))
@@ -225,17 +226,31 @@ par=optim(par=c(k=0.5,w50=.2), fn,dat=dat)
 ggplot(dat,aes(wt,mat))+
   geom_point(aes(wt,mat,col=age))+
   geom_smooth(se=F,span=0.2)+
-  xlab("Age")+ylab("Matutrity")+
+  xlab("Mass-at-age")+ylab("Matutrity-at-age")+
   geom_line(aes(wt,mat),col="red",data=data.frame(mat=matFn(dat$wt,par$par),wt=dat$wt))
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Maturity-at-age v mass-at-age
+**Figure `r iFig=iFig+1; iFig`** Maturity-at-age v mass-at-age  (k=`r par$par[1]` $W_{50}$=`r par$par[2]`)
 
 
 ```{r}
-gmr=gammV(data~s(tb, bs="tp")+age, data=wt)
+wt=subset(wt,age!=0)
+gmr=gammV(log(data)~s(tb/mean(tb), bs="tp")+age, data=wt)
 summary(gmr)
 plot(gmr)
+coefficients(gmr)
+
+wt=cbind(wt,hat=predict(gmr))
+
+plot(exp(coefficients(gmr)[2:12]))
+wt=merge(wt,data.frame(age=1:12,mean=exp(c(0,coefficients(gmr)[2:12]))))
+
+ggplot(wt)+
+  geom_line(aes(tb,exp(hat)/mean,col=age))+
+  geom_point(aes(tb,data/mean,col=age))+
+  xlab("Biomass")+ylab("Mass-Mean")
+
+summary(lm(hat~tb,data=transform(wt,tb=tb/mean(tb))))
 ```
 
 
@@ -243,18 +258,20 @@ plot(gmr)
 
 ```{r, whb.data}
 load(file.path(dropboxdir,"data/om/whb.RData"))
-ts=model.frame(FLQuants(whb,tb=biomass,ssb=ssb),drop=T)
+ts=model.frame(FLQuants(whb,tb=stock,ssb=ssb),drop=T)
 ts$tb=ts$tb/1e6
 wt =transform(as.data.frame(stock.wt(whb),drop=TRUE),cohort=year-as.numeric(age))
 wt =merge(wt,ts,by="year")
 wt=ddply(wt,.(age), transform, rsdl =data/mean(data))
 wt=ddply(wt,.(age), transform, rsdl_=rsdl/var(data)^0.5)
 wt$age=factor(wt$age,levels=sort(unique(wt$age)))
+
 mat=transform(as.data.frame(mat(whb),drop=TRUE),cohort=year-as.numeric(age))
 mat=merge(mat,ts)
 mat=ddply(mat,.(age), transform, rsdl =data/mean(data))
 mat=ddply(mat,.(age), transform, rsdl_=rsdl/var(data)^0.5) 
 mat$age=factor(mat$age,levels=sort(unique(mat$age)))
+
 m  =transform(as.data.frame(m(whb),drop=TRUE),cohort=year-as.numeric(age))  
 m  =merge(m,ts)
 m  =ddply(m,.(age), transform, rsdl =data/mean(data))
@@ -397,16 +414,58 @@ par=optim(par=c(k=0.5,w50=.2), fn,dat=dat)
 ggplot(dat,aes(wt,mat))+
   geom_point(aes(wt,mat,col=age))+
   geom_smooth(se=F,span=0.2)+
-  xlab("Age")+ylab("Matutrity")+
+  xlab("Mass-at-age")+ylab("Matutrity-at-age")+
   geom_line(aes(wt,mat),col="red",data=data.frame(mat=matFn(dat$wt,par$par),wt=dat$wt))
 ```
 
 
+**Figure `r iFig=iFig+1; iFig`** Maturity-at-age v mass-at-age  (k=`r par$par[1]` $W_{50}$=`r par$par[2]`)
+
+
 ```{r}
-gmr=gammV(data~s(tb)+age, data=wt)
+gmr=gammV(log(data)~s(tb, bs="tp")+s(year, bs="tp")+age, data=wt)
 summary(gmr)
 plot(gmr)
+coefficients(gmr)
+
+wt=cbind(wt,hat=predict(gmr))
+
+plot(coefficients(gmr)[2:10])
+wt=merge(wt,data.frame(age=1:10,mean=c(0,coefficients(gmr)[2:10])))
+
+p=ggplot(wt)+
+  geom_line(aes(tb,exp(hat-mean),col=age))+
+  geom_point(aes(tb,data-exp(mean),col=age))+
+  xlab("Biomass")+ylab("Mass-Mean")
 ```
+
+
+```{r}
+wt =transform(as.data.frame(stock.wt(whb),drop=TRUE),cohort=year-as.numeric(age))
+wt =merge(wt,ts,by="year")
+wt=ddply(wt,.(age), transform, rsdl =data/mean(data))
+wt=ddply(wt,.(age), transform, rsdl_=rsdl/var(data)^0.5)
+wt$age=factor(wt$age,levels=sort(unique(wt$age)))
+
+wt=subset(wt,age!=0)
+gmr=gammV(log(data)~s(tb/mean(tb), bs="tp")+age, data=wt)
+summary(gmr)
+plot(gmr)
+coefficients(gmr)
+
+wt=cbind(wt,hat=predict(gmr))
+
+plot(exp(coefficients(gmr)[2:12]))
+wt=merge(wt,data.frame(age=1:12,mean=exp(c(0,coefficients(gmr)[2:12]))))
+
+ggplot(wt)+
+  geom_line(aes(tb,exp(hat)/mean,col=age))+
+  geom_point(aes(tb,data/mean,col=age))+
+  xlab("Biomass")+ylab("Mass-Mean")
+
+summary(lm(hat~tb,data=transform(wt,tb=tb/mean(tb))))
+```
+
 
 # Funding
 

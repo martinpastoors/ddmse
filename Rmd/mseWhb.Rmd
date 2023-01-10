@@ -1,0 +1,159 @@
+---
+title: "**Density Dependence**"
+subtitle: "Example of MSE for Blue whiting"
+author: "L Kell"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+mathjax: TRUE
+tags: FLR FLCore introduction
+license: Creative Commons Attribution-ShareAlike 4.0 International Public License
+bibliography: refs.bib
+---
+
+```{r, knitr, eval=TRUE, echo=FALSE, warning=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+# getwd()
+library(knitr)
+
+opts_chunk$set(cache     =TRUE, 
+               comment   =NA, 
+               warning   =FALSE, 
+               message   =FALSE, 
+               error     =FALSE, 
+               echo      =FALSE, 
+               eval      =TRUE,cache   =TRUE,
+               cache.path="../cache/mseWhb/",
+               fig.path  ="../tex/figs/mseWhb/",
+               fig.width =8,
+               fig.height=6,
+               dev       ="png")
+
+iFig=0
+iTab=0
+```
+
+```{r, pkgs}
+library(FLCore)
+library(FLBRP)
+library(FLasher)
+library(FLAssess)
+library(FLife)
+library(ggplotFL)
+
+library(popbio)
+
+library(GGally)
+library(ggpubr)
+
+library(rjson) # install.packages("rjson"); used for dropbox function
+library(RJSONIO)
+
+library(plyr)
+library(dplyr)
+library(reshape)
+
+library(readxl)
+  
+library(mgcv)
+library(mgcViz)
+  
+theme_set(theme_bw(16))
+```
+
+
+```{r}
+source("../R/dd.R")
+```
+
+```{r, dbox}
+dropboxdir<-try(file.path(get_dropbox(), "dd"))
+
+if ("try-error"%in%is(dropboxdir))
+  dropboxdir="~/Dropbox/pelagics"
+```
+
+
+```{r, whb.data}
+load(file.path(dropboxdir,"data/om/whb.RData"))
+
+par=FLPar(c(m1=0.08/(0.2^-0.288),m2=-0.28,bmsy=6e6,k=63,w50=0.08)) 
+
+stock.wt(   whb)[1]=0.01
+catch.wt(   whb)[1]=0.01
+landings.wt(whb)[1]=0.01
+discards.wt(whb)[1]=0.01
+
+om=ddFn2(whb,par)
+om=om+VPA(om)
+om=ddFn2(om,par)
+
+sr=fmle(as.FLSR(om,model="bevholt"),control=list(silent=TRUE))
+eq=FLBRP(om,sr=sr)
+
+om=fwdWindow(om,end=2080,eq)
+f =fbar(om)[,ac(2021:2080)]%=%refpts(eq)["msy","harvest"]
+om=fwd(om,fbar=f,sr=eq)
+
+om2=om
+om3=om
+om4=om
+for (iYear in ac(2021:2080)){
+  om2=ddFn(iYear,om2,par)
+  om2=fwd(om2,fbar=f[,iYear]*0.8,sr=eq)
+
+  om3=ddFn(iYear,om3,par)
+  om3=fwd(om3,fbar=f[,iYear],sr=eq)
+  
+  om4=ddFn(iYear,om4,par)
+  om4=fwd(om4,fbar=f[,iYear]*1.2,sr=eq)
+  }
+
+plot(FLStocks("fwd"=om,"0.8"=om2,"1.0"=om3,"1.2"=om4))
+```
+
+
+```{r}
+ggplot(FLQuants("ICES"=stock.wt(om[ ,"2080"]), 
+                "0.8" =stock.wt(om2[,"2080"]), 
+                "1.0" =stock.wt(om3[,"2080"]),
+                "1.2" =stock.wt(om4[,"2080"])))+
+  geom_line(aes(age,data,col=qname))+
+  xlab("Age")+ylab("Mass-at-age")
+```
+
+**Figure `r iFig=iFig+1; iFig`** Mass-at-age 
+
+```{r}
+ggplot(FLQuants("ICES"=m(om[ ,"2080"]),  
+                "0.8" =m(om2[,"2080"]), 
+                "1.0" =m(om3[,"2080"]),
+                "1.2" =m(om4[,"2080"])))+
+  geom_line(aes(age,data,col=qname))+
+  xlab("Age")+ylab("M") 
+```
+
+**Figure `r iFig=iFig+1; iFig`** M-at-mass
+
+
+```{r}
+ggplot(FLQuants("ICES"=mat(om[ ,"2080"]),  
+               "0.8"  =mat(om2[,"2080"]),
+               "1.0"  =mat(om3[,"2080"]), 
+               "1.2"  =mat(om4[,"2080"])))+
+  geom_line(aes(age,data,col=qname))+
+  xlab("Age")+ylab("Maturity-a-age")
+```
+
+**Figure `r iFig=iFig+1; iFig`** Maturity-at-age
+
+
+```{r}
+ggplot(rbind(cbind(What="ICES",model.frame(FLQuants(Mat=mat(om[  ,"2080"]),Mass=stock.wt(om[ ,"2080"])))),  
+             cbind(What= "0.8",model.frame(FLQuants(Mat=mat(om2[ ,"2080"]),Mass=stock.wt(om2[,"2080"])))),
+             cbind(What= "1.0",model.frame(FLQuants(Mat=mat(om3[ ,"2080"]),Mass=stock.wt(om3[,"2080"])))),
+             cbind(What= "1.2",model.frame(FLQuants(Mat=mat(om4[ ,"2080"]),Mass=stock.wt(om4[,"2080"]))))))+
+  geom_line(aes(Mass,Mat,col=What))+
+  geom_point(aes(Mass,Mat,col=What))
+```
+
+**Figure `r iFig=iFig+1; iFig`** M-at-mass
