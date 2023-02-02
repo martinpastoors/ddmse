@@ -33,11 +33,12 @@ iTab=0
 ```
 
 ```{r, pkgs}
-library(FLCore)
-library(FLBRP)
-library(FLasher)
-library(FLAssess)
-library(FLife)
+
+library(FLCore)    # install.packages("FLCore", repos="http://flr-project.org/R")
+library(FLBRP)     # install.packages("FLBRP", repos="http://flr-project.org/R")
+library(FLasher)   # install.packages("FLasher", repos="http://flr-project.org/R")
+library(FLAssess)  # install.packages("FLAssess", repos="http://flr-project.org/R")
+library(FLife)     # install.packages("FLife", repos="http://flr-project.org/R")
 library(ggplotFL)
 
 library(popbio)
@@ -64,10 +65,11 @@ theme_set(theme_bw(16))
 
 ```{r}
 source("../R/dd.R")
+source("../R/get_dropbox.r")
 ```
 
 ```{r, dbox}
-dropboxdir<-try(file.path(get_dropbox(), "dd"))
+dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
