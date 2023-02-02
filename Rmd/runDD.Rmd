@@ -1,6 +1,6 @@
 ---
 title: "**Density Dependence**"
-subtitle: "Example of modelling density dependence in mass, maturity and M-at-age"
+subtitle: "Modelling density dependence in mass, maturity and M-at-age"
 author: "L Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: html_document
@@ -11,67 +11,49 @@ license: Creative Commons Attribution-ShareAlike 4.0 International Public Licens
 bibliography: refs.bib
 ---
 
-
-Mackerel life history parameters are used to construct an example of modelling density dependence. An `FLBRP` object represents the equilibrium and an `FLStock` models the time series dynamics.
-
+Mackerel life history parameters are used to develop an example of modelling density dependence for mass, maturity and natural mortality-at-age. The parameters are first used to construct An `FLBRP` object representing the equilibrium, and are then coerced into an `FLStock` to model the time series dynamics.
 
 ### Mass-at-age
 
 Mass-at-age ($W_a$) is modelled as
-    
+
 $W_a = {\alpha}_a B^{{\beta}_a}$
 
-Where $\alpha$ and $\beta$ are taken from a linear regression of Mass~Total biomass, i.e. we model mass-at-age at each age based on empirical data.
-
-$W_a$ is also constrained so sizes do not become unfeasibly small or large
-
-### Predation mortality-at-age (M2)
-
-#### Pope
-
-@pope2006modelling (doi:10.1016/j.icesjms.2006.04.015) proposed a way of modelling predation mortality (M2) based on size spectra, by modelled $M$ as a function of length i.e.
-
-$M2(L)=\gamma(F) e^{\lambda(F) L}$
-
-where Where $\gamma=2.0753+0.9914F$ and $\lambda = −0.0276−0.1088F$ and $F$ is fishing mortality
-
-However, the model is in mass-at-age, so we convert $L$ to $W$
-
-$M2(L)=\gamma(F) e^{\lambda(F) (W/a)^{1/b}}$
-
-$\gamma$ is scaled so that M at at reference length is equal to a desired value.
-
-A problem is that this will formulation respond immediately to a change in F. However, the size spectra depends on the historical not the current $F$. For example, for a specific value of $F$ in the current year, if the stock as been subject to a period of heavy exploitation the size spectra will be very different to that of a virgin fishery in the first year of exploitation. This will create problems in simulations of management as in an MSE.  
-
-#### Lorenzen
-
-Theoretical and empirical studies [@lorenzen2000allometry] support the existence of an allometric relationship between natural mortality ($M_a$) and body mass ($W_a$) at age of the form:
-
-  $M_W=M_uW^d$
-
-where $M_W$ is $M$ at weight $W$, $M_u$ is $M$ at unit weight, and $d$ is the allometric exponent from empirical relationships shown to range from –0.3 to –0.37.  
-
-If $M=0.2$ at $W_{50}$ then $M_u = 0.2/({W_{50}}^{d})$
-
-$d$ is approximately equal to $–1/3$, which implies that $M$ is inversely proportional to body length., since mass is approximately proportional to the third power of length.
+Where $\alpha$ and $\beta$ are estimated from a regression of mass-at-age ($W_a$) on total biomass ($B_a$), based on empirical data. $W_a$ is constrained so sizes do not become unfeasible large or small.
 
 ### Maturity-at-weight
 
-Modelled as a logistic function of mass-at-age e.g.
+Maturity is modelled as a logistic function of mass-at-age i.e.
 
-$O(W) = 1/(1+e^(k(W-W50)))$
+$O(W_a) = 1/(1+e^{k(W_a-W_{50})})$
 
+### Natural mortality
 
-## Sparholt, empirical
+Is assumed to vary at unit length ($L_1$) e.g.
 
-Mackerel
+$ln(M_1) =\alpha + \beta ln(L_{\infty}) + \gamma ln(k)$
 
-$M = 0.0232 * TB + 0.0524$
+where $\alpha=0.65$, $\beta=0.91$, $\gamma=0.87$
+
+Length-at-age ($L_a$) can be obtained from the length-weight relationship
+
+$L_a=(W/a)^{1/b}$
+
+giving
+
+$ln(M_1) =(W/a)^{1/b}(\alpha + \beta ln(L_{\infty}) + \gamma ln(k))$
+
+For DD there is a relationship between $M_a$ and total biomass ($B$)
+
+Mackerel:
+
+$M = 0.0232B + 0.0524$
 
 Blue whiting:
 
-$M = 0.0221 * TB  + 0.0719$
+$M = 0.0221B + 0.0719$
 
+Combining these provides values of $M_a$
 
 ```{r, knitr, eval=TRUE, echo=FALSE, warning=FALSE, cache=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -122,7 +104,6 @@ library(mgcViz)
 theme_set(theme_bw(16))
 ```
 
-
 ```{r}
 source("../R/dd.R")
 ```
@@ -141,7 +122,6 @@ load(file.path(dropboxdir,"data/om/mac.RData"))
 ts =as.data.frame(read_excel("../data/inputs/dat.xlsx",3))
 ```
 
-
 ```{r eq}
 par=teleost[c("linf","k","t0","l50","a","b"),dimnames(teleost)$iter=="Scomber scombrus"]
 par=lhPar(par,m1=0.2/(300^-0.288),m2=-0.28,m3=NA)
@@ -151,7 +131,6 @@ plot(eq,refpt="msy")
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Equilibrium dynamics
-
 
 ```{r}
 om=as(eq,"FLStock")
@@ -199,7 +178,6 @@ ggplot(as.data.frame(mat))+
 
 **Figure `r iFig=iFig+1; iFig`** Simulation of density dependence in maturity-at-age
 
-
 ```{r}
 ggplot(ddM(stock.wt(eq),fbar(eq)))+
     geom_line(aes(age,data,col=factor(year)))+
@@ -209,7 +187,6 @@ ggplot(ddM(stock.wt(eq),fbar(eq)))+
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Pope: simulation of density dependence in M-at-age
-
 
 ```{r}
 m=par["m1"]%*%(wt%^%par["m2"]) 
@@ -222,7 +199,6 @@ ggplot(as.data.frame(m))+
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Lorenzen: Simulation of density dependence in M-at-age
-
 
 ```{r}
 save(eq,file="/home/laurie/Desktop/tmp/t.RData")
@@ -252,7 +228,6 @@ ggplot()+
 
 **Figure `r iFig=iFig+1; iFig`** Mass-at-age: Comparison of equilibrium curves with (black) and without (red) density dependence.
 
-
 ```{r, dd-eq-mass-mat}
 x=propagate(eq,length(dimnames(eq)$year))
 fbar(x)[,1]=c(seq(0,max(fbar(eq)),length.out=51),seq(1,50,length.out=51)*max(fbar(eq)))[-52]
@@ -278,7 +253,6 @@ ggplot()+
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Mass and maturity-at-age: Comparison of equilibrium curves with (black) and without (red) density dependence.
-
 
 ```{r, dd-eq-mass-mat-m}
 x=propagate(eq,length(dimnames(eq)$year))
@@ -306,7 +280,6 @@ ggplot()+
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Mass, maturity and M-at-age: Comparison of equilibrium curves with (black) and without (red) density dependence.
-
 
 ```{r}
 save(eq,parMat,par,sr,file="/home/laurie/Desktop/tmp/t.RData")
@@ -345,101 +318,128 @@ for (year in dimnames(om2)$year[-1]){
 plot(window(FLStocks("OM"=om,DD=om2),start=11))
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Mass, maturity and M-at-age: Comparison of projections with  and without density dependence.
+**Figure `r iFig=iFig+1; iFig`** Mass, maturity and M-at-age: Comparison of projections with and without density dependence.
 
 # Funding
 
 # References
 
-## Mackerel
+<!-- ## Mackerel -->
 
-Mass-at-age 
+<!-- Mass-at-age -->
 
-$W_a = \alpha_aB+\beta$
+<!-- $W_a = \alpha_aB+\beta$ -->
 
-<!-- $M = ~~0.0232 \times B + 0.0524$ -->
+<!-- <!-- $M = ~~0.0232 \times B + 0.0524$ --> -->
 
-Predation mortality-at-age 
+<!-- Predation mortality-at-age -->
 
-$M_2(L) =ae^{bL}$ 
+<!-- $M_2(L) =ae^{bL}$ -->
 
-where $a=2.0753+0.9914F$ and $b=-0.0276-0.1088F$
+<!-- where $a=2.0753+0.9914F$ and $b=-0.0276-0.1088F$ -->
 
-Maturity-at-weight 
+<!-- Maturity-at-weight -->
 
-$O(W) = \frac{1}{1+e^{-1.67(W-28.2)}}$ 
+<!-- $O(W) = \frac{1}{1+e^{-1.67(W-28.2)}}$ -->
 
-## Blue whiting:
+<!-- ## Blue whiting: -->
 
-$M = 0.0221 \times B   + 0.0719$
+<!-- $M = 0.0221 \times B + 0.0719$ -->
 
+<!-- ## Mass-at-age -->
 
+<!-- Individual mass-at-age is assumed to vary with total biomass, estimates of mass-at-age (${W_t}^\prime$) are based on observations around $B_{MSY}$, and if total biomass increases density dependence results in a decline in the expected value of $W_a$, i.e. -->
 
-## Mass-at-age
+<!-- $W_t = {W_t}^\prime a(B_t/B_{MSY})^b$ -->
 
-Individual mass-at-age is assumed to vary with total biomass, estimates of mass-at-age (${W_t}^\prime$) are based on observations around $B_{MSY}$, and if total biomass increases density dependence results in a decline in the expected value of $W_a$, i.e. 
+<!-- ## Maturity-at-age -->
 
-$W_t = {W_t}^\prime a(B_t/B_{MSY})^b$
+<!-- Maturity at age is modelled by a logistic relationship -->
 
-## Maturity-at-age
+<!-- $f(x) = \frac{1}{1+e^{-r(W-W_{50})}}$ -->
 
-Maturity at age is modelled by a logistic relationship 
+<!-- where $W_{50}$ is the mass-at-age when $50%$ of individuals are mature, and $r$ the logistic growth rate or steepness of the curve. -->
 
-$f(x) = \frac{1}{1+e^{-r(W-W_{50})}}$ 
+<!-- ## Natural mortality -->
 
-where $W_{50}$ is the mass-at-age when $50%$ of individuals are mature, and $r$ the logistic growth rate or steepness of the curve.
+<!-- Theoretical and empirical studies [@lorenzen2000allometry] support the existence of an allometric relationship between natural mortality ($M_a$) and body mass ($W_a$) at age of the form: -->
 
-## Natural mortality
+<!-- $M_W=M_uW^d$ -->
 
-Theoretical and empirical studies [@lorenzen2000allometry] support the existence of an allometric relationship between natural mortality ($M_a$) and body mass ($W_a$) at age of the form:
+<!-- where $M_W$ is $M$ at weight $W$, $M_u$ is $M$ at unit weight, and $d$ is the allometric exponent from empirical relationships shown to range from --0.3 to --0.37. -->
 
-  $M_W=M_uW^d$
+<!-- If $M=0.2$ at $W_{50}$ then $M_u = 0.2/({W_{50}}^{d})$ -->
 
-where $M_W$ is $M$ at weight $W$, $M_u$ is $M$ at unit weight, and $d$ is the allometric exponent from empirical relationships shown to range from –0.3 to –0.37.  
+<!-- $d$ is approximately equal to $–1/3$, which implies that $M$ is inversely proportional to body length., since mass is approximately proportional to the third power of length. -->
 
-If $M=0.2$ at $W_{50}$ then $M_u = 0.2/({W_{50}}^{d})$
+<!-- @10.1093/icesjms/fst226 recognised that if the von Bertalanffy growth equation -->
 
-$d$ is approximately equal to $–1/3$, which implies that $M$ is inversely proportional to body length., since mass is approximately proportional to the third power of length.
+<!-- $L_t=L_{\infty}{(1-e^{(1-k(t-t_0))})}^{b(-0.305)}$ -->
 
-@10.1093/icesjms/fst226 recognised that if the von Bertalanffy growth equation  
+<!-- and the allometric length weight relationship -->
 
-$L_t=L_{\infty}{(1-e^{(1-k(t-t_0))})}^{b(-0.305)}$
+<!-- $W = a L^b$. -->
 
-and the allometric length weight relationship 
+<!-- are combined since -->
 
-$W = a L^b$.
+<!-- $M_a = M_{\infty}{(W_a/W_{\infty})}^{-0.3}$ -->
 
-are combined since
+<!-- then mortality schedule can be defined by -->
 
-$M_a = M_{\infty}{(W_a/W_{\infty})}^{-0.3}$
+<!-- $M_a=M_{\infty}(1−e^{(−K(t−t_0))})^{−b(0.3)}$ -->
 
-then mortality schedule can be defined by
+<!-- where $M_{\infty}$ can be derived from life history characteristics @hoenig1992empirical -->
 
-$M_a=M_{\infty}(1−e^{(−K(t−t_0))})^{−b(0.3)}$
+<!-- ## Multispecies modelling of predation mortality (M2) -->
 
-where $M_{\infty}$ can be derived from life history characteristics @hoenig1992empirical
+<!-- @pope2006modelling (<doi:10.1016/j.icesjms.2006.04.015>) proposed a way of modelling predation mortality (M2) based on size spectra, e.g. -->
 
-## Multispecies modelling of predation mortality (M2)
+<!-- $N(L) = \Omega L^{\kappa}$ -->
 
-@pope2006modelling (doi:10.1016/j.icesjms.2006.04.015) proposed a way of modelling predation mortality (M2) based on size spectra, e.g. 
+<!-- where $N$ is numbers at length $L$ and $\Omega$ is a prefactor and $\kappa$ the scaling by length -->
 
-$N(L) = \Omega L^{\kappa}$
+<!-- This was further developed by @POPE2021105952 (<https://doi.org/10.1016/j.fishres.2021.105952>) by assuming that predation by all fish in the spectrum is mediated through a feeding relationship with mean $\mu$ and standard deviation $\sigma$, both common to all predators and that UM2 is a constant that relates predation pressure to mortality, and where $\lambda$ is the scaling of the feeding rate of predators by length then the predation mortality on a prey species of length $L^{\prime}$ can be written as -->
 
-where $N$ is numbers at length $L$ and $\Omega$ is a prefactor and $\kappa$ the scaling by length 
+<!-- $M2(L^\prime) = \Omega \times UM2 (L^\prime)^{(\kappa + \lambda)}\times e^{\mu((\kappa + \lambda)/3)} \times e^{{\sigma}^2((\kappa+\lambda)^2)/18}$ -->
 
-This was further developed by @POPE2021105952 (https://doi.org/10.1016/j.fishres.2021.105952) by assuming that predation by all fish in the spectrum is mediated through a feeding relationship with mean $\mu$ and standard deviation $\sigma$, both common to all predators and that UM2 is a constant that relates predation pressure to mortality, and where $\lambda$ is the scaling of the feeding rate of predators by length then the predation mortality on a prey species of length $L^{\prime}$ can be written as
+<!-- This simplifies to -->
 
-$M2(L^\prime) = \Omega \times UM2 (L^\prime)^{(\kappa + \lambda)}\times e^{\mu((\kappa + \lambda)/3)} \times e^{{\sigma}^2((\kappa+\lambda)^2)/18}$
+<!-- $M2(L) = aL^b$ -->
 
-This simplifies to
+<!-- and is therefore equivalent to -->
 
-$M2(L) = aL^b$
+<!-- $M_W=M_uW^d$ -->
 
-and is therefore equivalent to 
+<!-- depending on the choice of $a$ and $b$ -->
 
-  $M_W=M_uW^d$
+<!-- <!-- Another insight derived from size spectra studies comes from the work of Andersen et al. (2009). They derive a formulation for the predation mortality to be expected from a size spectrum with a given slope and intercept in terms of mass. However, the CSM is a rather different model to theirs since it only considers the fish part of the ecosystem and is framed in terms of length rather than mass. Moreover, it treats predation mortality as a top-down process rather than in terms of mass balance. Predation mortality is defined on a simple UM2*predation pressure basis. Here, UM2 is defined as a constant M2 per unit of predation pressure. The predation pressure is summed over all predator lengths with a weighting for the feeding relationship between specific prey and predator lengths. For a particular length L of predator, predation pressure is taken to be their numbers times their length to a power $\gamma$ (if $\gamma=3$), this would be equivalent to biomass except that the condition factor linking $L^3$ to mass is included into the UM2 constant to simplify the equations). Hence, assuming a numbers size spectrum described by --> -->
 
-depending on the choice of $a$ and $b$
+<!-- ### Predation mortality-at-age (M2) -->
 
-<!-- Another insight derived from size spectra studies comes from the work of Andersen et al. (2009). They derive a formulation for the predation mortality to be expected from a size spectrum with a given slope and intercept in terms of mass. However, the CSM is a rather different model to theirs since it only considers the fish part of the ecosystem and is framed in terms of length rather than mass. Moreover, it treats predation mortality as a top-down process rather than in terms of mass balance. Predation mortality is defined on a simple UM2*predation pressure basis. Here, UM2 is defined as a constant M2 per unit of predation pressure. The predation pressure is summed over all predator lengths with a weighting for the feeding relationship between specific prey and predator lengths. For a particular length L of predator, predation pressure is taken to be their numbers times their length to a power $\gamma$ (if $\gamma=3$), this would be equivalent to biomass except that the condition factor linking $L^3$ to mass is included into the UM2 constant to simplify the equations). Hence, assuming a numbers size spectrum described by -->
+<!-- #### Pope -->
 
+<!-- @pope2006modelling (<doi:10.1016/j.icesjms.2006.04.015>) proposed a way of modelling predation mortality (M2) based on size spectra, by modelled $M$ as a function of length i.e. -->
+
+<!-- $M2(L)=\gamma(F) e^{\lambda(F) L}$ -->
+
+<!-- where Where $\gamma=2.0753+0.9914F$ and $\lambda = −0.0276−0.1088F$ and $F$ is fishing mortality -->
+
+<!-- However, the model is in mass-at-age, so we convert $L$ to $W$ -->
+
+<!-- $M2(L)=\gamma(F) e^{\lambda(F) (W/a)^{1/b}}$ -->
+
+<!-- $\gamma$ is scaled so that M at at reference length is equal to a desired value. -->
+
+<!-- A problem is that this will formulation respond immediately to a change in F. However, the size spectra depends on the historical not the current $F$. For example, for a specific value of $F$ in the current year, if the stock as been subject to a period of heavy exploitation the size spectra will be very different to that of a virgin fishery in the first year of exploitation. This will create problems in simulations of management as in an MSE. -->
+
+<!-- #### Lorenzen -->
+
+<!-- Theoretical and empirical studies [@lorenzen2000allometry] support the existence of an allometric relationship between natural mortality ($M_a$) and body mass ($W_a$) at age of the form: -->
+
+<!-- $M_W=M_uW^d$ -->
+
+<!-- where $M_W$ is $M$ at weight $W$, $M_u$ is $M$ at unit weight, and $d$ is the allometric exponent from empirical relationships shown to range from --0.3 to --0.37. -->
+
+<!-- If $M=0.2$ at $W_{50}$ then $M_u = 0.2/({W_{50}}^{d})$ -->
+
+<!-- $d$ is approximately equal to $–1/3$, which implies that $M$ is inversely proportional to body length., since mass is approximately proportional to the third power of length. -->
