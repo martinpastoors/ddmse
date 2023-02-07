@@ -127,21 +127,18 @@ par=teleost[c("linf","k","t0","l50","a","b"),dimnames(teleost)$iter=="Scomber sc
 par=lhPar(par,m1=0.2/(300^-0.288),m2=-0.28,m3=NA)
 eq =lhEql(par,m="lorenzen")
 
-plot(eq,refpt="msy")
+p1=plot(eq,refpt="msy")
 ```
-
-**Figure `r iFig=iFig+1; iFig`** Equilibrium dynamics
 
 ```{r}
 om=as(eq,"FLStock")
 om=fwd(om,fbar=fbar(om)[,-1],sr=eq)
 
-plot(om)
+p2=plot(om)
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Time series dynamics
 
-```{r}
+```{r, eval=FALSE}
 plot(qmin(qmax(0.96*biomass(eq)%/%biomass(eq)[,14],0.5),1.5))+
   scale_y_continuous(labels = scales::percent)+
   geom_vline(aes(xintercept=14),col="red")+
