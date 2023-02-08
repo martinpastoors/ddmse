@@ -23,7 +23,7 @@ opts_chunk$set(cache     =TRUE,
                echo      =FALSE, 
                eval      =TRUE,cache   =TRUE,
                cache.path="../cache/whb/cond/",
-               fig.path  ="../tex/figs/whb/cond",
+               fig.path  ="../tex/figs/whb/cond/",
                fig.width =8,
                fig.height=6,
                dev       ="png")
@@ -98,7 +98,7 @@ ggplot(transform(melt(ts,id="year"),year=year,quant=variable,data=value))+
   xlab("Year")+ylab("")
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Time series
+**Figure A.`r iFig=iFig+1; iFig`** Time series
 
 
 ```{r, whb.wt, fig.width=8,fig.height=4}
@@ -111,7 +111,7 @@ ggplot(wt)+
   scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Mass-at-age
+**Figure A.`r iFig=iFig+1; iFig`** Mass-at-age
 
 
 ```{r, whb.mat, fig.width=8,fig.height=4}
@@ -124,7 +124,7 @@ ggplot(mat)+
   scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Maturity-at-age
+**Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age
 
 
 ```{r, whb.m, fig.width=8,fig.height=4}
@@ -137,7 +137,7 @@ ggplot(m)+
   scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
 ```
 
-**Figure `r iFig=iFig+1; iFig`** M-at-age
+**Figure A.`r iFig=iFig+1; iFig`** M-at-age
 
 
 
@@ -161,7 +161,7 @@ ggarrange(a,b ,label.y=1,
         axis.title.y = element_blank())
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Mass-at-age, summary 
+**Figure A.`r iFig=iFig+1; iFig`** Mass-at-age, summary 
 
 
 ```{r, whb.wt.tb, fig.height=8,fig.width=8}
@@ -172,7 +172,7 @@ ggplot(wt,aes(tb,data))+
   xlab("Biomass")+ylab("Mass-at-age")
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Mass-at-age v Biomass
+**Figure A.`r iFig=iFig+1; iFig`** Mass-at-age v Biomass
 
 
 ```{r, whb.mat2, fig.width=8,fig.height=5}
@@ -196,7 +196,7 @@ ggarrange(a,b ,label.y=1,
 ```
 
 
-**Figure `r iFig=iFig+1; iFig`** Maturity-at-age, summary 
+**Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age, summary 
 
 
 ```{r, whb.mat.tb, fig.height=5,fig.width=8}
@@ -207,7 +207,7 @@ ggplot(subset(mat,age%in%1:5),aes(tb,data))+
   xlab("Biomass")+ylab("Mass-at-age")
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Mass-at-age v Biomass
+**Figure A.`r iFig=iFig+1; iFig`** Mass-at-age v Biomass
 
 
 $f(x) = \frac{1}{1+e^{-k(x-x_0)}}$
@@ -230,7 +230,7 @@ ggplot(dat,aes(wt,mat))+
 ```
 
 
-**Figure `r iFig=iFig+1; iFig`** Maturity-at-age v mass-at-age  (k=`r par$par[1]` $W_{50}$=`r par$par[2]`)
+**Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age v mass-at-age  (k=`r par$par[1]` $W_{50}$=`r par$par[2]`)
 
 
 ```{r}
