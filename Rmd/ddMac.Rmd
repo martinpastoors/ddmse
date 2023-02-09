@@ -190,16 +190,16 @@ lsr=landings.wt(eq)/stock.wt(eq)
 dsr=discards.wt(eq)/stock.wt(eq)
 # iterate
 for (i in seq(10)){
-  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.17)
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.2)
   landings.wt(x)=stock.wt(x)*lsr
   discards.wt(x)=stock.wt(x)*dsr
   x=brp(x)}
 
 ggplot()+
-  geom_line(aes(ssb,catch),
-            data=model.frame(FLQuants(x, ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T))+
-  geom_line(aes(ssb,catch),
-            data=model.frame(FLQuants(eq,ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T),col="red")+
+  geom_line(aes(biomass,catch),
+            data=model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T))+
+  geom_line(aes(biomass,catch),
+            data=model.frame(FLQuants(eq,biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T),col="red")+
   xlab("SSB")+ylab("Catch")
 ```
 
@@ -214,7 +214,7 @@ lsr=landings.wt(eq)/stock.wt(eq)
 dsr=discards.wt(eq)/stock.wt(eq)
 # iterate
 for (i in seq(10)){
-  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.17)
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.2)
   landings.wt(x)=stock.wt(x)*lsr
   discards.wt(x)=stock.wt(x)*dsr
 
@@ -222,10 +222,10 @@ for (i in seq(10)){
   x=brp(x)}
 
 ggplot()+
-  geom_line(aes(ssb,catch),
-            data=model.frame(FLQuants(x, ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T))+
-  geom_line(aes(ssb,catch),
-            data=model.frame(FLQuants(eq,ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T),col="red")+
+  geom_line(aes(biomass,catch),
+            data=model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T))+
+  geom_line(aes(biomass,catch),
+            data=model.frame(FLQuants(eq,biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T),col="red")+
   xlab("SSB")+ylab("Catch")
 ```
 
@@ -240,7 +240,7 @@ lsr=landings.wt(eq)/stock.wt(eq)
 dsr=discards.wt(eq)/stock.wt(eq)
 # iterate
 for (i in seq(10)){
-  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.17)
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.2)
   landings.wt(x)=stock.wt(x)*lsr
   discards.wt(x)=stock.wt(x)*dsr
 
@@ -249,19 +249,19 @@ for (i in seq(10)){
   x=brp(x)}
 
 ggplot()+
-  geom_line(aes(ssb,catch),
-            data=model.frame(FLQuants(x, ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T))+
-  geom_line(aes(ssb,catch),
-            data=model.frame(FLQuants(eq,ssb=function(x) ssb(x), catch=function(x) catch(x)),drop=T),col="red")+
+  geom_line(aes(biomass,catch),
+            data=model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T))+
+  geom_line(aes(biomass,catch),
+            data=model.frame(FLQuants(eq,biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T),col="red")+
   xlab("SSB")+ylab("Catch")
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Mass, maturity and M-at-age: Comparison of equilibrium curves with (black) and without (red) density dependence.
 
 ```{r, check1}
-par=FLPar(c(m1=0.2/(300^-0.288),m2=-0.28,bmsy=c(refpts(eq)["msy","ssb"]),k=0.1,w50=par["a"]*par["l50"]^par["b"]))
+par=FLPar(c(m1=0.2/(300^-0.288),m2=-0.28,bmsy=c(refpts(eq)["msy","biomass"]),k=0.1,w50=par["a"]*par["l50"]^par["b"]))
 
-f=FLQuant(c(rep(seq(0,1,length.out=101),each=51),rep(seq(1,5,length.out=101),each=51)[-1]),
+f=FLQuant(c(rep(seq(0,1,length.out=51),each=101),rep(seq(1,25,length.out=61)[-1],each=101)),
           dimnames=list(year=dimnames(om)$year,iter=seq(101)))%*%refpts(eq)["msy","harvest"]
 fbar(eq)=f
 
@@ -282,20 +282,20 @@ for (year in dimnames(om2)$year[-1]){
   
   #om2=fwd(om2,f=f[,year],sr=eq)}
   
-  om2=ddFn(year,om2,par)}
+  om2=ddFn(year,om2,par)
+  om2=fwd(om2,f=f[,year],sr=eq)
+  }
 
 catch(om2)=computeCatch(om2,slot="all")
-plot(window(FLStocks("OM"=om,DD=om2),start=11))
+plot(window(FLStocks("OM"=om,DD=om2),start=400))
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Check 1.
 
-```{r, check2}
-save(om2,file="~/Desktop/tmp/t.RData")
-load("~/Desktop/tmp/t.RData")
-ggplot(model.frame(FLQuants(om2[,dim(m(om2))[2]],"Biomass"=biomass,"Yield"=catch)))+
-  geom_line(aes(Biomass,Yield),col="red")+
-  geom_line(aes(Biomass,Yield),data=model.frame(FLQuants(om[,dim(m(om))[2]],"Biomass"=biomass,"Yield"=catch)))
+```{r, check2} 
+ggplot(model.frame(FLQuants(om2[,dim(m(om2))[2]],"Biomass"=biomass,"Yield"=catch)))+  
+  geom_line(aes(Biomass,Yield),col="black")+ 
+  geom_line(aes(Biomass,Yield),data=model.frame(FLQuants(om[,dim(m(om))[2]],"Biomass"=biomass,"Yield"=catch)),col="red")
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Check 2.
