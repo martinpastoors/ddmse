@@ -18,7 +18,7 @@ ddFn<-function(year,x,par){
   dsr=discards.wt(x)[,year]/stock.wt(x)[,year]
   dsr[!is.finite(dsr)]=0
   
-  stock.wt(   x)[,year]=ddWt(stock.wt(x)[,year],biomass(x)[,ac(an(year)-1)],par["bmsy"],alpha=-0.25)
+  stock.wt(   x)[,year]=ddWt(stock.wt(x)[,year],biomass(x)[,ac(an(year)-1)],par["bmsy"])
   landings.wt(x)[,year]=stock.wt(x)[,year]*lsr
   discards.wt(x)[,year]=stock.wt(x)[,year]*dsr
   
