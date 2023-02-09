@@ -1,5 +1,8 @@
-ddWt<-function(wt,biomass,bmsy,alpha=-0.25)
-  wt%*%qmin(qmax((biomass%/%bmsy)^alpha,0.1),10)
+ddWt<-function(wt,biomass,bmsy,alpha=-0.2,min=0.5,max=1.5){
+  adj=(biomass%/%bmsy)^alpha
+  
+  wt%*%qmin(qmax(adj,min),max)}
+
 
 ddMat<-function(wt,x) 
   1/(1+exp(-x[1]%*%(wt%-%x[2])))
