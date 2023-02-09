@@ -106,26 +106,24 @@ theme_set(theme_bw(16))
 
 ```{r}
 source("../R/dd.R")
-```
+source("../R/get_dropbox.R")
 
-```{r, dbox}
-dropboxdir<-try(file.path(get_dropbox(), "dd"))
+dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
+
+load(file.path(dropboxdir,"data/om/mac.RData"))
+ts =as.data.frame(read_excel("../data/inputs/dat.xlsx",3))
+
 ```
 
 # Simulations
 
-```{r, mac.data}
-load(file.path(dropboxdir,"data/om/mac.RData"))
-ts =as.data.frame(read_excel("../data/inputs/dat.xlsx",3))
-```
-
 ```{r eq}
-par=teleost[c("linf","k","t0","l50","a","b"),dimnames(teleost)$iter=="Scomber scombrus"]
-par=lhPar(par,m1=0.2/(300^-0.288),m2=-0.28,m3=NA)
-eq =lhEql(par,m="lorenzen")
+par=FLife::teleost[c("linf","k","t0","l50","a","b"),dimnames(teleost)$iter=="Scomber scombrus"]
+par=FLife::lhPar(par,m1=0.2/(300^-0.288),m2=-0.28,m3=NA)
+eq =FLife::lhEql(par,m="lorenzen")
 
 p1=plot(eq,refpt="msy")
 ```
@@ -148,7 +146,7 @@ plot(qmin(qmax(0.96*biomass(eq)%/%biomass(eq)[,14],0.5),1.5))+
 **Figure `r iFig=iFig+1; iFig`** Density dependence multiplier, red is $B_{MSY}$
 
 ```{r}
-save(eq,file="~/Desktop/eq.RData")
+# save(eq,file="~/Desktop/eq.RData")
 ```
 
 ```{r}
@@ -198,7 +196,7 @@ ggplot(as.data.frame(m))+
 **Figure `r iFig=iFig+1; iFig`** Lorenzen: Simulation of density dependence in M-at-age
 
 ```{r}
-save(eq,file="/home/laurie/Desktop/tmp/t.RData")
+# save(eq,file="/home/laurie/Desktop/tmp/t.RData")
 ```
 
 ```{r, dd-eq-mass}
@@ -279,11 +277,11 @@ ggplot()+
 **Figure `r iFig=iFig+1; iFig`** Mass, maturity and M-at-age: Comparison of equilibrium curves with (black) and without (red) density dependence.
 
 ```{r}
-save(eq,parMat,par,sr,file="/home/laurie/Desktop/tmp/t.RData")
+# save(eq,parMat,par,sr,file="/home/laurie/Desktop/tmp/t.RData")
 ```
 
 ```{r}
-load("/home/laurie/Desktop/tmp/t.RData")
+# load("/home/laurie/Desktop/tmp/t.RData")
 
 par=FLPar(c(m1=0.2/(300^-0.288),m2=-0.28,bmsy=c(refpts(eq)["msy","ssb"]),b=0.3,k=0.1, w50=111.0)) 
 
