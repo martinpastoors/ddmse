@@ -272,16 +272,6 @@ om=fwd(om,f=f[,-1],sr=eq)
 om2=om
 
 for (year in dimnames(om2)$year[-1]){
-
-  #stock.wt(   om2)[,year]=ddWt(stock.wt(om2)[,year],biomass(om2)[,ac(an(year))],par["bmsy"])
-  #landings.wt(om2)[,year]=stock.wt(om2)[,year]*lsr[,year]
-  #discards.wt(om2)[,year]=stock.wt(om2)[,year]*dsr[,year]
-
-  #mat(om2)[,year]=1/(1+exp(-par["k"]*(stock.wt(om2)[,year]-par["w50"])))
-  #m(  om2)[,year]=par["m1"]%*%(stock.wt(om2)[,year]%^%par["m2"])
-  
-  #om2=fwd(om2,f=f[,year],sr=eq)}
-  
   om2=ddFn(year,om2,par)
   om2=fwd(om2,f=f[,year],sr=eq)
   }
