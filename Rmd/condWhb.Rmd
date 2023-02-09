@@ -11,7 +11,7 @@ license: Creative Commons Attribution-ShareAlike 4.0 International Public Licens
 # bibliography: refs.bib
 ---
   
-```{r, knitr, eval=TRUE, echo=FALSE, warning=FALSE, cache=FALSE}
+```{r echo=FALSE, warning=FALSE, cache=FALSE, knitr, eval=TRUE}
 knitr::opts_chunk$set(echo = FALSE)
 # getwd()
 library(knitr)
@@ -47,27 +47,20 @@ library(mgcv)
 library(mgcViz)
 
 theme_set(theme_bw(16))
-```
 
-
-```{r, eval=FALSE}
 source("../R/get_dropbox.R")
-```
-
-```{r}
-matFn<-function(wt,x) 
-   1/(1+exp(-x[1]*(wt-x[2])))
-```
-
-
-```{r, dbox}
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
+
+matFn<-function(wt,x) 
+   1/(1+exp(-x[1]*(wt-x[2])))
+
 ```
 
 
-```{r, whb.data}
+```{r echo=FALSE}
+
 load(file.path(dropboxdir,"data/om/whb.RData"))
 ts=model.frame(FLQuants(whb,tb=stock,ssb=ssb),drop=T)
 ts$tb=ts$tb/1e6
@@ -90,16 +83,18 @@ m  =ddply(m,.(age), transform, rsdl_=rsdl/var(data)^0.5)
 m$age=factor(m$age,levels=sort(unique(m$age)))
 ```
 
+
 ```{r, whb.ts, fig.width=8,fig.height=4}
 ggplot(transform(melt(ts,id="year"),year=year,quant=variable,data=value))+
   geom_line(aes(year,data,col=quant))+
   theme(legend.position="bottom")+
-  scale_color_manual("Quantity",labels=c("SSB","Total Biomass","ICES Biomass"),values=rainbow(3))+
+  scale_color_manual("Quantity",labels=c("VPA SSB","VPA Total Biomass","ICES Total Biomass"),values=rainbow(3))+
   xlab("Year")+ylab("")
 ```
 
 **Figure A.`r iFig=iFig+1; iFig`** Time series
 
+\newpage
 
 ```{r, whb.wt, fig.width=8,fig.height=4}
 ggplot(wt)+  
@@ -113,33 +108,35 @@ ggplot(wt)+
 
 **Figure A.`r iFig=iFig+1; iFig`** Mass-at-age
 
+\newpage
 
 ```{r, whb.mat, fig.width=8,fig.height=4}
 ggplot(mat)+  
   geom_line(aes(year,data,group=cohort),linetype=3,colour="grey10")+
   geom_line(aes(year,data,group=age,col=age))+
   geom_point(aes(year,data,col=age))+
-  xlab("Year")+ylab("Mass-at-age")+
+  xlab("Year")+ylab("Maturity-at-age")+
   theme(legend.position="bottom")+
   scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
 ```
 
 **Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age
 
+\newpage
 
 ```{r, whb.m, fig.width=8,fig.height=4}
 ggplot(m)+  
   geom_line(aes(year,data,group=cohort),linetype=3,colour="grey10")+ 
   geom_line(aes(year,data,group=age,col=age))+
   geom_point(aes(year,data,col=age))+
-  xlab("Year")+ylab("Mass-at-age")+
+  xlab("Year")+ylab("M-at-age")+
   theme(legend.position="bottom")+
   scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
 ```
 
 **Figure A.`r iFig=iFig+1; iFig`** M-at-age
 
-
+\newpage
 
 ```{r, whb.wt2, fig.width=8,fig.height=5}
 #wt$age=factor(wt$age,levels=rev(levels(wt$age)))
@@ -163,6 +160,7 @@ ggarrange(a,b ,label.y=1,
 
 **Figure A.`r iFig=iFig+1; iFig`** Mass-at-age, summary 
 
+\newpage
 
 ```{r, whb.wt.tb, fig.height=8,fig.width=8}
 ggplot(wt,aes(tb,data))+
@@ -174,13 +172,14 @@ ggplot(wt,aes(tb,data))+
 
 **Figure A.`r iFig=iFig+1; iFig`** Mass-at-age v Biomass
 
+\newpage
 
 ```{r, whb.mat2, fig.width=8,fig.height=5}
 #wt$age=factor(wt$age,levels=rev(levels(wt$age)))
 #ggbivariate(subset(wt,rsdl<5&rsdl>0), outcome="data", explanatory=c("age", "tb"))
 a=ggplot(mat)+
   geom_boxplot(aes(age,data))+
-  xlab("Mass-at-age")+ylab("Age")
+  xlab("Maturity-at-age")+ylab("Age")
 b=ggplot(mat)+
   geom_point(aes(tb,rsdl))+
   geom_smooth(aes(tb,rsdl),method="lm")+
@@ -198,17 +197,19 @@ ggarrange(a,b ,label.y=1,
 
 **Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age, summary 
 
+\newpage
 
 ```{r, whb.mat.tb, fig.height=5,fig.width=8}
 ggplot(subset(mat,age%in%1:5),aes(tb,data))+
   geom_point()+
   geom_smooth(se=F,method="lm")+
   facet_wrap(~age,scale="free",ncol=3)+
-  xlab("Biomass")+ylab("Mass-at-age")
+  xlab("Biomass")+ylab("Maturity-at-age")
 ```
 
 **Figure A.`r iFig=iFig+1; iFig`** Mass-at-age v Biomass
 
+\newpage
 
 $f(x) = \frac{1}{1+e^{-k(x-x_0)}}$
 
