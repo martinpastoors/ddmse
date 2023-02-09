@@ -285,14 +285,17 @@ for (year in dimnames(om2)$year[-1]){
   om2=ddFn(year,om2,par)
   om2=fwd(om2,f=f[,year],sr=eq)
   }
-
 catch(om2)=computeCatch(om2,slot="all")
-plot(window(FLStocks("OM"=om,DD=om2),start=400))
+```
+
+
+```{r, check2}
+plot(window(FLStocks("OM"=om,DD=om2),start=40))
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Check 1.
 
-```{r, check2} 
+```{r, check3} 
 ggplot(model.frame(FLQuants(om2[,dim(m(om2))[2]],"Biomass"=biomass,"Yield"=catch)))+  
   geom_line(aes(Biomass,Yield),col="black")+ 
   geom_line(aes(Biomass,Yield),data=model.frame(FLQuants(om[,dim(m(om))[2]],"Biomass"=biomass,"Yield"=catch)),col="red")
