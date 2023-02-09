@@ -291,8 +291,8 @@ plot(window(FLStocks("OM"=om,DD=om2),start=11))
 **Figure `r iFig=iFig+1; iFig`** Check 1.
 
 ```{r, check2}
-save(om2,file="~/Desktop/tmp/t.RData")
-load("~/Desktop/tmp/t.RData")
+# save(om2,file="~/Desktop/tmp/t.RData")
+# load("~/Desktop/tmp/t.RData")
 ggplot(model.frame(FLQuants(om2[,dim(m(om2))[2]],"Biomass"=biomass,"Yield"=catch)))+
   geom_line(aes(Biomass,Yield),col="red")+
   geom_line(aes(Biomass,Yield),data=model.frame(FLQuants(om[,dim(m(om))[2]],"Biomass"=biomass,"Yield"=catch)))
