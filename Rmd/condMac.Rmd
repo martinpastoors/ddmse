@@ -47,31 +47,25 @@ library(mgcv)
 library(mgcViz)
 
 theme_set(theme_bw(16))
-```
 
-
-```{r, eval=FALSE}
 source("../R/get_dropbox.R")
-```
 
-```{r}
 matFn<-function(wt,x) 
    1/(1+exp(-x[1]*(wt-x[2])))
-```
 
-
-```{r, dbox}
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
+
 ```
 
 
 # Mackerel
 
 ```{r, mac.data}
+
 load(file.path(dropboxdir,"data/om/mac.RData"))
-ts =as.data.frame(read_excel(file.path(dropboxdir,"data/inputs/dat.xlsx"),3))
+ts =as.data.frame(readxl::read_excel(file.path(dropboxdir,"data/inputs/dat.xlsx"),sheet="ts"))
 wt =transform(as.data.frame(stock.wt(mac),drop=TRUE),cohort=year-as.numeric(age))
 wt =merge(wt,ts,by="year")
 wt=ddply(wt,.(age), transform, rsdl =data/mean(data))
@@ -101,6 +95,7 @@ ggplot(transform(melt(ts,id="year"),year=year,quant=variable,data=value))+
 
 **Figure A.`r iFig=iFig+1; iFig`** Time series
 
+\newpage
 
 ```{r, mac.wt, fig.width=8,fig.height=4}
 ggplot(wt)+  
@@ -114,31 +109,35 @@ ggplot(wt)+
 
 **Figure A.`r iFig=iFig+1; iFig`** Mass-at-age
 
+\newpage
 
 ```{r, mac.m, fig.width=8,fig.height=4}
 ggplot(mat)+  
   geom_line(aes(year,data,group=cohort),linetype=3,colour="grey10")+ 
   geom_line(aes(year,data,group=age,col=age))+
   geom_point(aes(year,data,col=age))+
-  xlab("Year")+ylab("Mass-at-age")+
+  xlab("Year")+ylab("Maturity-at-age")+
   theme(legend.position="bottom")+
   scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
 ```
 
 **Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age
 
+\newpage
+
 ```{r, mac.mat, fig.width=8,fig.height=4}
 ggplot(m)+  
   geom_line(aes(year,data,group=cohort),linetype=3,colour="grey10")+ 
   geom_line(aes(year,data,group=age,col=age))+
   geom_point(aes(year,data,col=age))+
-  xlab("Year")+ylab("Mass-at-age")+
+  xlab("Year")+ylab("M-at-age")+
   theme(legend.position="bottom")+
   scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
 ```
 
 **Figure A.`r iFig=iFig+1; iFig`** M-at-age
 
+\newpage
 
 ```{r, mac.wt2, fig.width=8,fig.height=5}
 #wt$age=factor(wt$age,levels=rev(levels(wt$age)))
@@ -162,6 +161,7 @@ ggarrange(a,b ,label.y=1,
 
 **Figure A.`r iFig=iFig+1; iFig`** Mass-at-age, summary 
 
+\newpage
 
 
 ```{r, mac.wt.tb, fig.height=8,fig.width=8}
@@ -174,12 +174,14 @@ ggplot(subset(wt,age!=0),aes(tb,data))+
 
 **Figure A.`r iFig=iFig+1; iFig`** Mass-at-age v Biomass
 
+\newpage
+
 ```{r, mac.mat2, fig.width=8,fig.height=5}
 #wt$age=factor(wt$age,levels=rev(levels(wt$age)))
 #ggbivariate(subset(wt,rsdl<5&rsdl>0), outcome="data", explanatory=c("age", "tb"))
 a=ggplot(mat)+
   geom_boxplot(aes(age,data))+
-  xlab("Mass-at-age")+ylab("Age")
+  xlab("Maturity-at-age")+ylab("Age")
 b=ggplot(mat)+
   geom_point(aes(tb,rsdl))+
   geom_smooth(aes(tb,rsdl),method="lm")+
@@ -197,6 +199,7 @@ ggarrange(a,b ,label.y=1,
 
 **Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age, summary 
 
+\newpage
 
 
 ```{r, mac.mat.tb, fig.height=5,fig.width=8}
@@ -209,6 +212,7 @@ ggplot(subset(mat,age%in%(1:5)),aes(tb,data))+
 
 **Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age v Biomass
 
+\newpage
 
 $f(x) = \frac{1}{1+e^{-k(x-x_0)}}$
 
@@ -232,6 +236,7 @@ ggplot(dat,aes(wt,mat))+
 
 **Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age v mass-at-age  (k=`r par$par[1]` $W_{50}$=`r par$par[2]`)
 
+\newpage
 
 ```{r}
 wt=subset(wt,age!=0)
