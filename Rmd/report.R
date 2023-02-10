@@ -61,17 +61,22 @@ myparams <- data.frame(
   b     = c(0.3              ,  NA               ),
   k     = c(30.1             ,  NA               ), 
   w50   = c(0.2              ,  NA               ),
-  wt1   = c(0.01             ,  NA               ))
+  wt1   = c(0.01             ,  NA               ),
+  maxage= c(12               ,  10               ))
+
+save(myparams, file=file.path(dropboxdir, "data", "inputs", "myparams.RData"))
 
 mystk     <- "mac"; mystkname <- "Northeast Atlantic mackerel"; mylatin <- "Scomber scombrus" 
 # mystk     <- "whb"; mystkname <- "Blue whiting";                mylatin <- "Micromesistius poutassou" 
 maxyear <- 2050
 
+resultsdir <- file.path(dropboxdir, "results", mystk, "figures")
 
 # ------------------------------------------------------------------------------
 # Operating model
 # ------------------------------------------------------------------------------
-resultsdir <- file.path(dropboxdir, "results", mystk, "figures")
+
+maxage <-  myparams[myparams$stock==mystk,"maxage"]
 
 btrig_blim <- myparams[myparams$stock==mystk,"btrig"]/myparams[myparams$stock==mystk,"blim"] #mac 1.29; whb 1.5
   
@@ -132,8 +137,186 @@ ggsave(p,
        width=10, height=10, units="in")
 
 # ------------------------------------------------------------------------------
+# Reference points
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
 # Density dependence: assumptions and estimation
 # ------------------------------------------------------------------------------
+
+# HOW DO THESE PARAMETERS RELATE TO MYPARAMS; e.g. b??
+
+# Get theoretical values from literature
+par=FLife::teleost[c("linf","k","t0","l50","a","b"),dimnames(teleost)$iter==mylatin]
+
+# Uses life history theory to derive parameters for biological relationships
+par=FLife::lhPar(par,
+                 m1=myparams[myparams$stock==mystk,"m1"],
+                 m2=myparams[myparams$stock==mystk,"m2"],
+                 m3=myparams[myparams$stock==mystk,"m3"])
+
+# WHAT IS THE ASSUMED SELECTIVITY AND WHERE DOES IT COME FROM?
+
+# derive a FLBRP object with Lorenzen natural mortality
+eq =FLife::lhEql(par,m="lorenzen")
+
+# plot the BRP object
+ggsave(ggplotFL::plot(eq) + 
+         theme_bw() +
+         labs(title=paste(mystk, mystkname, "FLBRP object with DD M")), 
+       filename=file.path(resultsdir, paste(mystk, "brp.jpg", sep="_")), 
+       device="jpeg", 
+       width=10, height=10, units="in")
+
+# convert to FLStock and project
+om=as(eq,"FLStock")
+om=fwd(om,fbar=fbar(om)[,-1],sr=eq)
+ggsave(ggplot(model.frame(FLQuants(Biomass=biomass(eq),Yield=catch(eq))))+
+         geom_line(aes(Biomass,Yield)), 
+       filename=file.path(resultsdir, paste(mystk, "eq.jpg", sep="_")), 
+       device="jpeg", 
+       width=10, height=10, units="in")
+
+
+# Simulation of density dependence in mass-at-age for different levels of biomass relative to Bmsy
+dat=ddWt(stock.wt(eq),biomass(eq),refpts(eq)["msy","biomass"]) 
+dat=merge(as.data.frame(dat,drop=T),
+          as.data.frame(biomass(eq)%/%refpts(eq)["msy","biomass"],drop=T),
+          by="year")
+names(dat)[3:4]=c("mass","biomass")
+
+ggsave(ggplot(dat)+    
+         theme_bw() +
+         geom_line(aes(age,mass,col=biomass,group=year))+
+         scale_x_continuous(limits=c(0,maxage), breaks=(seq(0,maxage,1)))+
+         # scale_y_continuous(limits=c(0,800))+
+         geom_line(aes(age,data),data=as.data.frame(stock.wt(eq)),col="red",size=2)+
+         labs(x="Age", y="Mass-at-age", colour="Biomass/Bmsy") , 
+       filename=file.path(resultsdir, paste(mystk, "sim_dd_mass.jpg", sep="_")), 
+       device="jpeg", 
+       width=10, height=10, units="in")
+
+# Simulation of density dependence in maturity-at-age for different levels of biomass relative to Bmsy
+# WHAT IS K HERE?
+parMat=FLPar(c(k=0.1, w5=par["a"]*par["l50"]^par["b"]))
+dat=transform(dat,mat=1/(1+exp(-parMat[1]*(mass-parMat[2])))) 
+
+ggsave(ggplot(dat)+           
+         theme_bw() +
+         geom_line(aes(age,mat,col=biomass,group=year))+
+         scale_x_continuous(limits=c(0,maxage), breaks=(seq(0,maxage,1)))+
+         geom_line(aes(age,data),data=as.data.frame(mat(eq)),col="red",size=2)+
+         labs(x="Age", y="Maturity-at-age", colour="Biomass/Bmsy"), 
+       filename=file.path(resultsdir, paste(mystk, "sim_dd_maturity.jpg", sep="_")), 
+       device="jpeg", 
+       width=10, height=10, units="in")
+
+# Simulation of density dependence in M-at-age for different levels of biomass relative to Bmsy
+dat=transform(dat,m=c(par["m1"])*(mass^c(par["m2"])))
+
+ggsave(ggplot(dat)+           
+         geom_line(aes(age,m,col=biomass,group=year))+
+         scale_x_continuous(limits=c(0,maxage), breaks=(seq(0,maxage,1)))+
+         geom_line(aes(age,data),data=as.data.frame(m(eq)),col="red",size=2)+
+         labs(x="Age", y="M-at-age", colour="Biomass/Bmsy"), 
+       filename=file.path(resultsdir, paste(mystk, "sim_dd_m.jpg", sep="_")), 
+       device="jpeg", 
+       width=10, height=10, units="in")
+
+
+# Comparison of equilibrium yields curves without DD, with DD mass, DD mass+maturity and DD mass+mat+M 
+
+# First by mass
+x         = propagate(eq,length(dimnames(eq)$year))
+fbar(x)   = fbar(x)[,1]
+fbar(x)[] = c(fbar(eq))*2
+
+# landing weight at age and discard weight at age relative to stock weight
+lsr       = landings.wt(eq)/stock.wt(eq)
+dsr       = discards.wt(eq)/stock.wt(eq)
+
+# iterate
+for (i in seq(10)){
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.2)
+  landings.wt(x)=stock.wt(x)*lsr
+  discards.wt(x)=stock.wt(x)*dsr
+  x=brp(x)}
+
+df <- 
+  bind_rows(
+    model.frame(FLQuants(eq,biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T) %>% mutate(scen="no-DD"),
+    model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T) %>% mutate(scen="DD mass")
+  )
+
+# then by mass and maturity
+x=propagate(eq,length(dimnames(eq)$year))
+fbar(x)[,1]=c(seq(0,max(fbar(eq)),length.out=51),seq(1,50,length.out=51)*max(fbar(eq)))[-52]
+fbar(x)=fbar(x)[,1]
+
+lsr=landings.wt(eq)/stock.wt(eq)
+dsr=discards.wt(eq)/stock.wt(eq)
+# iterate
+for (i in seq(10)){
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.2)
+  landings.wt(x)=stock.wt(x)*lsr
+  discards.wt(x)=stock.wt(x)*dsr
+  
+  mat(     x)=1/(1+exp(-parMat[1]*(stock.wt(x)-parMat[2])))
+  x=brp(x)
+}
+
+df <- 
+  bind_rows(
+    df,
+    model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T) %>% mutate(scen="DD mass+mat")
+  )
+
+# then by mass and maturity and M
+x=propagate(eq,length(dimnames(eq)$year))
+fbar(x)[,1]=c(seq(0,max(fbar(eq)),length.out=51),seq(1,50,length.out=51)*max(fbar(eq)))[-52]
+fbar(x)=fbar(x)[,1]
+
+lsr=landings.wt(eq)/stock.wt(eq)
+dsr=discards.wt(eq)/stock.wt(eq)
+# iterate
+for (i in seq(10)){
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.2)
+  landings.wt(x)=stock.wt(x)*lsr
+  discards.wt(x)=stock.wt(x)*dsr
+  
+  mat(     x)=1/(1+exp(-parMat[1]*(stock.wt(x)-parMat[2])))
+  x=brp(x)
+}
+
+df <- 
+  bind_rows(
+    df,
+    model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T) %>% mutate(scen="DD mass+mat+M")
+  )
+ggplot(data=df, aes(biomass, catch))+
+  theme_bw() +
+  geom_line(aes(colour=scen)) +
+  labs(x="Total biomass", y="Catch", colour="") +
+  scale_colour_manual(values =c("no-DD"         = "black",
+                                "DD mass"       = "red", 
+                                "DD mass+mat"   = "blue",
+                                "DD mass+mat+M" = "darkgreen")) +
+  facet_wrap(~scen)
+
+
+ggsave(ggplot(data=df, aes(biomass, catch))+
+         theme_bw() +
+         geom_line(aes(colour=scen)) +
+         labs(x="Total biomass", y="Catch", colour="") +
+         scale_colour_manual(values =c("no-DD"         = "black",
+                                       "DD mass"       = "red", 
+                                       "DD mass+mat"   = "blue",
+                                       "DD mass+mat+M" = "darkgreen")), 
+       filename=file.path(resultsdir, paste(mystk, "eq_yield.jpg", sep="_")), 
+       device="jpeg", 
+       width=10, height=10, units="in")
+
+
 
 # ------------------------------------------------------------------------------
 # Management procedures
