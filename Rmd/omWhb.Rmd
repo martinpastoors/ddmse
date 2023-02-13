@@ -162,7 +162,9 @@ d=rbind(cbind("What"="ICES",dices),
         cbind("What"="VPA",dvpa),
         cbind("What"="M",d1))
 ggplot(d)+
-  geom_line(aes(SSB,Yield,col=What))
+  geom_line(aes(SSB,Yield,col=What))+
+  geom_line(aes(SSB,Yield),col="red",data=d1)
+
 ```
 
 
@@ -191,7 +193,9 @@ p3=ggplot(m(vpaDDM[,"2030"]))+geom_line(aes(age,data,group=iter))+
 d2=model.frame(FLQuants(vpaDDM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
                                         "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
 p4=ggplot(d2)+
-  geom_line(aes(SSB,Yield))
+  geom_line(aes(SSB,Yield))+
+  geom_line(aes(SSB,Yield),col="red",data=d1)
+
 
 ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 ```
@@ -216,7 +220,9 @@ p3=ggplot(m(vpaDDMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
 d3=model.frame(FLQuants(vpaDDMM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
                                          "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
 p4=ggplot(d3)+
-  geom_line(aes(SSB,Yield))
+  geom_line(aes(SSB,Yield))+
+  geom_line(aes(SSB,Yield),col="red",data=d1)
+
 
 ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 ```
