@@ -210,11 +210,11 @@ ggplot(subset(mat,age%in%1:5),aes(tb,data))+
 $f(x) = \frac{1}{1+e^{-k(x-x_0)}}$
 
 ```{r}
-matFn<-function(wt,x) 1/(1+exp(-x[1]*(wt-x[2])))
-  
 dat=model.frame(FLQuants(whb,"wt"=stock.wt,"mat"=function(x) mat(x)))
 dat$age=factor(dat$age)
 
+matFn<-function(wt,x) 1/(1+exp(-x[1]*(wt-x[2])))
+  
 fn<-function(x,dat) {
   sum((dat$mat-matFn(dat$wt,x))^2)}
 

@@ -130,7 +130,7 @@ om=fwd(om,fbar=fbar(om)[,-1],sr=eq)
 
 ```{r, dd-par}
 par=rbind(par,
-          FLPar(c(m1=0.2/(300^-0.288),m2=-0.28,
+          FLPar(c(m1=0.2/(150^-0.288),m2=-0.28,
                   bref =c(refpts(eq)["msy","biomass"]),
                   delta=-0.2,
                   matk = 0.1,
