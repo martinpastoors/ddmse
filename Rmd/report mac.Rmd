@@ -1,0 +1,316 @@
+---
+output:
+  word_document:
+    reference_docx: ../report_template.dotx
+mathjax: TRUE
+---
+
+
+```{r, knitr, echo=FALSE, fig.asp=1.15, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+library(knitr)
+
+knitr::opts_chunk$set(
+               cache     =TRUE, 
+               comment   ="", 
+               warning   =FALSE, 
+               message   =FALSE, 
+               error     =FALSE, 
+               echo      =FALSE, 
+               eval      =TRUE,
+               crop      =TRUE,
+               cache.path="../cache/figs/cond/",
+               fig.path  ="../tex/figs",
+               fig.width =10,
+               fig.height=8,
+               dev       ="png")
+
+rm(list=ls())
+
+iFig=0
+iTab=0
+
+library(FLCore)    # install.packages("FLCore", repos="http://flr-project.org/R")
+library(FLBRP)     # install.packages("FLBRP", repos="http://flr-project.org/R")
+library(FLasher)   # install.packages("FLasher", repos="http://flr-project.org/R")
+library(FLAssess)  # install.packages("FLAssess", repos="http://flr-project.org/R")
+library(FLife)     # install.packages("FLife", repos="http://flr-project.org/R")
+library(ggplotFL)
+
+library(popbio)
+
+library(GGally)
+library(ggpubr)
+
+library(rjson) # install.packages("rjson"); used for dropbox function
+library(RJSONIO)
+
+library(plyr)
+library(dplyr)
+library(reshape)
+
+library(readxl)
+  
+library(mgcv)
+library(mgcViz)
+
+library(tidyverse)
+
+theme_set(theme_bw(16))
+
+library(captioner)     # captions
+tab_nums <- captioner::captioner(prefix = "Table", levels=3, type=c("n","n","n"), infix=".")
+fig_nums <- captioner::captioner(prefix = "Figure", levels=3, type=c("n","n","n"), infix=".")
+
+source("../R/dd.R")
+source("../R/get_dropbox.r")
+source("../R/pm.R")
+
+dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
+
+if ("try-error"%in%is(dropboxdir))
+  dropboxdir="~/Dropbox/pelagics"
+
+
+mystk     <- "mac"; mystkname <- "Northeast Atlantic mackerel"; mylatin <- "Scombrus scomber"
+# mystk     <- "whb"; mystkname <- "Blue whiting";                mylatin <- "Micromesistius poutassou" 
+maxyear <- 2050
+
+
+# ------------------------------------------------------------------------------
+# Operating model
+# ------------------------------------------------------------------------------
+resultsdir <- file.path(dropboxdir, "results", mystk, "figures")
+
+
+```
+
+<!-- =============================================================================================================== -->
+<!-- ## Mackerel report                                                                                              -->
+<!-- =============================================================================================================== -->
+
+
+**Evaluating impacts of Density Dependent processes on `r mystkname` via MSE simulations**
+
+
+**L. Kell, M.A. Pastoors**
+
+`r format(Sys.time(), '%d/%m/%Y')`
+
+Commissioned by: University of Copenhagen (Henrik Sparholt)
+
+# Executive summary
+
+[summary here]
+
+
+
+<!-- =============================================================================================================== -->
+<!-- Section 1: introduction                                                                                         -->
+<!-- =============================================================================================================== -->
+
+# Introduction
+
+The purpose of this work is to support the project “Fmsy-project for six high profile fish stocks”. The project focuses on the current management approach for fish stocks based on single-species Fmsy Values where the only density-dependent process that is included is recruitment. The project includes three other density-dependent population dynamics: growth (weight at age), sexual maturity and natural mortality.  
+
+This report deals with the evaluation of density dependent processes for `r mystkname` using Management Strategy Evaluation (MSE). Steps in the analysis:
+
+1. Conditioning and summaries based on the 2022 ICES assessment (section 2)
+2. Estimating Density Dependent effects based on equilibrium analyses and explore DD before setting up the OMs (section 3)
+3. Setting up the Operating Models (OM) (section 4)
+4. Running MSE's (section 5)
+
+Four alternatives OMs have been included in the analyses: 
+
+1. No density dependent processes
+2. DD in growth
+3. DD in growth and maturity
+4. DD in growth, maturity and natural mortality
+
+All MSE's have been developed within the FLR framework (https://flr-project.org/) and all the code is stored on github (https://github.com/martinpastoors/ddmse). 
+
+All data and results are available on DropBox (https://www.dropbox.com/sh/k87x074xqw7sgae/AAAmF980iR2n24wTkqhOhnpfa?dl=0)
+
+<!-- =============================================================================================================== -->
+<!-- Section 2: conditioning and summaries of ICES assessment                                                        -->
+<!-- =============================================================================================================== -->
+
+# Conditioning and summaries based on the 2022 ICES assessment
+
+
+<!-- =============================================================================================================== -->
+<!-- Section 3: Estimating Density Dependent effects based on equilibrium analyses                                   -->
+<!-- =============================================================================================================== -->
+
+# Estimating Density Dependent effects based on equilibrium analyses
+
+
+Life history parameters are used to develop an example of modelling density dependence for mass, maturity and natural mortality-at-age. The parameters are first used to construct An `FLBRP` object representing the equilibrium, and are then coerced into an `FLStock` to model the time series dynamics.
+
+## Mass-at-age [SHOULD WE CALL IT WEIGHT AT AGE, SINCE WE ARE USING Wa? ]
+
+Mass-at-age ($W_a$) is modelled as
+
+$W_a = {\overline{W_a}} B^{{\beta}_a}$
+
+Where $\overline{W_a}$ and $\beta$ are estimated from a regression of mass-at-age ($W_a$) on total biomass ($B_a$), based on empirical data. $W_a$ is constrained so sizes do not become unfeasible large or small.
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "sim_dd_mass", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in mass-at-age for different levels of biomass relative to Bmsy")
+
+knitr::include_graphics(path=file.path(resultsdir, paste0(mystk,"_sim_dd_mass.jpg")))
+
+```
+
+_`r fig_nums("sim_dd_mass")`_
+
+## Maturity-at-weight
+
+Maturity is then  modelled as a logistic function of mass-at-age i.e.
+
+$O(W_a) = 1/(1+e^{k(W_a-W_{50})})$
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "sim_dd_mat", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in maturity-at-age for different levels of biomass relative to Bmsy")
+
+knitr::include_graphics(path=file.path(resultsdir, paste0(mystk,"_sim_dd_maturity.jpg")))
+
+```
+
+_`r fig_nums("sim_dd_mat")`_
+
+
+## Natural mortality
+
+Is assumed to vary at unit length ($L_1$) e.g.
+
+$ln(M_1) =\alpha + \beta ln(L_{\infty}) + \gamma ln(k)$
+
+where $\alpha=0.65$, $\beta=0.91$, $\gamma=0.87$
+
+Length-at-age ($L_a$) can be obtained from the length-weight relationship
+
+$L_a=(W/a)^{1/b}$
+
+giving
+
+$ln(M_1) =(W/a)^{1/b}(\alpha + \beta ln(L_{\infty}) + \gamma ln(k))$
+
+For DD there is a relationship between Mass at age $M_a$ and total biomass ($B$)
+
+Mackerel:
+
+$M = 0.0232B + 0.0524$
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "sim_dd_m", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in M-at-age for different levels of biomass relative to Bmsy")
+
+knitr::include_graphics(path=file.path(resultsdir, paste0(mystk,"_sim_dd_m.jpg")))
+
+```
+
+_`r fig_nums("sim_dd_m")`_
+
+Comparison of equilibrium yield plots for simulation with and without density-dependent processes
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "sim_yield", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in M-at-age for different levels of biomass relative to Bmsy")
+
+knitr::include_graphics(path=file.path(resultsdir, paste0(mystk,"_eq_yield.jpg")))
+
+```
+
+_`r fig_nums("sim_dd_m")`_
+
+
+
+<!-- =============================================================================================================== -->
+<!-- Section 4: Setting up the Operating Models (OM)                                                                 -->
+<!-- =============================================================================================================== -->
+
+# Setting up the Operating Models (OM)
+
+Stock assessments with SAM (non-DD), density-dependent SAM, VPA based on SAM (non-DD) and density-dependent VPA. The VPA reconstructions of the SAM assessment, shows a strongly divergent pattern in recruitment and also some differences in the trend of SSB. Mean fishing mortality is somewhat more variable in the VPA reconstruction compared to the SAM assessment. Density-dependent processes (on weight, maturity and M) tend to lead to lower SSB in the latter part of the time series. 
+
+
+```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+knitr::include_graphics(path=file.path(resultsdir, paste0(mystk,"_om.jpg")))
+
+```
+
+\newpage
+
+Forward projections with F=fmsy (fwd), 0.8xfmsy?, 1.0xfmsy, 1.2xfmsy?
+
+```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+
+```
+
+<!-- =============================================================================================================== -->
+<!-- Section 5: Running MSE's                                                                                        -->
+<!-- =============================================================================================================== -->
+
+# Running MSE's
+
+```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+
+```
+
+
+<!-- =============================================================================================================== -->
+<!-- Section 6: Discussion and conclusions                                                                           -->
+<!-- =============================================================================================================== -->
+
+# Discussion and conclusions
+
+The quality shall live up to that demanded by the International Council for the Exploration of the Sea (ICES) and potentially be used in ICES advice to fisheries managers. The Consultant shall be interacting with the leadership of the project Henrik Sparholt, or his representative, in the process of developing the software. The software shall be made publicly available via Github or on alternative platform if so directed by Henrik Sparholt or his representative.
+
+<!-- =============================================================================================================== -->
+<!-- Funding                                                                                                         -->
+<!-- =============================================================================================================== -->
+
+# Funding
+
+
+
+
+<!-- =============================================================================================================== -->
+<!-- References                                                                                                      -->
+<!-- =============================================================================================================== -->
+
+# References
+
+
+
+
+
+<!-- =============================================================================================================== -->
+<!-- Annex 1: OM conditioning                                                                           -->
+<!-- =============================================================================================================== -->
+
+# Annex 1: OM conditioning
+
+
+
+<!-- =============================================================================================================== -->
+<!-- Annex 2: Density dependent processes                                                                           -->
+<!-- =============================================================================================================== -->
+
+# Annex 2: Density dependent processes
+
+
+
