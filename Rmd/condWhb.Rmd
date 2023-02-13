@@ -52,10 +52,6 @@ source("../R/get_dropbox.R")
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
-
-matFn<-function(wt,x) 
-   1/(1+exp(-x[1]*(wt-x[2])))
-
 ```
 
 
@@ -214,12 +210,14 @@ ggplot(subset(mat,age%in%1:5),aes(tb,data))+
 $f(x) = \frac{1}{1+e^{-k(x-x_0)}}$
 
 ```{r}
+matFn<-function(wt,x) 1/(1+exp(-x[1]*(wt-x[2])))
+  
 dat=model.frame(FLQuants(whb,"wt"=stock.wt,"mat"=function(x) mat(x)))
 dat$age=factor(dat$age)
 
-fn<-function(x,dat) 
-   sum((dat$mat-matFn(dat$wt,x))^2)
- 
+fn<-function(x,dat) {
+  sum((dat$mat-matFn(dat$wt,x))^2)}
+
 par=optim(par=c(k=0.5,w50=.2), fn,dat=dat)
 
 

@@ -1,0 +1,264 @@
+---
+title: "**Density Dependence**"
+subtitle: "Blue whiting: Operating Model with density dependence in mass, maturity and M-at-age"
+author: "L Kell"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+mathjax: TRUE
+
+tags: FLR FLCore introduction
+license: Creative Commons Attribution-ShareAlike 4.0 International Public License
+bibliography: refs.bib
+---
+
+
+```{r, knitr, eval=TRUE, echo=FALSE, warning=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+# getwd()
+library(knitr)
+
+opts_chunk$set(cache     =TRUE, 
+               comment   =NA, 
+               warning   =FALSE, 
+               message   =FALSE, 
+               error     =FALSE, 
+               echo      =FALSE, 
+               eval      =TRUE,cache   =TRUE,
+               cache.path="../cache/whb/om/",
+               fig.path  ="../tex/figs/whb/om/",
+               fig.width =8,
+               fig.height=6,
+               dev       ="png")
+
+iFig=0
+iTab=0
+```
+
+```{r, pkgs}
+library(FLCore)
+library(FLBRP)
+library(FLasher)
+library(FLife)
+library(ggplotFL)
+
+library(popbio)
+
+library(GGally)
+library(ggpubr)
+
+library(rjson) # install.packages("rjson"); used for dropbox function
+library(RJSONIO)
+
+library(plyr)
+library(dplyr)
+library(reshape)
+
+library(readxl)
+  
+library(mgcv)
+library(mgcViz)
+
+library(compositions)
+  
+theme_set(theme_bw(16))
+```
+
+```{r, dbox}
+dropboxdir<-try(file.path(get_dropbox(), "dd"))
+
+if ("try-error"%in%is(dropboxdir))
+  dropboxdir="~/Dropbox/pelagics"
+```
+
+```{r}
+source("~/Desktop/projects/ddmse/R/dd.R")
+```
+
+```{r}
+load(file.path(dropboxdir,"data/om/whb.RData"))
+```
+
+```{r, ices}
+load(file.path(dropboxdir,"data/inputs/ices.RData"))
+ices=ices[["whb.27.1-91214"]]
+ices=window(ices,start=1991)
+
+sr  =as.FLSR(ices,model=bevholtSV)
+sr  =fmle(sr,fixed=list(s=0.8,spr0=mean(spr0(ices))),control=list(silent=TRUE))
+eq  =FLBRP(ices,ab(sr))
+ices=fwdWindow(ices,eq,end=2050) 
+
+F  =propagate(window(fbar(ices),start=2020),101)
+F[]=rep(c(seq(0,                               c(refpts(eq)["msy",  "harvest"]),length.out=51),
+          seq(c(refpts(eq)["msy",  "harvest"]),c(refpts(eq)["crash","harvest"])*1.2,length.out=51)[-1]),each=dim(F)[2])
+
+control=as(FLQuants("f"=F),"fwdControl")
+ices   =fwd(ices,control=control,sr=eq)
+
+dices=model.frame(FLQuants(ices[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+                                         "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
+ggplot(dices)+
+  geom_line(aes(SSB,Yield))
+```
+
+**Figure `r iFig=iFig+1; iFig`** . 
+
+
+```{r, vpa}
+load(file.path(dropboxdir,"data/inputs/ices.RData"))
+ices=ices[["whb.27.1-91214"]]
+ices=window(ices,start=1991)
+vpa =ices+FLAssess:::VPA(ices)
+
+sr  =as.FLSR(vpa,model=bevholtSV)
+sr  =fmle(sr,fixed=list(s=0.8,spr0=mean(spr0(vpa))),control=list(silent=TRUE))
+eq  =FLBRP(vpa,ab(sr))
+vpa =fwdWindow(vpa,eq,end=2050) 
+
+F  =propagate(window(fbar(vpa),start=2020),101)
+F[]=rep(c(seq(0,                             c(refpts(eq)["msy",  "harvest"]),length.out=51),
+          seq(c(refpts(eq)["msy","harvest"]),c(refpts(eq)["crash","harvest"])*1.2,length.out=51)[-1]),each=dim(F)[2])
+
+control=as(FLQuants("f"=F),"fwdControl")
+vpa    =fwd(vpa,control=control,sr=eq)
+
+dvpa=model.frame(FLQuants(vpa[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+                                       "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
+pvpa=ggplot(dvpa)+
+  geom_line(aes(SSB,Yield))
+```
+
+**Figure `r iFig=iFig+1; iFig`** . 
+
+
+```{r, vpaM}
+load("../data/om/parWhb.RData")
+par["m1"]  =par["m1"]/10
+par["w50"] =par["w50"]/100
+par["w50"] =0.08
+par["matk"]=100
+
+load(file.path(dropboxdir,"data/inputs/ices.RData"))
+vpaM=ices[["whb.27.1-91214"]]
+vpaM=window(vpaM,start=1991)
+m(vpaM)=par["m1"]%*%(stock.wt(vpaM)%^%par["m2"])
+vpaM=vpaM+FLAssess:::VPA(vpaM)
+
+sr  =as.FLSR(vpaM,model=bevholtSV)
+sr  =fmle(sr,fixed=list(s=0.8,spr0=mean(spr0(vpa))),control=list(silent=TRUE))
+eq  =FLBRP(vpaM,ab(sr))
+vpaM=fwdWindow(vpaM,eq,end=2050) 
+
+F  =propagate(window(fbar(vpaM),start=2020),101)
+F[]=rep(c(seq(0,                             c(refpts(eq)["msy",  "harvest"]),  length.out=51),
+          seq(c(refpts(eq)["msy","harvest"]),c(refpts(eq)["crash","harvest"])*2,length.out=51)[-1]),each=dim(F)[2])
+
+control=as(FLQuants("f"=F),"fwdControl")
+vpaM  =fwd(vpaM,control=control,sr=eq)
+
+d1=model.frame(FLQuants(vpaM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+                                      "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
+d=rbind(cbind("What"="ICES",dices),
+        cbind("What"="VPA",dvpa),
+        cbind("What"="M",d1))
+ggplot(d)+
+  geom_line(aes(SSB,Yield,col=What))
+```
+
+
+```{r, vpaDDM}
+source("~/Desktop/projects/ddmse/R/dd.R")
+
+####################################################
+par["bref"]=subset(d1,Yield==max(Yield))[,"Biomass"]
+####################################################  
+
+vpaDDM=vpaM
+
+for (i in ac(2020:2050)) {
+  vpaDDM =ddFn(i,vpaDDM,par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+  mat(vpaDDM)[1]=0
+  control=as(FLQuants("f"=F[,i]),"fwdControl")
+  vpaDDM =fwd(vpaDDM,control=control,sr=eq)}
+
+p1=ggplot(stock.wt(vpaDDM[,"2030"]))+geom_line(aes(age,data,group=iter))+
+  geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
+p2=ggplot(mat(vpaDDM[,"2030"]))+geom_line(aes(age,data,group=iter))+
+  geom_line(aes(age,data),data=as.data.frame(mat(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mat-at-age")
+p3=ggplot(m(vpaDDM[,"2030"]))+geom_line(aes(age,data,group=iter))+
+  geom_line(aes(age,data),data=as.data.frame(m(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("M-at-age")
+
+d2=model.frame(FLQuants(vpaDDM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+                                        "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
+p4=ggplot(d2)+
+  geom_line(aes(SSB,Yield))
+
+ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+```
+
+
+```{r, vpaDDMM}
+vpaDDMM =vpaM   
+
+for (i in ac(2020:2050)) {
+  vpaDDMM =ddFn(i,vpaDDMM,par,massFlag=TRUE,matFlag=TRUE,mFlag=FALSE)
+  mat(vpaDDMM)[1]=0
+  control=as(FLQuants("f"=F[,i]),"fwdControl")
+  vpaDDMM =fwd(vpaDDMM,control=control,sr=eq)}
+
+p1=ggplot(stock.wt(vpaDDMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
+  geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
+p2=ggplot(mat(vpaDDMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
+  geom_line(aes(age,data),data=as.data.frame(mat(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mat-at-age")
+p3=ggplot(m(vpaDDMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
+  geom_line(aes(age,data),data=as.data.frame(m(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("M-at-age")
+
+d3=model.frame(FLQuants(vpaDDMM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+                                         "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
+p4=ggplot(d3)+
+  geom_line(aes(SSB,Yield))
+
+ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+```
+
+**Figure `r iFig=iFig+1; iFig`** . 
+
+```{r, vpaDDMMM}
+vpaDDMMM=vpaM   
+
+for (i in ac(2020:2050)) {
+  vpaDDMMM =ddFn(i,vpaDDMMM,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
+  mat(vpaDDMMM)[1]=0
+  control=as(FLQuants("f"=F[,i]),"fwdControl")
+  vpaDDMMM =fwd(vpaDDMMM,control=control,sr=eq)}
+
+p1=ggplot(stock.wt(vpaDDMMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
+  geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
+p2=ggplot(mat(vpaDDMMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
+  geom_line(aes(age,data),data=as.data.frame(mat(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mat-at-age")
+p3=ggplot(m(vpaDDMMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
+  geom_line(aes(age,data),data=as.data.frame(m(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("M-at-age")
+
+d4=model.frame(FLQuants(vpaDDMMM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+                                          "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
+p4=ggplot(d4)+
+  geom_line(aes(SSB,Yield))
+
+ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+```
+
+**Figure `r iFig=iFig+1; iFig`** Blue whiting: simple projection. 
+
+```{r} 
+d=rbind(cbind("What"="M",d1),
+        cbind("What"="DD-M",d2),
+        cbind("What"="DD-MM",d3),
+        cbind("What"="DD-MMM",d4))
+ggplot(d)+  
+  geom_line(aes(SSB,Yield,col=What))
+```
+
+
+# Funding
+
+# References

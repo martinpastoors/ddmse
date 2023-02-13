@@ -1,6 +1,6 @@
 ---
 title: "**Nort East Atlantic Mackerel**"
-subtitle: "Emprirical evidence for density dependence"
+subtitle: "Mackerel: Emprirical evidence for density dependence"
 author: "L Kell & M Pastoors"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: word_document
@@ -47,16 +47,15 @@ library(mgcv)
 library(mgcViz)
 
 theme_set(theme_bw(16))
+```
 
+
+```{r, dropbox}
 source("../R/get_dropbox.R")
-
-matFn<-function(wt,x) 
-   1/(1+exp(-x[1]*(wt-x[2])))
 
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
-
 ```
 
 
@@ -218,23 +217,24 @@ $f(x) = \frac{1}{1+e^{-k(x-x_0)}}$
 
 
 ```{r}
+matFn<-function(wt,x) 1/(1+exp(-x[1]*(wt-x[2])))
+
 dat=model.frame(FLQuants(mac,"wt"=stock.wt,"mat"=function(x) mat(x)))
 dat$age=factor(dat$age)
 
-fn<-function(x,dat) 
-   sum((dat$mat-matFn(dat$wt,x))^2)
+fn<-function(x,dat) {
+  sum((dat$mat-matFn(dat$wt,x))^2)}
  
-par=optim(par=c(k=0.5,w50=.2), fn,dat=dat)
-
+matPar=optim(par=c(k=0.5,w50=.2), fn,dat=dat)
 
 ggplot(dat,aes(wt,mat))+
   geom_point(aes(wt,mat,col=age))+
   geom_smooth(se=F,span=0.2)+
   xlab("Mass-at-age")+ylab("Matutrity-at-age")+
-  geom_line(aes(wt,mat),col="red",data=data.frame(mat=matFn(dat$wt,par$par),wt=dat$wt))
+  geom_line(aes(wt,mat),col="red",data=data.frame(mat=matFn(dat$wt,matPar$par),wt=dat$wt))
 ```
 
-**Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age v mass-at-age  (k=`r par$par[1]` $W_{50}$=`r par$par[2]`)
+**Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age v mass-at-age  (k=`r matPar$par[1]` $W_{50}$=`r matPar$par[2]`)
 
 \newpage
 
