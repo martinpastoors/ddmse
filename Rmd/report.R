@@ -224,9 +224,8 @@ ggsave(ggplot(dat)+
        width=10, height=10, units="in")
 
 
-# Comparison of equilibrium yields curves without DD, with DD mass, DD mass+maturity and DD mass+mat+M 
+# Comparison of equilibrium yields curves without DD and with DD mass
 
-# First by mass
 x         = propagate(eq,length(dimnames(eq)$year))
 fbar(x)   = fbar(x)[,1]
 fbar(x)[] = c(fbar(eq))*2
@@ -248,7 +247,8 @@ df <-
     model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T) %>% mutate(scen="DD mass")
   )
 
-# then by mass and maturity
+# Comparison of equilibrium yields curves with DD mass+maturity
+
 x=propagate(eq,length(dimnames(eq)$year))
 fbar(x)[,1]=c(seq(0,max(fbar(eq)),length.out=51),seq(1,50,length.out=51)*max(fbar(eq)))[-52]
 fbar(x)=fbar(x)[,1]
@@ -271,7 +271,8 @@ df <-
     model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T) %>% mutate(scen="DD mass+mat")
   )
 
-# then by mass and maturity and M
+# Comparison of equilibrium yields curves with DD mass+mat+M 
+
 x=propagate(eq,length(dimnames(eq)$year))
 fbar(x)[,1]=c(seq(0,max(fbar(eq)),length.out=51),seq(1,50,length.out=51)*max(fbar(eq)))[-52]
 fbar(x)=fbar(x)[,1]
