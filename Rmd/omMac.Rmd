@@ -1,18 +1,19 @@
 ---
-title: "**Density Dependence**"
+title: "**Operating model**"
 subtitle: "Mackerel: Operating Model with density dependence in mass, maturity and M-at-age"
 author: "L Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: word_document
 mathjax: TRUE
 
 tags: FLR FLCore introduction
 license: Creative Commons Attribution-ShareAlike 4.0 International Public License
-bibliography: refs.bib
+# bibliography: refs.bib
 ---
 
 
-```{r, knitr, eval=TRUE, echo=FALSE, warning=FALSE, cache=FALSE}
+```{r warning=FALSE, cache=FALSE, include=FALSE, knitr, eval=TRUE}
+
 knitr::opts_chunk$set(echo = FALSE)
 # getwd()
 library(knitr)
@@ -23,7 +24,8 @@ opts_chunk$set(cache     =TRUE,
                message   =FALSE, 
                error     =FALSE, 
                echo      =FALSE, 
-               eval      =TRUE,cache   =TRUE,
+               eval      =TRUE,
+               cache     =TRUE,
                cache.path="../cache/mac/om/",
                fig.path  ="../tex/figs/mac/om/",
                fig.width =8,
@@ -32,9 +34,7 @@ opts_chunk$set(cache     =TRUE,
 
 iFig=0
 iTab=0
-```
 
-```{r, pkgs}
 library(FLCore)
 library(FLBRP)
 library(FLasher)
@@ -61,24 +61,33 @@ library(mgcViz)
 library(compositions)
   
 theme_set(theme_bw(16))
-```
 
-```{r, dbox}
-dropboxdir<-try(file.path(get_dropbox(), "dd"))
+source("../R/get_dropbox.R")
 
-if ("try-error"%in%is(dropboxdir))
+dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
+
+if ("try-error"%in% is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
 ```
 
-```{r}
-source("~/Desktop/projects/ddmse/R/dd.R")
+```{r echo=FALSE, warning=FALSE, cache=FALSE, eval=TRUE}
+
+# source("~/Desktop/projects/ddmse/R/dd.R")
+source("../R/dd.R")
+
 ```
 
-```{r}
+```{r echo=FALSE, warning=FALSE, cache=FALSE, eval=TRUE}
+
 load(file.path(dropboxdir,"data/om/mac.RData"))
+
 ```
 
-```{r, ices}
+```{r echo=FALSE, warning=FALSE, cache=FALSE, eval=TRUE}
+
+# Start the clock
+ptm <- proc.time()
+
 load(file.path(dropboxdir,"data/inputs/ices.RData"))
 ices=ices[["mac.27.nea"]]
 ices=window(ices,start=1991)
@@ -99,12 +108,20 @@ dices=model.frame(FLQuants(ices[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=
                                          "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
 ggplot(dices)+
   geom_line(aes(SSB,Yield))
+
+# Stop the clock
+proc.time() - ptm
+
 ```
 
 **Figure `r iFig=iFig+1; iFig`** . 
 
 
 ```{r, vpa}
+
+# Start the clock
+ptm <- proc.time()
+
 load(file.path(dropboxdir,"data/inputs/ices.RData"))
 ices=ices[["mac.27.nea"]]
 ices=window(ices,start=1991)
@@ -126,13 +143,20 @@ dvpa=model.frame(FLQuants(vpa[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=fu
                                        "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
 pvpa=ggplot(dvpa)+
   geom_line(aes(SSB,Yield))
+
+# Stop the clock
+proc.time() - ptm
 ```
 
 **Figure `r iFig=iFig+1; iFig`** . 
 
 
 ```{r, vpaM}
-load("../data/om/parMac.RData")
+
+# Start the clock
+ptm <- proc.time()
+
+load(file.path(dropboxdir, "data/om/parMac.RData"))
 par["m1"]  =par["m1"]/10
 par["w50"] =par["w50"]/1000
 par["matk"]=30
@@ -162,11 +186,27 @@ d=rbind(cbind("What"="ICES",dices),
         cbind("What"="M",d1))
 ggplot(d)+
   geom_line(aes(SSB,Yield,col=What))
+
+# Stop the clock
+proc.time() - ptm
 ```
 
+\newpage
+
+```{r}
+
+as.data.frame(par) %>% pander::pandoc.table(style="simple")
+
+```
+
+\newpage
 
 ```{r, vpaDDM}
-source("~/Desktop/projects/ddmse/R/dd.R")
+
+# source("~/Desktop/projects/ddmse/R/dd.R")
+
+# Start the clock
+ptm <- proc.time()
 
 ##################################
 par["bref"]=subset(d1,Yield==max(Yield))[,"Biomass"]
@@ -193,10 +233,18 @@ p4=ggplot(d2)+
   geom_line(aes(SSB,Yield),col="red",data=d1)
 
 ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+
+# Stop the clock
+proc.time() - ptm
 ```
 
+\newpage
 
 ```{r, vpaDDMM}
+
+# Start the clock
+ptm <- proc.time()
+
 vpaDDMM =vpaM
 
 for (i in ac(2020:2050)) {
@@ -218,11 +266,20 @@ p4=ggplot(d3)+
   geom_line(aes(SSB,Yield),col="red",data=d1)
 
 ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+
+# Stop the clock
+proc.time() - ptm
 ```
 
 **Figure `r iFig=iFig+1; iFig`** . 
 
+\newpage
+
 ```{r, vpaDDMMM}
+
+# Start the clock
+ptm <- proc.time()
+
 vpaDDMMM=vpaM
 
 for (i in ac(2020:2050)) {
@@ -244,9 +301,14 @@ p4=ggplot(d4)+
   geom_line(aes(SSB,Yield),col="red",data=d1)
 
 ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+
+# Stop the clock
+proc.time() - ptm
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Blue whiting: simple projection. 
+
+\newpage
 
 ```{r}
 d=rbind(cbind("What"="M",d1),
