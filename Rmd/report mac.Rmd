@@ -461,10 +461,24 @@ _`r fig_nums("sim_dd_m")`_
 
 # Setting up the Operating Models (OM)
 
+**Stock assessments**
+
 Stock assessments with SAM (non-DD), density-dependent SAM, VPA based on SAM (non-DD) and density-dependent VPA. The VPA reconstructions of the SAM assessment, shows a strongly divergent pattern in recruitment and also some differences in the trend of SSB. Mean fishing mortality is somewhat more variable in the VPA reconstruction compared to the SAM assessment. Density-dependent processes (on weight, maturity and M) tend to lead to lower SSB in the latter part of the time series. 
 
-[to be done]
 
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "om_assessments", level = 1, display = FALSE,
+  caption = "Comparison of different assessments. VPA-M is used going forward")
+
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_comparing_assessments.jpg")))
+
+```
+
+_`r fig_nums("om_VPADDM")`_
+
+\newpage
 
 **Density dependence in mass-at-age**
 
@@ -522,7 +536,7 @@ fig_nums(
   name    = "om_eqyield", level = 1, display = FALSE,
   caption = "Equilibrium curves for density dependence analyses: biomass against yield")
 
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_om_biomass_yield.jpg")))
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_comparing_dd.jpg")))
 
 ```
 
@@ -530,28 +544,13 @@ _`r fig_nums("om_eqyield")`_
 
 \newpage
 
-**Comparison of equilibrium curves for density dependence analyses: biomass against F**
-
-```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
-
-fig_nums(
-  name    = "om_eqf", level = 1, display = FALSE,
-  caption = "Equilibrium curves for density dependence analyses: biomass against F")
-
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_om_biomass_F.jpg")))
-
-```
-
-_`r fig_nums("om_eqf")`_
-
-\newpage
 
 
 <!-- =============================================================================================================== -->
-<!-- Section 5: Running MSE's                                                                                        -->
+<!-- Section 5: Running forward projections                                                                          -->
 <!-- =============================================================================================================== -->
 
-# Running MSE's
+# Forward projections without feedback
 
 ```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
