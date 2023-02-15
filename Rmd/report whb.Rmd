@@ -57,674 +57,547 @@ library(tidyverse)
 
 theme_set(theme_bw(16))
 
+library(captioner)     # captions
+tab_nums <- captioner::captioner(prefix = "Table", levels=1, type=c("n"), infix=".")
+fig_nums <- captioner::captioner(prefix = "Figure", levels=1, type=c("n"), infix=".")
+
 source("../R/dd.R")
-source("../R/get_dropbox.r")
 source("../R/pm.R")
 
+source("../R/get_dropbox.r")
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"
 
 
-# mystk     <- "whb"; mystkname <- "Blue whiting"
-# mystk     <- "her"; mystkname <- "North Sea herring"
-mystk     <- "mac"; mystkname <- "Northeast Atlantic mackerel"; maxyear <- 2050
+# mystk     <- "mac"; mystkname <- "Northeast Atlantic mackerel"; mylatin <- "Scombrus scomber"
+mystk     <- "whb"; mystkname <- "Blue whiting";                mylatin <- "Micromesistius poutassou" 
+maxyear <- 2050
+
+load(file=file.path(dropboxdir,paste0("data/om/",mystk,"matPar.RData")))
+ 
+
+# ------------------------------------------------------------------------------
+# Operating model
+# ------------------------------------------------------------------------------
+figuresdir <- file.path(dropboxdir, "results", mystk, "figures")
+tablesdir  <- file.path(dropboxdir, "results", mystk, "tables")
 
 
 ```
 
-# Evaluating impacts of Density Dependent processes on `r mystkname` MSE
+<!-- =============================================================================================================== -->
+<!-- ## Mackerel report                                                                                              -->
+<!-- =============================================================================================================== -->
 
-**L. Kell, M.A. Pastoors
+
+**Evaluating impacts of Density Dependent processes on `r mystkname` via MSE simulations**
+
+
+**L. Kell, M.A. Pastoors**
 
 `r format(Sys.time(), '%d/%m/%Y')`
 
-## Introduction
+Commissioned by: University of Copenhagen (Henrik Sparholt)
 
-## OM conditioning
+**Executive summary**
 
-Stock assessments with SAM, Density dependent SAM and Density dependent VPA
+[summary here]
 
-```{r, mac.data, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
-load(file.path(dropboxdir,"data/om/mac.RData"))
-combY <- as.data.frame(pmYear(window(mac, start=2001)),drop=T) %>% mutate(stk=mystk, type="SAM") 
 
-par=FLPar(c(m1=0.15/(0.2^-0.288),m2=-0.28,bmsy=3500000,b=0.3,k=30.1, w50=0.2)) 
+<!-- =============================================================================================================== -->
+<!-- Section 1: introduction                                                                                         -->
+<!-- =============================================================================================================== -->
 
-stock.wt(   mac)[1]=0.01
-catch.wt(   mac)[1]=0.01
-landings.wt(mac)[1]=0.01
-discards.wt(mac)[1]=0.01
+```{r}
 
-om_orig=ddFn2(mac,par); 
-combY <- bind_rows(combY,
-                   as.data.frame(pmYear(window(om_orig, start=2001)),drop=T) %>% mutate(stk=mystk, type="DD SAM")) 
-
-om=om_orig+VPA(om_orig)
-om=ddFn2(om,par)
-combY <- bind_rows(combY, 
-                   as.data.frame(pmYear(window(om, start=2001)),drop=T) %>% mutate(stk=mystk, type="DD VPA") )
-
-combY %>% 
-  filter(qname %in% c("catch","ssb","rec","fbar")) %>% 
-  ggplot(aes(x=year, y=median)) +
-  theme_bw() +
-  geom_ribbon(aes(fill=type, ymin=lowq, ymax=uppq, xmin=year, xmax=year), alpha=0.3) +
-  geom_line(aes(colour=type)) +
-  facet_grid(qname~., scales="free_y") 
+# captioner::bump(fig_nums, level=1)
+# fig_nums(name    = "section1_fig", caption = "section1_fig", level = 1, display = FALSE)
+# tab_nums(name    = "section1_tab", caption = "section1_tab", level = 1, display = FALSE)
 
 ```
+
+# Introduction
+
+The purpose of this work is to support the project “Fmsy-project for six high profile fish stocks”. The project focuses on the current management approach for fish stocks based on single-species Fmsy Values where the only density-dependent process that is included is recruitment. The project includes three other density-dependent population dynamics: growth (weight at age), sexual maturity and natural mortality.  
+
+This report deals with the evaluation of density dependent processes for `r mystkname` using Management Strategy Evaluation (MSE). Steps in the analysis:
+
+1. Conditioning and summaries based on the 2022 ICES assessment (section 2)
+2. Estimating Density Dependent effects based on equilibrium analyses and explore DD before setting up the OMs (section 3)
+3. Setting up the Operating Models (OM) (section 4)
+4. Running MSE's (section 5)
+
+Four alternatives OMs have been included in the analyses: 
+
+1. No density dependent processes
+2. DD in growth
+3. DD in growth and maturity
+4. DD in growth, maturity and natural mortality
+
+All MSE's have been developed within the FLR framework (https://flr-project.org/) and all the code is stored on github (https://github.com/martinpastoors/ddmse). 
+
+All data and results are available on DropBox (https://www.dropbox.com/sh/k87x074xqw7sgae/AAAmF980iR2n24wTkqhOhnpfa?dl=0)
+
+<!-- =============================================================================================================== -->
+<!-- Section 2: conditioning and summaries of ICES assessment                                                        -->
+<!-- =============================================================================================================== -->
+
+
+# Conditioning and summaries based on the 2022 ICES assessment
+
+```{r}
+
+# fig_nums(name    = "section2_fig", caption = "section2_fig", level = 1, display = FALSE)
+# tab_nums(name    = "section2_tab", caption = "section2_tab", level = 1, display = FALSE)
+
+```
+
+**Weight at age**
+
+[text here]
+
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "cond_waa", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". Weight at age by year and cohort"))
+
+knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "waa.jpg", sep="_")))
+
+```
+
+_`r fig_nums("cond_waa")`_
 
 \newpage
 
-Forward projections with F=fmsy (fwd), 0.8xfmsy?, 1.0xfmsy, 1.2xfmsy?
+**Maturity at age**
 
-```{r, mac.data2, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+[text here]
 
-sr=fmle(as.FLSR(om,model="bevholt"),control=list(silent=TRUE))
-eq=FLBRP(om,sr=sr)
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
-om=fwdWindow(om,end=maxyear,eq)
-f =fbar(om)[,ac(2021:maxyear)]%=%refpts(eq)["msy","harvest"]
-om=fwd(om,fbar=f,sr=eq)
+fig_nums(
+  name    = "cond_mat", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". Maturity at age by year and cohort"))
 
-om2=om
-om3=om
-om4=om
-
-for (iYear in ac(2021:maxyear)){
-  om2=ddFn(iYear,om2,par)
-  om2=fwd(om2,fbar=f[,iYear]*0.8,sr=eq)
-
-  om3=ddFn(iYear,om3,par)
-  om3=fwd(om3,fbar=f[,iYear],sr=eq)
-  
-  om4=ddFn(iYear,om4,par)
-  om4=fwd(om4,fbar=f[,iYear]*1.2,sr=eq)
-  }
-
-plot(FLStocks("fwd"=om,"0.8"=om2,"1.0"=om3,"1.2"=om4))
+knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "mat.jpg", sep="_")))
 
 ```
 
-## Simulation results
-
-## Discussion and conclusions
-
-
-
-
-ICES
-Fmsy
-HCR1 (no bounds)
-
-```{r, runWhb1, echo=FALSE, fig.asp=1.15, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
-
-myvar     <- c("catch","cCum", "ssb","fbar", "rec")
-scenarios <- c("ICES", "Fmsy", "HCR1")
-rp        <- refs  %>% 
-  filter(stk == mystk, refpoint %in% c("fmsy", "blim", "msybtrigger")) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-ices      <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% "ICES",  year %in% 2000:2021) %>% 
-  dplyr::select(- .id) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-df        <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-iters        <- combYI %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021, iter <= 5) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  group_by(stk, .id, iter) %>% 
-  mutate(perc_diff = (data-lag(data))/lag(data)) 
-# box <- 
-#   bind_rows(
-#     df   %>% dplyr::select(.id, qname, stk, data=median),
-#     ices %>% dplyr::select(qname, stk, data=median) %>% mutate(.id="ICES")
-#   ) %>% 
-#   group_by(qname, stk) %>% 
-#   summarise(max = max(data, na.rm=TRUE), min = min(data, na.rm=TRUE)) %>% 
-#   mutate(min = ifelse(min<0, min, 0)) %>% 
-  
-  
-df %>% 
-  ggplot(aes(x=year, y=median)) +
-  theme_bw() +
-  theme(panel.grid.minor = element_blank(),  
-        panel.border     = element_rect(linetype = 1, colour="black", fill=NA))+
-
-  # vline at 2010
-  geom_vline(xintercept = 2010, colour="darkgray", linewidth=1) +
-  
-  # iters
-  geom_line(data=iters,
-            aes(y=data, group=iter),
-            linewidth=0.4, colour="darkgray") +
-  
-  # median and ribbon
-  geom_line(aes(y=median),
-            linewidth=1, colour="red") +
-  geom_ribbon(aes(xmin=year, xmax=year, ymin=lowq, ymax=uppq),
-              alpha=0.2, fill="red") +
-  
-  # ICES
-  geom_line(data= ices,
-            aes(year,median),
-            col="blue", linewidth=1, linetype=2, inherit.aes=FALSE) +
-  
-  # refpoints
-  geom_line(data=rp,
-            aes(x=year, y=data, group=reftype, col=reftype, linetype=reftype),
-            linewidth=1) +
-  scale_linetype_manual(values = c("longdash","dashed"), breaks = c("lim", "msy") ) +
-  scale_colour_manual  (values = c("black","darkgray"), breaks = c("lim", "msy") ) +
-  
-  expand_limits(y=0) +
-  facet_grid(qname ~ .id, scales="free_y")
-
-
-
-```
-
-**Figure `r mystk`.2**  `r mystkname`. Comparison of different HCR’s without TAC bounds
+_`r fig_nums("cond_mat")`_
 
 \newpage
 
-#### `r mystkname`: comparing different HCR’s with and without TAC bounds
 
-Fmsy
-HCR0 (no bounds)
-HCR1 bnd (-25%/+20% TAC change bounds apply when stock is above MSY Btrigger)
-HCR2 bnd (-25%/+20% TAC change bounds apply when stock is above Blim)
+**Natural mortality at age (fixed)**
 
-```{r, runWhb2, echo=FALSE, fig.asp=1.15, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+[text here]
 
-myvar     <- c("catch","cCum", "ssb","fbar")
-scenarios <- c("Fmsy", "HCR1",  "HCR1 bnd", "HCR2 bnd")
-rp        <- refs %>% 
-  filter(stk == mystk, refpoint %in% c("fmsy", "blim", "msybtrigger")) %>% 
-    mutate(qname = factor(qname, levels=myvar))
-ices      <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% "ICES",  year %in% 2000:2021) %>% 
-  dplyr::select(- .id) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-df        <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-iters        <- combYI %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021, iter <= 5) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  group_by(stk, .id, iter) %>% 
-  mutate(perc_diff = (data-lag(data))/lag(data)) 
-  
-df %>% 
-  ggplot(aes(x=year, y=median)) +
-  theme_bw() +
-  theme(panel.grid.minor = element_blank(),  
-        panel.border     = element_rect(linetype = 1, colour="black", fill=NA))+
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
-  # vline at 2010
-  geom_vline(xintercept = 2010, colour="darkgray", linewidth=1) +
-  
-  # iters
-  geom_line(data=iters,
-            aes(y=data, group=iter),
-            linewidth=0.4, colour="darkgray") +
-  
-  # median and ribbon
-  geom_line(aes(y=median), 
-            linewidth=1, colour="red") +
-  geom_ribbon(aes(xmin=year, xmax=year, ymin=lowq, ymax=uppq), 
-              alpha=0.2, fill="red") +
-  
-  # ICES
-  geom_line(data= ices, aes(year,median), 
-            col="blue", linewidth=1, linetype=2, inherit.aes=FALSE) +
-  
-  # refpoints
-  geom_line(data=rp, 
-            aes(x=year, y=data, group=reftype, col=reftype, linetype=reftype),
-            linewidth=1) +
-  scale_linetype_manual(values = c("longdash","dashed"), breaks = c("lim", "msy") ) +
-  scale_colour_manual  (values = c("black","darkgray"), breaks = c("lim", "msy") ) +
-  
-  expand_limits(y=0) +
-  facet_grid(qname ~ .id, scales="free_y")
+fig_nums(
+  name    = "cond_natmor", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". Natural mortality at age by year and cohort (all ages and years the same M)"))
 
-
+knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "m.jpg", sep="_")))
 
 ```
 
-**Figure `r mystk`.3**  `r mystkname`. Comparison of different HCR’s with and without TAC bounds
+_`r fig_nums("cond_natmor")`_
 
 \newpage
 
-#### `r mystkname`: comparing HCR’s with and without a cap on TAC bounds
 
-HCR1 bnd
-HCR1 bnd cap
-HCR2 bnd
-HCR2 bnd cap
+**Density dependence in Weight at age vs. Total biomass**
 
-```{r, runWhb3, echo=FALSE, fig.asp=1.15, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+[text here]
 
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
-myvar     <- c("catch","cCum", "ssb","fbar")
-scenarios <- c("HCR1 bnd", "HCR1 bnd cap", "HCR2 bnd", "HCR2 bnd cap")
-rp        <- refs %>% 
-  filter(stk == mystk, refpoint %in% c("fmsy", "blim", "msybtrigger")) %>% 
-    mutate(qname = factor(qname, levels=myvar))
-ices      <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% "ICES",  year %in% 2000:2021) %>% 
-  dplyr::select(- .id) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-df        <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-iters        <- combYI %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021, iter <= 5) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  group_by(stk, .id, iter) %>% 
-  mutate(perc_diff = (data-lag(data))/lag(data)) 
-  
-df %>% 
-  ggplot(aes(x=year, y=median)) +
-  theme_bw() +
-  theme(panel.grid.minor = element_blank(),  
-        panel.border     = element_rect(linetype = 1, colour="black", fill=NA))+
+fig_nums(
+  name    = "cond_ddwaa", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". Density dependence and weight at age."))
 
-  # vline at 2010
-  geom_vline(xintercept = 2010, colour="darkgray", linewidth=1) +
-
-  # iters
-  geom_line(data=iters,
-            aes(y=data, group=iter),
-            linewidth=0.4, colour="darkgray") +
-  
-  # median and ribbon
-  geom_line(aes(y=median), 
-            linewidth=1, colour="red") +
-  geom_ribbon(aes(xmin=year, xmax=year, ymin=lowq, ymax=uppq), 
-              alpha=0.2, fill="red") +
-  # ICES
-  geom_line(data= ices, aes(year,median), 
-            col="blue", linewidth=1, linetype=2, inherit.aes=FALSE) +
-  
-  # refpoints
-  geom_line(data=rp, 
-            aes(x=year, y=data, group=reftype, col=reftype, linetype=reftype),
-            linewidth=1) +
-  scale_linetype_manual(values = c("longdash","dashed"), breaks = c("lim", "msy") ) +
-  scale_colour_manual  (values = c("black","darkgray"), breaks = c("lim", "msy") ) +
-  
-  expand_limits(y=0) +
-  facet_grid(qname ~ .id, scales="free_y")
+knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "dd_waa.jpg", sep="_")))
 
 ```
 
-**Figure `r mystk`.4**  `r mystkname`. Comparison of different HCR’s with and without a cap on TAC bounds
+_`r fig_nums("cond_ddwaa")`_
 
 \newpage
 
-#### `r mystkname`: comparing HCR’s with and without implementation error (without bounds on TAC change)
+**GAMM at age**
 
-HCR0
-HCR1 10%
-HCR1 20%
-HCR1 30%
-HCR1 10% recent
-HCR1 10% random recent
+[text here]
 
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
-```{r, runWhb4, echo=FALSE, fig.asp=1.15, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+fig_nums(
+  name    = "cond_gammwaa", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". GAMM analysis of density dependence and weight at age."))
 
-
-myvar     <- c("catch","cCum", "ssb","fbar")
-scenarios <- c("HCR1", "HCR1 +10%", "HCR1 +20%", "HCR1 +30%", "HCR1 +10% recent", 
-               "HCR1 +random recent")
-rp        <- refs %>% 
-  filter(stk == mystk, refpoint %in% c("fmsy", "blim", "msybtrigger")) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-ices      <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% "ICES",  year %in% 2000:2021) %>% 
-  dplyr::select(- .id) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-df        <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-iters        <- combYI %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021, iter <= 5) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  group_by(stk, .id, iter) %>% 
-  mutate(perc_diff = (data-lag(data))/lag(data)) 
-  
-df %>% 
-  ggplot(aes(x=year, y=median)) +
-  theme_bw() +
-  theme(panel.grid.minor = element_blank(),  
-        panel.border     = element_rect(linetype = 1, colour="black", fill=NA))+
-  
-  # vline at 2010
-  geom_vline(xintercept = 2010, colour="darkgray", linewidth=1) +
-
-  # iters
-  geom_line(data=iters,
-            aes(y=data, group=iter),
-            linewidth=0.4, colour="darkgray") +
-  
-  # median and ribbon
-  geom_line(aes(y=median), 
-            linewidth=1, colour="red") +
-  geom_ribbon(aes(xmin=year, xmax=year, ymin=lowq, ymax=uppq), 
-              alpha=0.2, fill="red") +
-  
-  # ICES
-  geom_line(data= ices, aes(year,median), 
-            col="blue", linewidth=1, linetype=2, inherit.aes=FALSE) +
-  
-  # refpoints
-  geom_line(data=rp, 
-            aes(x=year, y=data, group=reftype, col=reftype, linetype=reftype),
-            linewidth=1) +
-  scale_linetype_manual(values = c("longdash","dashed"), breaks = c("lim", "msy") ) +
-  scale_colour_manual  (values = c("black","darkgray"), breaks = c("lim", "msy") ) +
-  
-  expand_limits(y=0) +
-  facet_grid(qname ~ .id, scales="free_y")
+knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "gamm.jpg", sep="_")))
 
 ```
 
-**Figure `r mystk`.5**  `r mystkname`. Comparison of different HCR’s with and without implementation error (without bounds on TAC change)
+_`r fig_nums("cond_gammwaa")`_
 
 \newpage
 
-#### `r mystkname`: comparing HCR’s with and without implementation error in combination with bounds on TAC change
+**GAMM summary**
 
-HCR1 bnd
-HCR1 10% bnd
-HCR1 10% recent bnd
-HCR1 10% random bnd
-HCR1 10% random recent bnd
+[text here]
 
-```{r, runWhb5, echo=FALSE, fig.asp=1.15, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
+tab_nums(
+  name    = "cond_gammsummary", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". GAMM summary of density dependence and weight at age."))
 
-myvar     <- c("catch","cCum", "ssb","fbar")
-scenarios <- c("HCR1 bnd", 
-               "HCR1 +10% bnd",
-               "HCR1 +10% bnd recent",
-               "HCR1 +random bnd", 
-               "HCR1 +random bnd recent")
-rp        <- refs %>% 
-  filter(stk == mystk, refpoint %in% c("fmsy", "blim", "msybtrigger")) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-ices      <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% "ICES",  year %in% 2000:2021) %>% 
-  dplyr::select(- .id) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-df        <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-iters        <- combYI %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021, iter <= 5) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  group_by(stk, .id, iter) %>% 
-  mutate(perc_diff = (data-lag(data))/lag(data)) 
-  
-df %>% 
-  ggplot(aes(x=year, y=median)) +
-  theme_bw() +
-  theme(panel.grid.minor = element_blank(),  
-        panel.border     = element_rect(linetype = 1, colour="black", fill=NA))+
-  
-  # vline at 2010
-  geom_vline(xintercept = 2010, colour="darkgray", linewidth=1) +
-
-  # iters
-  geom_line(data=iters,
-            aes(y=data, group=iter),
-            linewidth=0.4, colour="darkgray") +
-  
-  # median and ribbon
-  geom_line(aes(y=median), 
-            linewidth=1, colour="red") +
-  geom_ribbon(aes(xmin=year, xmax=year, ymin=lowq, ymax=uppq), 
-              alpha=0.2, fill="red") +
-  
-  # ICES
-  geom_line(data= ices, aes(year,median), 
-            col="blue", linewidth=1, linetype=2, inherit.aes=FALSE) +
-  
-  # refpoints
-  geom_line(data=rp, 
-            aes(x=year, y=data, group=reftype, col=reftype, linetype=reftype),
-            linewidth=1) +
-  scale_linetype_manual(values = c("longdash","dashed"), breaks = c("lim", "msy") ) +
-  scale_colour_manual  (values = c("black","darkgray"), breaks = c("lim", "msy") ) +
-  
-  expand_limits(y=0) +
-  facet_grid(qname ~ .id, scales="free_y")
+cat(readLines(file.path(tablesdir, paste(mystk, "gamm summary.txt", sep="_"))), sep = '\n')
 
 ```
 
-**Figure `r mystk`.6**  `r mystkname`. Comparison of different HCR’s with and without implementation error in combination with bounds on TAC change
+_`r tab_nums("cond_gammsummary")`_
 
 \newpage
 
-#### `r mystkname`: checking the working of different constraints
+**GAMM summary**
 
-```{r, whbcheck, echo=FALSE, fig.asp=.5, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+[text here]
 
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
-myvar     <- c("ssb")
-# scenarios <- c("ICES", "HCR1 bnd", "HCR1 +10%", "HCR1 +10% bnd", "HCR1 +10% bnd cap")
-scenarios <- c("HCR1", "HCR1 bnd", "HCR2", "HCR2 bnd")
-#scenarios <- c("ICES", "HCR1 bnd", "HCR1 +10% bnd", "HCR1 +20% bnd", "HCR1 +30% bnd")
-rp        <- refs %>% filter(stk == mystk, refpoint %in% c("msybtrigger", "blim"))
-ices      <- combY %>% filter(stk == mystk, qname %in% c(myvar),  .id %in% "ICES",  year %in% 2000:2021) %>% dplyr::select(- .id)
-df        <- combY %>% filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  left_join(dplyr::select(rp,
-                          stk, year, qname, refpoint, reftype, rp=data), 
-            by=c("stk", "year", "qname")) %>% 
-  mutate(trigger = ifelse(median >= rp, "above","below"))
-iters        <- combYI %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021, iter <= 10) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  left_join(dplyr::select(rp,
-                          stk, year, qname, refpoint, reftype, rp=data), 
-            by=c("stk", "year", "qname")) %>% 
-  mutate(trigger = ifelse(data >= rp, "above","below"))
-df %>% 
-  ggplot(aes(x=year, y=median)) +
-  theme_bw() +
-  theme(panel.grid.minor = element_blank(),  
-        panel.border     = element_rect(linetype = 1, colour="black", fill=NA))+
-  geom_line(data=iters,
-            aes(y=data, group=iter),
-            linewidth=0.4, colour="darkgray") +
-  geom_point(data=filter(iters,
-                         trigger=="above"),
-            aes(y=data, group=iter),
-            size=1.0, colour="black") +
-  
-  geom_line(linewidth=1, colour="red") +
-  geom_point(data=filter(df,
-                        trigger=="above"),
-            colour="red", size=2) +
-    # refpoints
-  geom_line(data=rp, 
-            aes(x=year, y=data, group=reftype, col=reftype, linetype=reftype),
-            linewidth=1) +
-  scale_linetype_manual(values = c("longdash","dashed"), breaks = c("lim", "msy") ) +
-  scale_colour_manual  (values = c("black","darkgray"), breaks = c("lim", "msy") ) +
-  labs(y="ssb (tonnes)") +
-  expand_limits(y=0) +
-  facet_grid(qname ~ .id, scales="free_y")
+tab_nums(
+  name    = "cond_gammcoefficients", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". GAMM coefficients of density dependence and weight at age."))
 
-
-
-myvar     <- c("catch")
-# scenarios <- c("ICES", "HCR1 bnd", "HCR1 +10%", "HCR1 +10% bnd", "HCR1 +10% bnd cap")
-# scenarios <- c("ICES", "HCR1 bnd", "HCR1 +10% bnd", "HCR1 +20% bnd", "HCR1 +30% bnd")
-rp        <- refs %>% 
-  filter(stk == mystk, refpoint %in% c("fmsy", "blim", "msybtrigger")) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-ices      <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% "ICES",  year %in% 2000:2021) %>% 
-  dplyr::select(- .id) %>% 
-  mutate(qname = factor(qname, levels=myvar))
-df        <- combY %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  mutate(qname = factor(qname, levels=myvar)) %>% 
-  group_by(stk, .id) %>% 
-  mutate(perc_diff = (median-lag(median))/lag(median)) 
-
-iters        <- combYI %>% 
-  filter(stk == mystk, qname %in% c(myvar),  .id %in% scenarios, year %in% 2000:2021, iter <= 5) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  group_by(stk, .id, iter) %>% 
-  mutate(perc_diff = (data-lag(data))/lag(data)) 
-  
-df %>% 
-  ggplot(aes(x=year, y=perc_diff)) +
-  theme_bw() +
-  theme(panel.grid.minor = element_blank(),  
-        panel.border     = element_rect(linetype = 1, colour="black", fill=NA))+
-
-  geom_line(data=iters,
-            aes(x=year, y=perc_diff, group=iter),
-            linewidth=.4, colour="darkgray", inherit.aes = FALSE) +
-  
-  geom_line(linewidth=1, colour="red") +
-  
-  geom_hline(yintercept = 0.25, colour="black", linewidth=1, linetype=2) +
-  geom_hline(yintercept = -0.2, colour="black", linewidth=1, linetype=2) +
-  expand_limits(y=0) +
-  scale_y_continuous(labels=scales::percent, limits=c(-2,2)) +
-  facet_grid(qname ~ .id, scales="free_y")
-
-
-
-
+cat(readLines(file.path(tablesdir, paste(mystk, "gamm coefficients.txt", sep="_"))), sep = '\n')
 
 ```
 
-**Figure `r mystk`.6**  `r mystkname`. Comparison of the working of constraints on TAC change relative to stock size and reference point MSY Btrigger. Black dots indicate estimated stock size on individual runs above MSY Btrigger (i.e. TAC contstraint applies). Red dots indicate median stock size above MSY Btrigger. 
+_`r tab_nums("cond_gammcoefficients")`_
 
 \newpage
 
-#### `r mystkname`: comparing all scenario's on median catch, IAV and AAV
 
-```{r, whbsmry, echo=FALSE, fig.asp=1.2, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+**LM of density dependence in weight at age**
 
+[text here]
 
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
-myvar     <- c("catch.50", "iav.50", "aav")
-scenarios <- c("ICES","Fmsy","HCR1","HCR1 bnd","HCR1 bnd cap", "HCR1 +10% bnd","HCR1 +10% bnd cap",
-               "HCR1 +10% bnd recent","HCR1 +random bnd",",HCR1 +random bnd recent","HCR1 +10%",
-               "HCR1 +10% recent","HCR1 +random","HCR1 +random recent","HCR1 +20% bnd", 
-               "HCR1 +20% bnd cap","HCR1 +20% bnd recent","HCR1 +20%","HCR1 +20% recent",
-               "HCR1 +30% bnd","HCR1 +30% bnd cap","HCR1 +30% bnd recent","HCR1 +30%",
-               "HCR1 +30% recent",
-               "HCR2","HCR2 bnd","HCR2 bnd cap","HCR2 +10% bnd","HCR2 +10% bnd cap",
-               "HCR2 +10% bnd recent","HCR2 +random bnd","HCR2 +random bnd recent","HCR2 +10%",
-               "HCR2 +10% recent","HCR2 +random","HCR2 +random recent","HCR2 +20% bnd",
-               "HCR2 +20% bnd cap","HCR2 +20% bnd recent","HCR2 +20%","HCR2 +20% recent",
-               "HCR2 +30% bnd","HCR2 +30% bnd cap","HCR2 +30% bnd recent","HCR2 +30%",
-               "HCR2 +30% recent")
+fig_nums(
+  name    = "cond_lmwaa", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". LM analysis of density dependence and weight at age."))
 
-df        <- combI %>% 
-  tidyr::pivot_longer(names_to = "variable", values_to = "data", myvar) %>% 
-  filter(stk == mystk,  .id %in% scenarios) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  mutate(variable = factor(variable, levels=myvar))
-
-calc_boxplot_stat <- function(x) {
-  coef <- 1.5
-  n <- sum(!is.na(x))
-  # calculate quantiles
-  stats <- quantile(x, probs = c(0.0, 0.25, 0.5, 0.75, 1.0))
-  names(stats) <- c("ymin", "lower", "middle", "upper", "ymax")
-  iqr <- diff(stats[c(2, 4)])
-  # set whiskers
-  outliers <- x < (stats[2] - coef * iqr) | x > (stats[4] + coef * iqr)
-  if (any(outliers)) {
-    stats[c(1, 5)] <- range(c(stats[2:4], x[!outliers]), na.rm = TRUE)
-  }
-  return(stats)
-}
-
-df %>% 
-  ggplot(aes(x=.id, y=data)) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  stat_summary(fun.data = calc_boxplot_stat, geom="boxplot") +
-  expand_limits(y=0) +
-  # scale_y_continuous(limits = quantile(t$data, c(0.1, 0.9))) +
-  labs(x="", y="") +
-  facet_grid(variable~., scales="free", space="free_x")
+knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "lm_waa.jpg", sep="_")))
 
 ```
 
-**Figure `r mystk`.7**  `r mystkname`. Comparison of all scenario's on median catch, median IAV (Interannual variability in catch) and AAV (Average Annual Variability in catch)
+_`r fig_nums("cond_lmwaa")`_
 
-```{r smry2, eval=FALSE, fig.align="center", fig.asp=1.2, message=FALSE, warning=FALSE, cache=FALSE, include=FALSE, whbsmry, echo=FALSE}
+\newpage
 
-mystk     <- c("whb","her","mac")
-myvar     <- c("catch.50", "iav.50", "aav")
-scenarios <- c("ICES","Fmsy","HCR1","HCR1 bnd","HCR1 bnd cap", "HCR1 +10% bnd","HCR1 +10% bnd cap",
-               "HCR1 +10% bnd recent","HCR1 +random bnd",",HCR1 +random bnd recent","HCR1 +10%",
-               "HCR1 +10% recent","HCR1 +random","HCR1 +random recent","HCR1 +20% bnd", 
-               "HCR1 +20% bnd cap","HCR1 +20% bnd recent","HCR1 +20%","HCR1 +20% recent",
-               "HCR1 +30% bnd","HCR1 +30% bnd cap","HCR1 +30% bnd recent","HCR1 +30%",
-               "HCR1 +30% recent",
-               "HCR2","HCR2 bnd","HCR2 bnd cap","HCR2 +10% bnd","HCR2 +10% bnd cap",
-               "HCR2 +10% bnd recent","HCR2 +random bnd","HCR2 +random bnd recent","HCR2 +10%",
-               "HCR2 +10% recent","HCR2 +random","HCR2 +random recent","HCR2 +20% bnd",
-               "HCR2 +20% bnd cap","HCR2 +20% bnd recent","HCR2 +20%","HCR2 +20% recent",
-               "HCR2 +30% bnd","HCR2 +30% bnd cap","HCR2 +30% bnd recent","HCR2 +30%",
-               "HCR2 +30% recent")
+**LM summary**
 
-df        <- combI %>% 
-  tidyr::pivot_longer(names_to = "variable", values_to = "data", myvar) %>% 
-  filter(stk %in% mystk,  .id %in% scenarios) %>% 
-  mutate(.id = factor(.id, levels=scenarios)) %>% 
-  mutate(variable = factor(variable, levels=myvar)) %>% 
-  mutate(stk = factor(stk, levels=mystk))
+[text here]
 
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
-calc_boxplot_stat <- function(x) {
-  coef <- 1.5
-  n <- sum(!is.na(x))
-  # calculate quantiles
-  stats <- quantile(x, probs = c(0.0, 0.25, 0.5, 0.75, 1.0))
-  names(stats) <- c("ymin", "lower", "middle", "upper", "ymax")
-  iqr <- diff(stats[c(2, 4)])
-  # set whiskers
-  outliers <- x < (stats[2] - coef * iqr) | x > (stats[4] + coef * iqr)
-  if (any(outliers)) {
-    stats[c(1, 5)] <- range(c(stats[2:4], x[!outliers]), na.rm = TRUE)
-  }
-  return(stats)
-}
+tab_nums(
+  name    = "cond_lmsummary", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". LM summary of density dependence and weight at age."))
 
-df %>% 
-  ggplot(aes(x=.id, y=data)) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  stat_summary(fun.data = calc_boxplot_stat, geom="boxplot") +
-  expand_limits(y=0) +
-  # scale_y_continuous(limits = quantile(t$data, c(0.1, 0.9))) +
-  labs(x="", y="") +
-  facet_grid(variable~stk, scales="free", space="free_x")
+cat(readLines(file.path(tablesdir, paste(mystk, "lm summary.txt", sep="_"))), sep = '\n')
 
 ```
+
+_`r tab_nums("cond_gammcoefficients")`_
+
+\newpage
+
+**DD analysis of maturity at age**
+
+[text here]
+
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "cond_ddmat", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". Analysis of density dependence and maturity at age."))
+
+knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "dd_mat.jpg", sep="_")))
+
+```
+
+_`r fig_nums("cond_ddmat")`_
+
+\newpage
+
+**Estimated maturity at weight**
+
+$f(x) = \frac{1}{1+e^{-k(x-x_0)}}$
+
+Estimated parameters: k=`r matPar$par[1]` $W_{50}$=`r matPar$par[2]`
+
+```{r, echo=FALSE, fig.width=10, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "cond_matogive", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". Estimated maturity ogive at weight"))
+
+knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "mat_ogive.jpg", sep="_")))
+
+```
+
+_`r fig_nums("cond_matogive")` _
+
+ 
+<!-- =============================================================================================================== -->
+<!-- Section 3: Estimating Density Dependent effects based on equilibrium analyses                                   -->
+<!-- =============================================================================================================== -->
+
+# Estimating Density Dependent effects based on equilibrium analyses
+
+
+Life history parameters are used to develop an example of modelling density dependence for mass, maturity and natural mortality-at-age. The parameters are first used to construct An `FLBRP` object representing the equilibrium, and are then coerced into an `FLStock` to model the time series dynamics.
+
+## Mass-at-age [SHOULD WE CALL IT WEIGHT AT AGE, SINCE WE ARE USING Wa? ]
+
+Mass-at-age ($W_a$) is modelled as
+
+$W_a = {\overline{W_a}} B^{{\beta}_a}$
+
+Where $\overline{W_a}$ and $\beta$ are estimated from a regression of mass-at-age ($W_a$) on total biomass ($B_a$), based on empirical data. $W_a$ is constrained so sizes do not become unfeasible large or small.
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "sim_dd_mass", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in mass-at-age for different levels of biomass relative to Bmsy")
+
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_sim_dd_mass.jpg")))
+
+```
+
+_`r fig_nums("sim_dd_mass")`_
+
+## Maturity-at-weight
+
+Maturity is then  modelled as a logistic function of mass-at-age i.e.
+
+$O(W_a) = 1/(1+e^{k(W_a-W_{50})})$
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "sim_dd_mat", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in maturity-at-age for different levels of biomass relative to Bmsy")
+
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_sim_dd_maturity.jpg")))
+
+```
+
+_`r fig_nums("sim_dd_mat")`_
+
+
+## Natural mortality
+
+Is assumed to vary at unit length ($L_1$) e.g.
+
+$ln(M_1) =\alpha + \beta ln(L_{\infty}) + \gamma ln(k)$
+
+where $\alpha=0.65$, $\beta=0.91$, $\gamma=0.87$
+
+Length-at-age ($L_a$) can be obtained from the length-weight relationship
+
+$L_a=(W/a)^{1/b}$
+
+giving
+
+$ln(M_1) =(W/a)^{1/b}(\alpha + \beta ln(L_{\infty}) + \gamma ln(k))$
+
+For DD there is a relationship between Mass at age $M_a$ and total biomass ($B$)
+
+Mackerel:
+
+$M = 0.0232B + 0.0524$
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "sim_dd_m", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in M-at-age for different levels of biomass relative to Bmsy")
+
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_sim_dd_m.jpg")))
+
+```
+
+_`r fig_nums("sim_dd_m")`_
+
+Comparison of equilibrium yield plots for simulation with and without density-dependent processes
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "sim_yield", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in M-at-age for different levels of biomass relative to Bmsy")
+
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_eq_yield.jpg")))
+
+```
+
+_`r fig_nums("sim_dd_m")`_
+
+
+
+<!-- =============================================================================================================== -->
+<!-- Section 4: Setting up the Operating Models (OM)                                                                 -->
+<!-- =============================================================================================================== -->
+
+# Setting up the Operating Models (OM)
+
+**Stock assessments**
+
+Stock assessments with SAM (non-DD), density-dependent SAM, VPA based on SAM (non-DD) and density-dependent VPA. The VPA reconstructions of the SAM assessment, shows a strongly divergent pattern in recruitment and also some differences in the trend of SSB. Mean fishing mortality is somewhat more variable in the VPA reconstruction compared to the SAM assessment. Density-dependent processes (on weight, maturity and M) tend to lead to lower SSB in the latter part of the time series. 
+
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "om_assessments", level = 1, display = FALSE,
+  caption = "Comparison of different assessments. VPA-M is used going forward")
+
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_comparing_assessments.jpg")))
+
+```
+
+_`r fig_nums("om_VPADDM")`_
+
+\newpage
+
+**Density dependence in mass-at-age**
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "om_VPADDM", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in Mass-at-age")
+
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_VPADDM_4panels.jpg")))
+
+```
+
+_`r fig_nums("om_VPADDM")`_
+
+\newpage
+
+**Density dependence in mass-at-age and maturity at age**
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "om_VPADDMM", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in Mass-at-age and Maturity at age")
+
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_VPADDMM_4panels.jpg")))
+
+```
+
+_`r fig_nums("om_VPADDMM")`_
+
+\newpage
+
+**Density dependence in mass-at-age, maturity at age and M at age**
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "om_VPADDMMM", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in Mass-at-age, maturity at age and M at age")
+
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_VPADDMMM_4panels.jpg")))
+
+```
+
+_`r fig_nums("om_VPADDMMM")`_
+
+\newpage
+
+**Comparison of equilibrium curves for density dependence analyses: biomass against yield**
+
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "om_eqyield", level = 1, display = FALSE,
+  caption = "Equilibrium curves for density dependence analyses: biomass against yield")
+
+knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_comparing_dd.jpg")))
+
+```
+
+_`r fig_nums("om_eqyield")`_
+
+\newpage
+
+
+
+<!-- =============================================================================================================== -->
+<!-- Section 5: Running forward projections                                                                          -->
+<!-- =============================================================================================================== -->
+
+# Forward projections without feedback
+
+```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+
+```
+
+
+<!-- =============================================================================================================== -->
+<!-- Section 6: Discussion and conclusions                                                                           -->
+<!-- =============================================================================================================== -->
+
+# Discussion and conclusions
+
+The quality shall live up to that demanded by the International Council for the Exploration of the Sea (ICES) and potentially be used in ICES advice to fisheries managers. The Consultant shall be interacting with the leadership of the project Henrik Sparholt, or his representative, in the process of developing the software. The software shall be made publicly available via Github or on alternative platform if so directed by Henrik Sparholt or his representative.
+
+<!-- =============================================================================================================== -->
+<!-- Funding                                                                                                         -->
+<!-- =============================================================================================================== -->
+
+# Funding
+
+
+
+
+<!-- =============================================================================================================== -->
+<!-- References                                                                                                      -->
+<!-- =============================================================================================================== -->
+
+# References
+
+
+
+
+
+<!-- =============================================================================================================== -->
+<!-- Annex 1: OM conditioning                                                                           -->
+<!-- =============================================================================================================== -->
+
+# Annex 1: OM conditioning
+
+
+
+<!-- =============================================================================================================== -->
+<!-- Annex 2: Density dependent processes                                                                           -->
+<!-- =============================================================================================================== -->
+
+# Annex 2: Density dependent processes
+
+
+

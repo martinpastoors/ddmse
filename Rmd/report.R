@@ -70,13 +70,13 @@ myparams <- data.frame(
   minage  = c(0                            , 1                ),
   maxage  = c(12                           , 10               ),
   maxyear = c(2050                         , 2050             ),
-  m1scaler= c(8                            , 8                ),
-  w50scaler= c(1000                        , 1000             ),
-  matk2   = c(30                           , 30               ) )
+  m1scaler= c(8                            , 10               ),
+  w50scaler= c(1000                        , 500              ),
+  matk2   = c(30                           , 100               ) )
 
 save(myparams, file=file.path(dropboxdir, "data", "inputs", "myparams.RData"))
 
-mystk     <- "mac";  
+mystk     <- "whb";  
 # mystk     <- "whb";  
 # for (mystk in c("mac","whb")) {
   
