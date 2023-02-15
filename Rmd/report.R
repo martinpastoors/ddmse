@@ -1,4 +1,4 @@
- # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # report.R
 #
 # Generating DDMSE results to be included into Rmd files
@@ -65,7 +65,7 @@ myparams <- data.frame(
   bmsy    = c(3500000                      , 4000000          ), # guesstimates
   alpha   = c(-0.2                         , -0.2             ),
   delta   = c(-0.2                         , -0.2             ),
-  matk    = c(30                           , 0.1              ), # source: conditioning
+  matk    = c(0.2                           , 0.1              ), # source: conditioning
   wt1     = c(0.01                         , NA               ), # for resetting weight at age 1
   minage  = c(0                            , 1                ),
   maxage  = c(12                           , 10               ),
@@ -151,10 +151,10 @@ mystk     <- "mac";
     # guides(colour = guide_legend(nrow = 1)) +
     scale_color_manual("Age",values=rainbow(length(unique(wt$age))))
   
-  ggsave(p, 
-         filename=file.path(figuresdir, paste(mystk, "waa.jpg", sep="_")), 
-         device="jpeg", 
-         width=10, height=6, units="in")
+  jpeg(filename=file.path(figuresdir, paste(mystk, "waa.jpg", sep="_")),
+       width=10, height=6, units="in", res=300)
+  print(p) 
+  dev.off()
 
   # plot maturity at age -------------------------------------------------------
   p <-
@@ -170,12 +170,13 @@ mystk     <- "mac";
     # guides(colour = guide_legend(nrow = 1)) +
     scale_color_manual("Age",values=rainbow(length(unique(mat$age))))
   
-  ggsave(p, 
-         filename=file.path(figuresdir, paste(mystk, "mat.jpg", sep="_")), 
-         device="jpeg", 
-         width=10, height=6, units="in")
 
-
+  jpeg(filename=file.path(figuresdir, paste(mystk, "mat.jpg", sep="_")),
+       width=10, height=6, units="in", res=300)
+  print(p) 
+  dev.off()
+  
+  
   # plot m at age --------------------------------------------------------------
   p <-
     ggplot(m)+  
@@ -190,10 +191,15 @@ mystk     <- "mac";
     # guides(colour = guide_legend(nrow = 1)) +
     scale_color_manual("Age",values=rainbow(length(unique(m$age))))
   
-  ggsave(p, 
-         filename=file.path(figuresdir, paste(mystk, "m.jpg", sep="_")), 
-         device="jpeg", 
-         width=10, height=6, units="in")
+  jpeg(filename=file.path(figuresdir, paste(mystk, "m.jpg", sep="_")),
+       width=10, height=6, units="in", res=300)
+  print(p) 
+  dev.off()
+  
+  # ggsave(p, 
+  #        filename=file.path(figuresdir, paste(mystk, "m.jpg", sep="_")), 
+  #        device="jpeg", 
+  #        width=10, height=6, units="in")
   
   # Density dependence in weights at age ---------------------------------------
   
@@ -213,10 +219,16 @@ mystk     <- "mac";
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
           axis.title.y = element_blank())
-  ggsave(p, 
-         filename=file.path(figuresdir, paste(mystk, "dd_waa.jpg", sep="_")), 
-         device="jpeg", 
-         width=10, height=8, units="in")
+
+  # ggsave(p, 
+  #        filename=file.path(figuresdir, paste(mystk, "dd_waa.jpg", sep="_")), 
+  #        device="jpeg", 
+  #        width=10, height=8, units="in")
+  
+  jpeg(filename=file.path(figuresdir, paste(mystk, "dd_waa.jpg", sep="_")),
+       width=10, height=8, units="in", res=300)
+  print(p) 
+  dev.off()
   
   
   # GAM model and diagnostics of weight vs Total biomass -----------------------
@@ -258,10 +270,15 @@ mystk     <- "mac";
     geom_point(aes(tb,data/mean,col=age))+
     xlab("Total biomass")+ylab("Mass-Mean")
   
-  ggsave(p, 
-         filename=file.path(figuresdir, paste(mystk, "lm_waa.jpg", sep="_")), 
-         device="jpeg", 
-         width=10, height=8, units="in")
+  jpeg(filename=file.path(figuresdir, paste(mystk, "lm_waa.jpg", sep="_")),
+       width=10, height=8, units="in", res=300)
+  print(p) 
+  dev.off()
+  
+  # ggsave(p, 
+  #        filename=file.path(figuresdir, paste(mystk, "lm_waa.jpg", sep="_")), 
+  #        device="jpeg", 
+  #        width=10, height=8, units="in")
   
   # Linear model summary  
   fileConn <-file(file.path(tablesdir, paste(mystk, "lm summary.txt", sep="_")))
@@ -286,7 +303,12 @@ mystk     <- "mac";
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
           axis.title.y = element_blank())
-
+  
+  jpeg(filename=file.path(figuresdir, paste(mystk, "dd_mat.jpg", sep="_")),
+       width=10, height=8, units="in", res=300)
+  print(p) 
+  dev.off()
+  
   # Estimating maturity ogive --------------------------------------------------
   
   matFn <-function(wt,x) 1/(1+exp(-x[1]*(wt-x[2])))
@@ -308,10 +330,15 @@ mystk     <- "mac";
   # print(paste("k=", matPar$par[1]))
   # print(paste("W50=", matPar$par[2]))
 
-  ggsave(p, 
-         filename=file.path(figuresdir, paste(mystk, "mat_ogive.jpg", sep="_")), 
-         device="jpeg", 
-         width=10, height=8, units="in")
+  jpeg(filename=file.path(figuresdir, paste(mystk, "mat_ogive.jpg", sep="_")),
+       width=10, height=8, units="in", res=300)
+  print(p) 
+  dev.off()
+  
+  # ggsave(p, 
+  #        filename=file.path(figuresdir, paste(mystk, "mat_ogive.jpg", sep="_")), 
+  #        device="jpeg", 
+  #        width=10, height=8, units="in")
 
 
   # COND = OK
@@ -340,10 +367,15 @@ mystk     <- "mac";
            theme_bw() +
            labs(title=paste("FLBRP object"))
   
-  ggsave(p, 
-         filename=file.path(figuresdir, paste(mystk, "brp.jpg", sep="_")), 
-         device="jpeg", 
-         width=10, height=8, units="in")
+  # ggsave(p, 
+  #        filename=file.path(figuresdir, paste(mystk, "brp.jpg", sep="_")), 
+  #        device="jpeg", 
+  #        width=10, height=8, units="in")
+  
+  jpeg(filename=file.path(figuresdir, paste(mystk, "brp.jpg", sep="_")),
+       width=10, height=8, units="in", res=300)
+  print(p) 
+  dev.off()
   
   # convert to FLStock and project
   om=as(eq,"FLStock")
@@ -381,10 +413,15 @@ mystk     <- "mac";
            geom_line(aes(age,data),data=as.data.frame(stock.wt(eq)),col="red",size=2)+
            labs(x="Age", y="Mass-at-age", colour="Biomass/Bmsy") 
   
-  ggsave(p, 
-         filename=file.path(figuresdir, paste(mystk, "sim_dd_mass.jpg", sep="_")), 
-         device="jpeg", 
-         width=10, height=10, units="in")
+  # ggsave(p, 
+  #        filename=file.path(figuresdir, paste(mystk, "sim_dd_mass.jpg", sep="_")), 
+  #        device="jpeg", 
+  #        width=10, height=10, units="in")
+  
+  jpeg(filename=file.path(figuresdir, paste(mystk, "sim_dd_mass.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
   
   # Simulation of density dependence in maturity-at-age ------------------------ 
   # for different levels of biomass relative to Bmsy
@@ -399,12 +436,16 @@ mystk     <- "mac";
     geom_line(aes(age,data),data=as.data.frame(mat(eq)),col="red",size=2)+
     labs(x="Age", y="Maturity-at-age", colour="Biomass/Bmsy")
   
-  ggsave(p, 
-         filename=file.path(figuresdir, paste(mystk, "sim_dd_maturity.jpg", sep="_")), 
-         device="jpeg", 
-         width=10, height=10, units="in")
+  # ggsave(p, 
+  #        filename=file.path(figuresdir, paste(mystk, "sim_dd_maturity.jpg", sep="_")), 
+  #        device="jpeg", 
+  #        width=10, height=10, units="in")
   
-
+  jpeg(filename=file.path(figuresdir, paste(mystk, "sim_dd_maturity.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
+  
   # Simulation of density dependence in M-at-age -------------------------------
   # for different levels of biomass relative to Bmsy
   
@@ -417,11 +458,16 @@ mystk     <- "mac";
     geom_line(aes(age,data),data=as.data.frame(m(eq)),col="red",size=2)+
     labs(x="Age", y="M-at-age", colour="Biomass/Bmsy")
   
-  ggsave(p, 
-       filename=file.path(figuresdir, paste(mystk, "sim_dd_m.jpg", sep="_")), 
-       device="jpeg", 
-       width=10, height=10, units="in")
-
+  # ggsave(p, 
+  #      filename=file.path(figuresdir, paste(mystk, "sim_dd_m.jpg", sep="_")), 
+  #      device="jpeg", 
+  #      width=10, height=10, units="in")
+  
+  jpeg(filename=file.path(figuresdir, paste(mystk, "sim_dd_m.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
+  
   # Comparison of equilibrium yields curves without DD and with DD mass --------
   
   x         = propagate(eq,length(dimnames(eq)$year))
@@ -511,11 +557,16 @@ mystk     <- "mac";
                                   "DD mass+mat+M" = "darkgreen")) 
   
   
-  ggsave(p, 
-         filename=file.path(figuresdir, paste(mystk, "eq_yield.jpg", sep="_")), 
-         device="jpeg", 
-         width=10, height=10, units="in")
+  # ggsave(p, 
+  #        filename=file.path(figuresdir, paste(mystk, "eq_yield.jpg", sep="_")), 
+  #        device="jpeg", 
+  #        width=10, height=10, units="in")
 
+  jpeg(filename=file.path(figuresdir, paste(mystk, "eq_yield.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
+  
   # Check 1 --------------------------------------------------------------------
   
   # generate FLquants with different F values
@@ -676,10 +727,15 @@ mystk     <- "mac";
     geom_segment(data=df_helper,
                  aes(x=0, xend=Biomass, y=Yield, yend=Yield, colour=scen))
   
-  ggsave(p,
-         filename=file.path(figuresdir, paste(mystk, "om_biomass_yield.jpg", sep="_")),
-         device="jpeg",
-         width=10, height=10, units="in")
+  # ggsave(p,
+  #        filename=file.path(figuresdir, paste(mystk, "om_biomass_yield.jpg", sep="_")),
+  #        device="jpeg",
+  #        width=10, height=10, units="in")
+  
+  jpeg(filename=file.path(figuresdir, paste(mystk, "om_biomass_yield.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
   
   # plot of F vs biomass
   p <-
@@ -692,11 +748,14 @@ mystk     <- "mac";
     geom_segment(data=df_helper,
                  aes(x=Biomass, xend=Biomass, y=0, yend=F, colour=scen))
   
-  ggsave(p,
-         filename=file.path(figuresdir, paste(mystk, "om_biomass_F.jpg", sep="_")),
-         device="jpeg",
-         width=10, height=10, units="in")
-  
+  # ggsave(p,
+  #        filename=file.path(figuresdir, paste(mystk, "om_biomass_F.jpg", sep="_")),
+  #        device="jpeg",
+  #        width=10, height=10, units="in")
+  jpeg(filename=file.path(figuresdir, paste(mystk, "om_biomass_F.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
   
   ##############################################################################
   # Setting Bref !!
@@ -736,10 +795,15 @@ mystk     <- "mac";
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 
-  ggsave(p,
-         filename=file.path(figuresdir, paste(mystk, "VPADDM_4panels.jpg", sep="_")),
-         device="jpeg",
-         width=10, height=10, units="in")
+  # ggsave(p,
+  #        filename=file.path(figuresdir, paste(mystk, "VPADDM_4panels.jpg", sep="_")),
+  #        device="jpeg",
+  #        width=10, height=10, units="in")
+  
+  jpeg(filename=file.path(figuresdir, paste(mystk, "VPADDM_4panels.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
   
   # Stop the clock
   proc.time() - ptm
@@ -775,10 +839,15 @@ mystk     <- "mac";
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
   
-  ggsave(p,
-         filename=file.path(figuresdir, paste(mystk, "VPADDMM_4panels.jpg", sep="_")),
-         device="jpeg",
-         width=10, height=10, units="in")
+  # ggsave(p,
+  #        filename=file.path(figuresdir, paste(mystk, "VPADDMM_4panels.jpg", sep="_")),
+  #        device="jpeg",
+  #        width=10, height=10, units="in")
+
+  jpeg(filename=file.path(figuresdir, paste(mystk, "VPADDMM_4panels.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
   
   # Stop the clock
   proc.time() - ptm
@@ -814,10 +883,15 @@ mystk     <- "mac";
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
   
-  ggsave(p,
-         filename=file.path(figuresdir, paste(mystk, "VPADDMMM_4panels.jpg", sep="_")),
-         device="jpeg",
-         width=10, height=10, units="in")
+  # ggsave(p,
+  #        filename=file.path(figuresdir, paste(mystk, "VPADDMMM_4panels.jpg", sep="_")),
+  #        device="jpeg",
+  #        width=10, height=10, units="in")
+  
+  jpeg(filename=file.path(figuresdir, paste(mystk, "VPADDMMM_4panels.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
   
   # Stop the clock
   proc.time() - ptm
@@ -830,10 +904,15 @@ mystk     <- "mac";
   p <- ggplot(d)+
     geom_line(aes(SSB,Yield,col=What))
 
-  ggsave(p,
-         filename=file.path(figuresdir, paste(mystk, "comparing_DD.jpg", sep="_")),
-         device="jpeg",
-         width=10, height=10, units="in")
+  # ggsave(p,
+  #        filename=file.path(figuresdir, paste(mystk, "comparing_DD.jpg", sep="_")),
+  #        device="jpeg",
+  #        width=10, height=10, units="in")
+  
+  jpeg(filename=file.path(figuresdir, paste(mystk, "comparing_DD.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
   
   # p <- ggplot(df_om)+
   #   geom_line(aes(SSB,Yield,col=scen))
