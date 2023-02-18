@@ -11,9 +11,6 @@
 
 rm(list=ls())
 
-iFig=0
-iTab=0
-
 library(FLCore)    # install.packages("FLCore", repos="http://flr-project.org/R")
 library(FLBRP)     # install.packages("FLBRP", repos="http://flr-project.org/R")
 library(FLasher)   # install.packages("FLasher", repos="http://flr-project.org/R")
@@ -56,8 +53,9 @@ myparams <- data.frame(
   stock    = c("mac"                       , "whb"            ),
   mystkname=c("Northeast Atlantic mackerel", "Blue whiting"   ),
   mylatin = c("Scomber scombrus"           ,"Micromesistius poutassou"),
-  m1      = c(0.15/(300^-0.288)            , 0.2/(150^-0.288) ), # 300 g MAC, 150 g WHB 
-  m2      = c(-0.288                        , -0.288          ),
+  m1txt   = c("0.15/(300^-0.288)"          , "0.2/(150^-0.288)"),
+  m1      = c( 0.15/(300^-0.288)           ,  0.2/(150^-0.288) ), # 300 g MAC, 150 g WHB 
+  m2      = c(-0.288                       , -0.288          ),
   m3      = c(NA                           , NA               ),
   m       = c("lorenzen"                   , "lorenzen"       ),
   blim    = c(2000000                      , 1500000          ),
@@ -76,7 +74,7 @@ myparams <- data.frame(
 
 save(myparams, file=file.path(dropboxdir, "data", "inputs", "myparams.RData"))
 
-mystk     <- "whb";  
+mystk     <- "mac";  
 # mystk     <- "whb";  
 # for (mystk in c("mac","whb")) {
   
@@ -104,9 +102,9 @@ mystk     <- "whb";
   stk   = get(mystk)
   stkR  = get(paste0(mystk,"R"))
   
-
   if (mystk == "mac") {
-    ts    = as.data.frame(readxl::read_excel(file.path(dropboxdir,"data/inputs/dat.xlsx"),sheet="ts"))
+    # ts    = as.data.frame(readxl::read_excel(file.path(dropboxdir,"data/inputs/dat.xlsx"),sheet="ts"))
+    ts=model.frame(FLQuants(stk,tb=stock,ssb=ssb),drop=T)
     
     stock.wt(   stk)[1] = myparams[myparams$stock==mystk,"wt1"]
     catch.wt(   stk)[1] = myparams[myparams$stock==mystk,"wt1"]
@@ -208,12 +206,15 @@ mystk     <- "whb";
   
   a=ggplot(wt)+
     geom_boxplot(aes(age,data))+
-    xlab("Mass-at-age")+ylab("Age")
-  b=ggplot(subset(wt,rsdl<3&rsdl>0))+
+    ylab("Mass-at-age")+xlab("Age")
+  b=subset(wt,rsdl<3&rsdl>0) %>% 
+    mutate(tb = tb/1000) %>% 
+    ggplot()+
     geom_point(aes(tb,rsdl))+
     geom_smooth(aes(tb,rsdl),method="lm")+
-    facet_wrap(age~.)+
-    xlab("Total biomass")+ylab("Residual")
+    xlab("Total biomass (1000 tonnes)")+ylab("Residual") +
+    scale_x_continuous(breaks = scales::pretty_breaks(n=2)) +
+    facet_wrap(age~.)
   p <-
     ggarrange(a,b ,label.y=1,  
             widths = c(4,6), heights = c(1,1,1),
@@ -241,7 +242,8 @@ mystk     <- "whb";
   nn  = length(unique(wt2$age))
   
   # run gammV  
-  gmr=mgcViz::gammV(log(data)~s(tb/mean(tb), bs="tp")+age, data=wt2)
+  gmr=mgcViz::gammV(log(data) ~ s(tb/mean(tb), bs="tp")+age, 
+                    data=wt2)
   
   # plot gammV
   jpeg(filename=file.path(figuresdir, paste(mystk, "gamm.jpg", sep="_")),
@@ -271,7 +273,7 @@ mystk     <- "whb";
     ggplot(wt2)+
     geom_line(aes(tb,exp(hat)/mean,col=age))+
     geom_point(aes(tb,data/mean,col=age))+
-    xlab("Total biomass")+ylab("Mass-Mean")
+    xlab("Total biomass")+ylab("Mass-Mean") 
   
   jpeg(filename=file.path(figuresdir, paste(mystk, "lm_waa.jpg", sep="_")),
        width=10, height=8, units="in", res=300)
@@ -328,7 +330,9 @@ mystk     <- "whb";
     geom_point(aes(wt,mat,col=age))+
     geom_smooth(se=F,span=0.2)+
     xlab("Mass-at-age")+ylab("Matutrity-at-age")+
-    geom_line(aes(wt,mat),col="red",data=data.frame(mat=matFn(dat$wt,matPar$par),wt=dat$wt))
+    geom_line(aes(wt,mat),
+              col="red",
+              data=data.frame(mat=matFn(dat$wt,matPar$par),wt=dat$wt))
 
   # print(paste("k=", matPar$par[1]))
   # print(paste("W50=", matPar$par[2]))
@@ -406,6 +410,7 @@ mystk     <- "whb";
   dat=merge(as.data.frame(dat,drop=T),
             as.data.frame(biomass(eq)%/%refpts(eq)["msy","biomass"],drop=T),
             by="year")
+  
   names(dat)[3:4]=c("mass","biomass")
   
   p <- ggplot(dat)+    
@@ -567,7 +572,9 @@ mystk     <- "whb";
   save(df,file=paste(dropboxdir,"/data/results/",mystk,"Eq.RData",sep=""))
   
   p <-
-    ggplot(data=df, aes(biomass, catch))+
+    df %>% 
+    mutate(scen = factor(scen, levels=c("no-DD", "DD mass", "DD mass+mat", "DD mass+mat+M"))) %>% 
+    ggplot(aes(biomass, catch))+
     theme_bw() +
     geom_line(aes(colour=scen)) +
     labs(x="Total biomass", y="Catch", colour="") +
@@ -577,17 +584,14 @@ mystk     <- "whb";
                                   "DD mass+mat+M" = "darkgreen")) 
   
   
-  # ggsave(p, 
-  #        filename=file.path(figuresdir, paste(mystk, "eq_yield.jpg", sep="_")), 
-  #        device="jpeg", 
-  #        width=10, height=10, units="in")
-
   jpeg(filename=file.path(figuresdir, paste(mystk, "eq_yield.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
   print(p) 
   dev.off()
   
   # Check 1 --------------------------------------------------------------------
+
+  ptm <- proc.time()
   
   # generate FLquants with different F values
   f = FLQuant(c(rep(seq(0, 1,length.out=51)    ,each=101),
@@ -606,7 +610,6 @@ mystk     <- "whb";
   # simulate with DD for 100 years into the future (THIS TAKES ABOUT 10 MINUTES)
   om2=om
   
-  ptm <- proc.time()
   
   for (year in dimnames(om2)$year[-1]){
     om2=ddFn(year,om2,par)
@@ -649,6 +652,7 @@ mystk     <- "whb";
   # ices=window(ices,start=1991)
   
   ices=window(stk,start=1991)
+  stock(ices) =computeStock(ices)
   name(ices) <- mystkname
 
   assess_df <-
@@ -701,6 +705,7 @@ mystk     <- "whb";
   
   # run VPA
   vpa =ices+FLAssess:::VPA(ices)
+  stock(vpa) = computeStock(vpa)
 
   # add to assess_df
   assess_df <-
@@ -734,7 +739,7 @@ mystk     <- "whb";
                                        "Yield"=function(x) catch(x)),drop=T) %>% mutate(scen="vpa"))
 
   # model.frame(FLQuants(vpa,"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
-  #                      "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T) %>% 
+  #                      "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T) %>%
   #   ggplot(aes(x=year, y=Biomass, group=iter)) +
   #   theme_bw() +
   #   geom_line()
@@ -763,7 +768,8 @@ mystk     <- "whb";
   vpaM   = ices
   m(vpaM)=1.0*(par["m1"]%*%(stock.wt(vpaM)%^%par["m2"]))
   vpaM=vpaM+FLAssess:::VPA(vpaM)
-
+  stock(vpaM) = computeStock(vpaM)
+  
   # add to assess df
   assess_df <-
     bind_rows(
@@ -898,7 +904,8 @@ mystk     <- "whb";
     d2 %>% mutate(scen="vpa-DDM"))
   
   p4=ggplot(d2)+
-    geom_line(aes(SSB,Yield))
+    geom_line(aes(SSB,Yield),col="red")+
+    geom_line(aes(SSB,Yield),col="black",data=d1)
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 
@@ -936,8 +943,8 @@ mystk     <- "whb";
     d3 %>% mutate(scen="vpa-DDMM"))
   
   p4=ggplot(d3)+
-    geom_line(aes(SSB,Yield))+
-    geom_line(aes(SSB,Yield),col="red",data=d1)
+    geom_line(aes(SSB,Yield),col="red")+
+    geom_line(aes(SSB,Yield),col="black",data=d1)
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
   
@@ -978,10 +985,16 @@ mystk     <- "whb";
   df_om  =bind_rows(
     df_om,
     d4 %>% mutate(scen="vpa-DDMMM"))
+
+  df_helper <-
+    df_om %>% 
+    group_by(scen) %>% 
+    summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
+    left_join(df_om)
   
   p4=ggplot(d4)+
-    geom_line(aes(SSB,Yield))+
-    geom_line(aes(SSB,Yield),col="red",data=d1)
+    geom_line(aes(SSB,Yield),col="red")+
+    geom_line(aes(SSB,Yield),col="black",data=d1)
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
   
@@ -993,7 +1006,7 @@ mystk     <- "whb";
   # Stop the clock
   proc.time() - ptm
   
-  # Plotting
+  # Plotting overview scenarios
   
   # scenarios
   scenarios = c("vpa-M", "vpa-DDM","vpa-DDMM","vpa-DDMMM") 
@@ -1011,6 +1024,36 @@ mystk     <- "whb";
        width=10, height=10, units="in", res=300)
   print(p) 
   dev.off()
+
+  # Plot of F vs biomass
+  p <-
+    df_om %>% 
+    filter(F < 1) %>% 
+    filter(scen %in% scenarios) %>% 
+    mutate(scen = factor(scen, levels=scenarios)) %>% 
+    ggplot(aes(x=Biomass, y=F)) +
+    theme_bw() +
+    geom_line(aes(colour=scen)) +
+    geom_segment(data=filter(df_helper, scen %in% scenarios) %>% mutate(scen = factor(scen, levels=scenarios)),
+                 aes(x=0, xend=Biomass, y=F, yend=F, colour=scen)) +
+    geom_segment(data=filter(df_helper, scen %in% scenarios) %>% mutate(scen = factor(scen, levels=scenarios)),
+                 aes(x=Biomass, xend=Biomass, y=0, yend=F, colour=scen))
+
+  jpeg(filename=file.path(figuresdir, paste(mystk, "comparing_DD_F.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
+  
+  # Make table
+  fileConn <-file(file.path(tablesdir, paste(mystk, "msy.txt", sep="_")))
+  df_helper %>% 
+    dplyr::filter(scen %in% scenarios) %>% 
+    mutate(scen = factor(scen, levels=scenarios)) %>% 
+    dplyr::select(-iter) %>% 
+    arrange(scen) %>% 
+    pander::pandoc.table(style="simple", big.mark=",", justify="left") %>% 
+    capture.output() %>% writeLines(., con=fileConn)
+  close(fileConn)
   
   # save objects
   eq<-df
@@ -1024,6 +1067,7 @@ mystk     <- "whb";
                B0    =max(biomass))})
   
   save(om, om2, stk, sam, ices, om, om2, vpa, vpaM, vpaDDM, vpaDDMM, vpaDDMMM, eq, rfs,
+       df_om, df_helper,
        file=file.path(figuresdir, paste0(mystk, "_objects.RData")))
   
   
