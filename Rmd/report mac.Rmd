@@ -63,8 +63,12 @@ fig_nums <- captioner::captioner(prefix = "Figure", levels=1, type=c("n"), infix
 
 source("../R/dd.R")
 source("../R/pm.R")
+```
 
-source("../R/get_dropbox.r")
+
+```{r}
+source("../R/get_dropbox.R")
+
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 
 if ("try-error"%in%is(dropboxdir))
@@ -515,7 +519,6 @@ _`r fig_nums("om_VPADDMM")`_
 **Density dependence in mass-at-age, maturity at age and M at age**
 
 ```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
-
 fig_nums(
   name    = "om_VPADDMMM", level = 1, display = FALSE,
   caption = "Simulation of density dependence in Mass-at-age, maturity at age and M at age")
@@ -530,14 +533,13 @@ _`r fig_nums("om_VPADDMMM")`_
 
 **Comparison of equilibrium curves for density dependence analyses: biomass against yield**
 
-```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE, eval=FALSE}
 
 fig_nums(
   name    = "om_eqyield", level = 1, display = FALSE,
   caption = "Equilibrium curves for density dependence analyses: biomass against yield")
 
 knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_comparing_dd.jpg")))
-
 ```
 
 _`r fig_nums("om_eqyield")`_

@@ -64,7 +64,8 @@ fig_nums <- captioner::captioner(prefix = "Figure", levels=1, type=c("n"), infix
 source("../R/dd.R")
 source("../R/pm.R")
 
-source("../R/get_dropbox.r")
+source("/home/laurie/pCloudDrive/projects/ddmse/R/get_dropbox.r")
+
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 
 if ("try-error"%in%is(dropboxdir))

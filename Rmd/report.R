@@ -493,10 +493,18 @@ mystk     <- "whb";
   
   df <- 
     bind_rows(
-      model.frame(FLQuants(eq,biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T) %>% mutate(scen="no-DD"),
-      model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T) %>% mutate(scen="DD mass")
+      model.frame(FLQuants(eq,ssb    =function(x) ssb(x),
+                              biomass=function(x) biomass(x), 
+                              catch  =function(x) catch(x),
+                              f      =function(x) fbar(x)),
+                           drop=T) %>% mutate(scen="no-DD"),
+      model.frame(FLQuants(x, ssb    =function(x) ssb(x),
+                              biomass=function(x) biomass(x), 
+                              catch  =function(x) catch(x),
+                              f      =function(x) fbar(x)),
+                  drop=T) %>% mutate(scen="DD mass")
     )
-  
+
   # Comparison of equilibrium yields curves with DD mass+maturity
   
   x=propagate(eq,length(dimnames(eq)$year))
@@ -521,9 +529,13 @@ mystk     <- "whb";
   df <- 
     bind_rows(
       df,
-      model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T) %>% mutate(scen="DD mass+mat")
+      model.frame(FLQuants(x,  ssb    =function(x) ssb(x),
+                               biomass=function(x) biomass(x), 
+                               catch  =function(x) catch(x),
+                               f      =function(x) fbar(x)),
+                  drop=T) %>% mutate(scen="DD mass+mat")
     )
-  
+ 
   # Comparison of equilibrium yields curves with DD mass+mat+M 
   
   x=propagate(eq,length(dimnames(eq)$year))
@@ -546,8 +558,13 @@ mystk     <- "whb";
   df <- 
     bind_rows(
       df,
-      model.frame(FLQuants(x, biomass=function(x) biomass(x), catch=function(x) catch(x)),drop=T) %>% mutate(scen="DD mass+mat+M")
+      model.frame(FLQuants(x, ssb    =function(x) ssb(x),
+                           biomass=function(x) biomass(x), 
+                           catch  =function(x) catch(x),
+                           f      =function(x) fbar(x)),
+                  drop=T) %>% mutate(scen="DD mass+mat+M")
     )
+  save(df,file=paste(dropboxdir,"/data/results/",mystk,"Eq.RData",sep=""))
   
   p <-
     ggplot(data=df, aes(biomass, catch))+
@@ -996,7 +1013,17 @@ mystk     <- "whb";
   dev.off()
   
   # save objects
-  save(om, om2, stk, sam, ices, om, om2, vpa, vpaM, vpaDDM, vpaDDMM, vpaDDMMM,
+  eq<-df
+  rfs=ddply(eq,.(scen), with, {
+    flag=catch==max(catch)
+    data.frame(MSY   =catch[ flag],
+               BMSY  =biomass[flag],
+               SSBMSY=ssb[flag],
+               FMSY  =f[flag],
+               Virgin=max(ssb),
+               B0    =max(biomass))})
+  
+  save(om, om2, stk, sam, ices, om, om2, vpa, vpaM, vpaDDM, vpaDDMM, vpaDDMMM, eq, rfs,
        file=file.path(figuresdir, paste0(mystk, "_objects.RData")))
   
   
