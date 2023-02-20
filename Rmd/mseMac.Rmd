@@ -3,7 +3,7 @@ title: "**Density Dependence**"
 subtitle: "MSE for Mackerel"
 author: "L Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: pdf_document
+output: html_document
 mathjax: TRUE
 tags: FLR FLCore introduction
 license: Creative Commons Attribution-ShareAlike 4.0 International Public License
@@ -29,8 +29,8 @@ opts_chunk$set(cache     =TRUE,
                error     =FALSE, 
                echo      =FALSE, 
                eval      =TRUE,cache   =TRUE,
-               cache.path="../cache/mse/",
-               fig.path  ="../tex/figs/mse/",
+               cache.path="../cache/mseMac/",
+               fig.path  ="../tex/figs/mseMac/",
                fig.width =8,
                fig.height=6,
                dev       ="png")
@@ -93,7 +93,7 @@ discards.wt(stk)[1]=0.01
 ```
 
 ```{r, pars}
-par=FLPar(c(m1=0.15/(0.2^-0.288),m2=-0.28,bref=NA,b=0.3,matk=30.1, w50=0.2))
+par=FLPar(c(m1=0.15/(0.2^-0.288),m2=-0.288,bref=NA,b=0.3,matk=30.1,w50=0.2))
 ```
 
 ```{r, m}
@@ -107,7 +107,7 @@ plot(FLStocks("ICES"=stk,"VPA"=vpa))
 ```
 
 ```{r,eq}
-sr=fmle(as.FLSR(iter(vpa,1),model="bevholt"),control=list(silent=TRUE))
+sr=fmle(as.FLSR(iter(stk,1),model="bevholt"),control=list(silent=TRUE))
 eq=FLBRP(iter(vpa,1),sr=sr)
 ```
 
@@ -145,6 +145,10 @@ for (iYear in ac(2021:2080)){
   oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],par,TRUE,TRUE,TRUE)
   oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=f[,iYear],sr=eq)
   }
+```
+
+```{r}
+save(oms,file="~/Desktop/tmp/oms.RData")
 ```
 
 ```{r, check2}
@@ -326,5 +330,61 @@ mse=hcrICES(fmsy,eql,rec(fmsy),
                       interval,lag=lag,
                       err=err,
                       bndTac=c(0,Inf))
+```
+
+
+```{r}
+load("/home/laurie/Dropbox/pelagics/results/mac/figures/mac_objects.RData")
+
+dt1=model.frame(FLQuants("Rec"=rec(oms[[1]][,"2050"]),"SSB"=ssb(oms[[1]][,"2050"])),drop=T)
+dt2=model.frame(FLQuants("Rec"=rec(vpa[,"2050"]),"SSB"=ssb(vpa[,"2050"])),drop=T)
+
+ggplot()+
+  geom_line(aes(SSB,Rec),data=dt1)+
+  geom_line(aes(SSB,Rec),data=dt2)
+```
+
+
+```{r}
+stk=window(iter(vpa,1),end=2019)
+sr=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
+                control=list(silent=TRUE))
+eq=FLBRP(stk,sr=ab(sr))
+
+stk=window(iter(vpaM,1),end=2019)
+srM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
+                control=list(silent=TRUE))
+eqM=FLBRP(stk,sr=ab(srM))
+
+stk=window(iter(vpaDDM,1),end=2019)
+srDDM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
+                control=list(silent=TRUE))
+eqDDM=FLBRP(stk,sr=ab(srDDM))
+
+stk=window(iter(vpaDDMM,1),end=2019)
+srDDMM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
+                control=list(silent=TRUE))
+eqDDMM=FLBRP(stk,sr=ab(srDDMM))
+
+stk=window(iter(vpaDDMMM,1),end=2019)
+srDDMM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
+                control=list(silent=TRUE))
+eqDDMMM=FLBRP(stk,sr=ab(srDDMMM))
+
+
+dat=rbind(
+  cbind(What="ICES",    model.frame(FLQuants(eq,rec=rec,ssb=ssb,catch=catch),drop=T)),
+  cbind(What="VPA",     model.frame(FLQuants(eqM,rec=rec,ssb=ssb,catch=catch),drop=T)),
+  cbind(What="VPA M",   model.frame(FLQuants(eqDDM,rec=rec,ssb=ssb,catch=catch),drop=T)),
+  cbind(What="VPA MM",  model.frame(FLQuants(eqDDMM,rec=rec,ssb=ssb,catch=catch),drop=T)),
+  cbind(What="VPA MMM", model.frame(FLQuants(eqDDMMM,rec=rec,ssb=ssb,catch=catch),drop=T)))
+
+ggplot(dat)+
+  geom_line(aes(ssb,catch,col=What))
+
+ggplot(dat)+
+  geom_line(aes(ssb,rec,col=What))
+
+
 ```
 
