@@ -1097,7 +1097,7 @@ mystk     <- "mac";
                Virgin=max(ssb),
                B0    =max(biomass))})
   
-  rfpts  
+  rfpts$Fmsy  
   
 
   # forward simulations
@@ -1132,10 +1132,10 @@ mystk     <- "mac";
   plot(FLStocks(prj[[1]]),iter=1:4)
   plot(FLStocks(prj[[2]]),iter=1:4)
   plot(FLStocks(prj[[3]]),iter=1:4)
-  plot(FLStocks(prj[[4]]),iter=1:4)
+  plot(FLStocks(prj[[4]]),iter=1:4) 
 
   plot(FLStocks(prj),iter=1:4)
-  plot(FLStocks(prj),iter=1)
+  plot(FLStocks(prj),iter=1:4) +scale_fill_manual(values=rep("white",4))
   
   # mse=hcrICES(fmsy,eql,rec(fmsy),
   #             par,
@@ -1143,7 +1143,31 @@ mystk     <- "mac";
   #             interval,lag=lag,
   #             err=err,
   #             bndTac=c(0,Inf))
+
+  as.data.frame(FLStocks(prj)) %>% 
+    filter(slot %in% c("catch", "stock")) %>% 
+    ggplot(aes(x=year, y=data)) +
+    theme_bw() +
+    geom_line(aes(colour=iter)) +
+    facet_grid(slot ~cname , scales="free_y")
+  
+  plot(propagate(fbar(prj[[1]]),4)%*%FLQuant(seq(0.5,1.5,length.out=4),
+                                             dimnames=list(iter=1:4)),
+       probs=rep(0,5), 
+       worm=1:4)
   
 # } # end of stk loop
 
+df=ldply(prj, function(x) { 
+  model.frame(FLQuants(x,
+                       biomass=function(x) stock(x),
+                       ssb    =function(x) ssb(  x),
+                       catch  =function(x) catch(x),
+                       f      =function(x) fbar( x)),drop=TRUE)})
 
+df %>% 
+  tidyr::pivot_longer(names_to = "variable", values_to = "data", biomass:f) %>% 
+  ggplot(aes(x=year, y=data)) +
+  theme_bw() +
+  geom_line(aes(colour=iter)) +
+  facet_grid(variable ~.id , scales="free_y")
