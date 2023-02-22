@@ -93,7 +93,7 @@ discards.wt(stk)[1]=0.01
 ```
 
 ```{r, pars}
-par=FLPar(c(m1=0.15/(0.2^-0.288),m2=-0.288,bref=NA,b=0.3,matk=30.1,w50=0.2))
+par=FLPar(c(m1=0.15/(0.2^-0.288),m2=-0.288,bref=NA,b=-0.3,matk=30.1,w50=0.2))
 ```
 
 ```{r, m}
@@ -106,24 +106,66 @@ vpa=stk+VPA(stk)
 plot(FLStocks("ICES"=stk,"VPA"=vpa))
 ```
 
-```{r,eq}
-sr=fmle(as.FLSR(iter(stk,1),model="bevholt"),control=list(silent=TRUE))
-eq=FLBRP(iter(vpa,1),sr=sr)
+
+```{r, sr}
+load(paste("/home/laurie/Dropbox/pelagics/results/mac/figures/",tolower(stock),"_objects.RData",sep=""))
+
+stk=window(iter(vpa,1),start=2000,end=2019)
+sr=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
+                control=list(silent=TRUE))
+eq=FLBRP(stk,sr=ab(sr))
+
+stk=window(iter(vpaM,1),start=2000,end=2019)
+srM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
+                control=list(silent=TRUE))
+eqM=FLBRP(stk,sr=ab(srM))
+
+stk=window(iter(vpaDDM,1),start=2000,end=2019)
+srDDM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
+                control=list(silent=TRUE))
+eqDDM=FLBRP(stk,sr=ab(srDDM))
+
+stk=window(iter(vpaDDMM,1),start=2000,end=2019)
+srDDMM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
+                control=list(silent=TRUE))
+eqDDMM=FLBRP(stk,sr=ab(srDDMM))
+
+stk=window(iter(vpaDDMMM,1),start=2000,end=2019)
+srDDMMM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
+                control=list(silent=TRUE))
+eqDDMMM=FLBRP(stk,sr=ab(srDDMMM))
+
+dat=rbind(
+  cbind(What="ICES",    model.frame(FLQuants(eq,rec=rec,ssb=ssb,catch=catch),drop=T)),
+  cbind(What="VPA",     model.frame(FLQuants(eqM,rec=rec,ssb=ssb,catch=catch),drop=T)),
+  cbind(What="VPA M",   model.frame(FLQuants(eqDDM,rec=rec,ssb=ssb,catch=catch),drop=T)),
+  cbind(What="VPA MM",  model.frame(FLQuants(eqDDMM,rec=rec,ssb=ssb,catch=catch),drop=T)),
+  cbind(What="VPA MMM", model.frame(FLQuants(eqDDMMM,rec=rec,ssb=ssb,catch=catch),drop=T)))
 ```
+
+
+```{r, eqs}
+ggplot(dat)+
+  geom_line(aes(ssb,catch,col=What))
+```
+
+**Figure `r iFig=iFig+1; iFig`** Stock recruitment relationships
+
+
+```{r, srs}
+ggplot(dat)+
+  geom_line(aes(ssb,rec,col=What))
+```
+
+
+**Figure `r iFig=iFig+1; iFig`** Equilibrium curves for assumptions about density dependence
+
 
 ```{r, ddM}
-par["bref"]=refpts(eq)["msy","biomass"]
+par["bref"]=refpts(eqM)["msy","biomass"]
 
-for (i in dimnames(vpa)$year)
-  om=ddFn(i,stk,par,FALSE,FALSE)
-```
-
-```{r}
-save(om,eq,file="~/Desktop/tmp/t.RData")
-```
-
-```{r}
-load("~/Desktop/tmp/t.RData")
+for (i in dimnames(vpaM)$year)
+  om=ddFn(i,vpaM,par,FALSE,FALSE,TRUE)
 ```
 
 ```{r, omCheck}
@@ -135,7 +177,7 @@ oms=FLStocks("Base"     =om)
 oms[["DD Mass"]]        =om
 oms[["DD Mass, Mat"]]   =om
 oms[["DD Mass, Mat, M"]]=om
-for (iYear in ac(2021:2080)){
+for (iYear in ac(2020:2080)){
   oms[["DD Mass"]]=ddFn(iYear,oms[["DD Mass"]],par,TRUE,FALSE,FALSE)
   oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=f[,iYear],sr=eq)
 
@@ -147,9 +189,6 @@ for (iYear in ac(2021:2080)){
   }
 ```
 
-```{r}
-save(oms,file="~/Desktop/tmp/oms.RData")
-```
 
 ```{r, check2}
 p1=ggplot(stock.wt(oms[[2]][,ac(2080)]))+ 
@@ -263,18 +302,18 @@ rfpts=ddply(rfs,.(.id), with, {
 rfpts
 ```
 
-```{r, projectons}
-prj=list("1"=iter(oms[[1]],1:4),
-         "2"=iter(oms[[2]],1:4),
-         "3"=iter(oms[[3]],1:4),
-         "4"=iter(oms[[4]],1:4))
+```{r, projectons-1}
+prj=FLStocks("1"=iter(oms[[1]],1:4),
+             "2"=iter(oms[[2]],1:4),
+             "3"=iter(oms[[3]],1:4),
+             "4"=iter(oms[[4]],1:4))
 
-F=fbar(prj[[1]][,ac(2021:2080)])%=%rep(rfpts$Fmsy,each=60)
+F=fbar(prj[[1]][,ac(2020:2080)])%=%rep(rfpts$Fmsy,each=61)
     
 control=as(FLQuants("f"=F),"fwdControl")
 prj[[1]] =fwd(prj[[1]],control=control,sr=eq)
-  
-for (i in ac(2021:2080)) {
+
+for (i in ac(2020:2080)) {
     prj[[2]] =ddFn(i,prj[[2]],par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
     prj[[2]] =fwd(prj[[2]],control=control,sr=eq)
@@ -290,7 +329,7 @@ for (i in ac(2021:2080)) {
 ```
 
 ```{r}
-plot(FLStocks(prj[[1]]),iter=1:4)
+plot(FLStocks(prj[[1]]),iter=1:4) 
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming no density dependence
@@ -316,12 +355,77 @@ plot(FLStocks(prj[[4]]),iter=1:4)
 **Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming density dependence in mass, maturity and natural mortality-at-age
 
 ```{r, eval=FALSE}
-ldply(prjs,ldply, function(x) model.frame(FLQuants(x,biomass=function(x) biomass(x)[,"2080"],
-                                                     ssb    =function(x) ssb(    x)[,"2080"],
-                                                     catch  =function(x) catch(  x)[,"2080"],
-                                                     f      =function(x) fbar(   x)[,"2080"]),drop=T)) 
+ldply(prj,ldply, function(x) model.frame(FLQuants(x,biomass=function(x) biomass(x)[,"2080"],
+                                                    ssb    =function(x) ssb(    x)[,"2080"],
+                                                    catch  =function(x) catch(  x)[,"2080"],
+                                                    f      =function(x) fbar(   x)[,"2080"]),drop=T)) 
 ```
 
+
+```{r, projectons-2}
+devRec=rlnorm(100,rec(prj[[1]])[,ac(2020:2080),,,,1]%=%0,0.3)
+
+base=propagate(iter(prj[[1]],1),100)
+     
+prjs=mlply(data.frame(F=rfpts$Fmsy), function(F) {
+              
+            ## FMSY estimate by OM ######################################
+            F=FLQuant(F,dimnames=list(year=2020:2080))
+         
+            ## No DD ####################################################
+            control=as(FLQuants("f"=F),"fwdControl")
+            x1     =fwd(base,control=control,sr=eq,residuals=devRec)
+           
+            ## With DD ####################################################
+            x2=x1
+            x3=x1
+            x4=x1
+            for (iYr in ac(2020:2080)) {
+              ## DD M ##################################################         
+              x2 =ddFn(iYr,x2,par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+              control=as(FLQuants("f"=F[,iYr]),"fwdControl")
+              x2 =fwd(x2,control=control,sr=eq,residuals=devRec)
+                 
+              ## DD MM##################################################
+              x3 =ddFn(iYr,x3,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
+              control=as(FLQuants("f"=F[,iYr]),"fwdControl")
+              x3 =fwd(x3,control=control,sr=eq,residuals=devRec)
+  
+              ## DD MMM ################################################
+              x4 =ddFn(iYr,x4,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
+              control=as(FLQuants("f"=F[,iYr]),"fwdControl")
+              x4 =fwd(x4,control=control,sr=eq,residuals=devRec)
+              }  ## year loop
+            
+            FLStocks(list("Base"=x1,"M"=x2,"MM"=x3,"MMM"=x4))        
+    }) ## F loop
+         
+save(prjs,file=paste(dirRuns,"/",stock,"Prjs.RData",sep=""))
+```
+
+```{r}
+plot(FLStocks(prjs[[1]])) 
+```
+
+**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at Base $F_{MSY}$ 
+
+```{r}
+plot(FLStocks(prjs[[2]])) 
+```
+
+**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, with  $F_{MSY}$ for density dependence in mass-at-age 
+
+```{r}
+plot(FLStocks(prjs[[3]])) 
+```
+
+**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models,  with  $F_{MSY}$ for density dependence in mass, maturity-at-age
+
+```{r}
+plot(FLStocks(prjs[[4]])) 
+```
+
+**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models,  with  $F_{MSY}$ for density dependence in mass, maturity, natural mortality-at-age
 
 ```{r, MSE, eval=FALSE}
 mse=hcrICES(fmsy,eql,rec(fmsy),
@@ -333,9 +437,7 @@ mse=hcrICES(fmsy,eql,rec(fmsy),
 ```
 
 
-```{r}
-load("/home/laurie/Dropbox/pelagics/results/mac/figures/mac_objects.RData")
-
+```{r, chk}
 dt1=model.frame(FLQuants("Rec"=rec(oms[[1]][,"2050"]),"SSB"=ssb(oms[[1]][,"2050"])),drop=T)
 dt2=model.frame(FLQuants("Rec"=rec(vpa[,"2050"]),"SSB"=ssb(vpa[,"2050"])),drop=T)
 
@@ -344,47 +446,4 @@ ggplot()+
   geom_line(aes(SSB,Rec),data=dt2)
 ```
 
-
-```{r}
-stk=window(iter(vpa,1),end=2019)
-sr=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
-                control=list(silent=TRUE))
-eq=FLBRP(stk,sr=ab(sr))
-
-stk=window(iter(vpaM,1),end=2019)
-srM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
-                control=list(silent=TRUE))
-eqM=FLBRP(stk,sr=ab(srM))
-
-stk=window(iter(vpaDDM,1),end=2019)
-srDDM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
-                control=list(silent=TRUE))
-eqDDM=FLBRP(stk,sr=ab(srDDM))
-
-stk=window(iter(vpaDDMM,1),end=2019)
-srDDMM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
-                control=list(silent=TRUE))
-eqDDMM=FLBRP(stk,sr=ab(srDDMM))
-
-stk=window(iter(vpaDDMMM,1),end=2019)
-srDDMM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
-                control=list(silent=TRUE))
-eqDDMMM=FLBRP(stk,sr=ab(srDDMMM))
-
-
-dat=rbind(
-  cbind(What="ICES",    model.frame(FLQuants(eq,rec=rec,ssb=ssb,catch=catch),drop=T)),
-  cbind(What="VPA",     model.frame(FLQuants(eqM,rec=rec,ssb=ssb,catch=catch),drop=T)),
-  cbind(What="VPA M",   model.frame(FLQuants(eqDDM,rec=rec,ssb=ssb,catch=catch),drop=T)),
-  cbind(What="VPA MM",  model.frame(FLQuants(eqDDMM,rec=rec,ssb=ssb,catch=catch),drop=T)),
-  cbind(What="VPA MMM", model.frame(FLQuants(eqDDMMM,rec=rec,ssb=ssb,catch=catch),drop=T)))
-
-ggplot(dat)+
-  geom_line(aes(ssb,catch,col=What))
-
-ggplot(dat)+
-  geom_line(aes(ssb,rec,col=What))
-
-
-```
 
