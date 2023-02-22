@@ -367,7 +367,10 @@ mystk     <- "mac";
   
   # derive a FLBRP object with Lorenzen natural mortality
   eq =FLife::lhEql(par,m=myparams[myparams$stock==mystk,"m"])
-  
+
+  # sr  = fmle(sr,fixed=list(s=0.8,spr0=mean(spr0(ices))),control=list(silent=TRUE))
+  # eq2  = FLBRP(ices,ab(sr))
+  # plot(eq, eq2)
   
   # plot the BRP object --------------------------------------------------------
   p <-ggplotFL::plot(eq) + 
@@ -647,10 +650,6 @@ mystk     <- "mac";
   # 4. OM
   # ------------------------------------------------------------------------------
 
-  # load(file.path(dropboxdir,"data/inputs/ices.RData"))
-  # ices=ices[["mac.27.nea"]]
-  # ices=window(ices,start=1991)
-  
   ices=window(stk,start=1991)
   stock(ices) =computeStock(ices)
   name(ices) <- mystkname
@@ -663,8 +662,9 @@ mystk     <- "mac";
                                "Rec"=function(x) rec(x)),drop=T) %>% mutate(scen="sam")
   
   # Start with the SAM assessment in forward projection
-  sr  = as.FLSR(ices,model=bevholtSV)
-  sr  = fmle(sr,fixed=list(s=0.8,spr0=mean(spr0(ices))),control=list(silent=TRUE))
+  sr  = fmle(as.FLSR(window(ices, start=1999, end=2020),model="bevholtSV"),
+             fixed=list(s=0.8, spr0=mean(spr0(ices))), 
+             control=list(silent=TRUE))
   eq  = FLBRP(ices,ab(sr))
   sam = fwdWindow(ices,eq,end=2050) 
   
@@ -682,25 +682,6 @@ mystk     <- "mac";
                                     "Yield"=function(x) catch(x)),drop=T) %>% mutate(scen="sam")
                 
   
-  # t <-
-  #   model.frame(FLQuants(sam,"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
-  #                      "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T) 
-  # tt <- t %>% filter(year==2050)
-  # t %>%   
-  #   ggplot(aes(x=year, y=Biomass, group=iter)) +
-  #   theme_bw() +
-  #   geom_line() +
-  #   geom_text(data=tt, aes(label=iter), hjust=0)
-  
-  # t  <- as.data.frame(F) %>% filter(data <= 0.8)
-  # tt <- t %>% filter(year==2050)
-  # 
-  # t %>%   
-  #   ggplot(aes(x=year, y=data, group=iter)) + 
-  #   theme_bw() + 
-  #   geom_line() +
-  #   geom_text(data=tt, aes(label=iter), hjust=0)
-  
   # VPA assessment based on SAM assessment -------------------------------------
   
   # run VPA
@@ -717,9 +698,10 @@ mystk     <- "mac";
                                 "Yield"=function(x) catch(x),
                                 "Rec"=function(x) rec(x)),drop=T) %>% mutate(scen="vpa") )
     
-  
-  sr  =as.FLSR(vpa,model=bevholtSV)
-  sr  =fmle(sr,fixed=list(s=0.8,spr0=mean(spr0(vpa))),control=list(silent=TRUE))
+  sr  =fmle(as.FLSR(window(vpa, start=1999, end=2020),model="bevholtSV"),
+            fixed=list(s   =0.8, 
+                       spr0=mean(spr0(vpa))), 
+            control=list(silent=TRUE))
   eq  =FLBRP(vpa,ab(sr))
   vpa =fwdWindow(vpa,eq,end=2050) 
   
@@ -738,28 +720,15 @@ mystk     <- "mac";
                                        "F"=function(x) fbar(x),
                                        "Yield"=function(x) catch(x)),drop=T) %>% mutate(scen="vpa"))
 
-  # model.frame(FLQuants(vpa,"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
-  #                      "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T) %>%
-  #   ggplot(aes(x=year, y=Biomass, group=iter)) +
-  #   theme_bw() +
-  #   geom_line()
-
-  # t <-
-  #   model.frame(FLQuants(vpa,"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
-  #                        "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T) 
-  # tt <- t %>% filter(year==2050)
-  # t %>%   
-  #   ggplot(aes(x=year, y=Biomass, group=iter)) +
-  #   theme_bw() +
-  #   geom_line() +
-  #   geom_text(data=tt, aes(label=iter), hjust=0)
-  
   # VPA assessment with age varying M -----------------------------------------------------
 
+
+  # RUN NEXT SECTION ONLY ONCE !!!!!! =====================================================
   load(file.path(dropboxdir, paste0("data/om/par",mystk,".RData")))
   par["m1"]  =par["m1"] /myparams[myparams$stock==mystk,"m1scaler"]    
   par["w50"] =par["w50"]/myparams[myparams$stock==mystk,"w50scaler"]
   par["matk"]=myparams[myparams$stock==mystk,"matk2"]               
+  # =======================================================================================
   
   fileConn <-file(file.path(tablesdir, paste(mystk, "par_om.txt", sep="_")))
   as.data.frame(par) %>% dplyr::select(-iter) %>% pander::pandoc.table(style="simple") %>% capture.output() %>% writeLines(., con=fileConn)
@@ -779,31 +748,35 @@ mystk     <- "mac";
                                  "F"=function(x) fbar(x),
                                  "Yield"=function(x) catch(x),
                                  "Rec"=function(x) rec(x)),drop=T) %>% mutate(scen="vpaM") )
+
+  # stock recruitment estimation  
+  sr08  =fmle(as.FLSR(window(vpaM, start=1999, end=2020),model="bevholtSV"),
+              fixed=list(s=0.8, 
+                         spr0=mean(spr0(vpaM))), 
+              control=list(silent=TRUE))
   
-  sr  =as.FLSR(vpaM,model=bevholtSV)
-  sr  =fmle(sr,fixed=list(s=0.8,spr0=mean(spr0(vpa))),control=list(silent=TRUE))
-  eq  =FLBRP(vpaM,ab(sr))
-  vpaM=fwdWindow(vpaM,eq,end=2050) 
+  jpeg(filename=file.path(figuresdir, paste(mystk, "om_srr.jpg", sep="_")),
+       width=10, height=12, units="in", res=300)
+  print(plot(sr08)) 
+  dev.off()
   
+  # BRP
+  eq08  =FLBRP(vpaM,sr=ab(sr08))
+  
+  jpeg(filename=file.path(figuresdir, paste(mystk, "om_brp.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(plot(eq08)) 
+  dev.off()
+  
+  # create projection object
+  vpaM=fwdWindow(vpaM,eq08,end=2050) 
+
   F  =propagate(window(fbar(vpaM),start=2020),101)
-  # F[]=rep(c(seq(0,                               c(refpts(eq)["msy",  "harvest"]),length.out=51),
-  #           seq(c(refpts(eq)["msy",  "harvest"]),c(refpts(eq)["crash","harvest"])*1.5,length.out=51)[-1]),each=dim(F)[2])
   F[]=rep(c(seq(0,                               c(refpts(eq)["crash","harvest"]),length.out=101)),each=dim(F)[2])
-  
+
   control=as(FLQuants("f"=F),"fwdControl")
-  vpaM  =fwd(vpaM,control=control,sr=eq)
+  vpaM  =fwd(vpaM,control=control,sr=eq08)
 
-  # t <-
-  #   model.frame(FLQuants(vpaM,"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
-  #                        "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
-  # tt <- t %>% filter(year==2050)
-  # t %>%
-  #   ggplot(aes(x=year, y=Biomass, group=iter)) +
-  #   theme_bw() +
-  #   geom_line() +
-  #   geom_text(data=tt, aes(label=iter), hjust=0)
-
-    
   d1=model.frame(FLQuants(vpaM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
                           "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
   
@@ -828,31 +801,10 @@ mystk     <- "mac";
     geom_segment(data=df_helper,
                  aes(x=0, xend=Biomass, y=Yield, yend=Yield, colour=scen))
   
-  # ggsave(p,
-  #        filename=file.path(figuresdir, paste(mystk, "om_biomass_yield.jpg", sep="_")),
-  #        device="jpeg",
-  #        width=10, height=10, units="in")
-  
   jpeg(filename=file.path(figuresdir, paste(mystk, "om_biomass_yield.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
   print(p) 
   dev.off()
-  
-  # plot of F vs biomass
-  # p <-
-  #   df_om %>% 
-  #   ggplot(aes(x=Biomass, y=F)) +
-  #   theme_bw() +
-  #   geom_line(aes(colour=scen)) +
-  #   geom_segment(data=df_helper,
-  #                aes(x=0, xend=Biomass, y=F, yend=F, colour=scen)) +
-  #   geom_segment(data=df_helper,
-  #                aes(x=Biomass, xend=Biomass, y=0, yend=F, colour=scen))
-  
-  # jpeg(filename=file.path(figuresdir, paste(mystk, "om_biomass_F.jpg", sep="_")),
-  #      width=10, height=10, units="in", res=300)
-  # print(p) 
-  # dev.off()
   
   # Comparing assessments
   p <-
@@ -869,11 +821,13 @@ mystk     <- "mac";
        width=10, height=10, units="in", res=300)
   print(p)
   dev.off()
-  
+
+
   ##############################################################################
-  # Setting Bref !!
+  # Setting Bref at BMSY!!
   
   par["bref"]=subset(d1, Yield==max(Yield))[,"Biomass"]
+  par["bref"]=refpts(eq08)["msy","biomass"]
   
   ##############################################################################
 
@@ -887,7 +841,7 @@ mystk     <- "mac";
   for (i in ac(2020:2050)) {
     vpaDDM =ddFn(i,vpaDDM,par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    vpaDDM =fwd(vpaDDM,control=control,sr=eq)}
+    vpaDDM =fwd(vpaDDM,control=control,sr=eq08)}
   
   p1=ggplot(stock.wt(vpaDDM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
@@ -927,7 +881,7 @@ mystk     <- "mac";
   for (i in ac(2020:2050)) {
     vpaDDMM =ddFn(i,vpaDDMM,par,massFlag=TRUE,matFlag=TRUE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    vpaDDMM =fwd(vpaDDMM,control=control,sr=eq)}
+    vpaDDMM =fwd(vpaDDMM,control=control,sr=eq08)}
   
   p1=ggplot(stock.wt(vpaDDMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
@@ -971,7 +925,7 @@ mystk     <- "mac";
   for (i in ac(2020:2050)) {
     vpaDDMMM =ddFn(i,vpaDDMMM,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    vpaDDMMM =fwd(vpaDDMMM,control=control,sr=eq)}
+    vpaDDMMM =fwd(vpaDDMMM,control=control,sr=eq08)}
   
   p1=ggplot(stock.wt(vpaDDMMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
@@ -1056,17 +1010,7 @@ mystk     <- "mac";
   close(fileConn)
   
   # save objects
-  eq<-df
-  rfs=ddply(eq,.(scen), with, {
-    flag=catch==max(catch)
-    data.frame(MSY   =catch[ flag],
-               BMSY  =biomass[flag],
-               SSBMSY=ssb[flag],
-               FMSY  =f[flag],
-               Virgin=max(ssb),
-               B0    =max(biomass))})
-  
-  save(om, om2, stk, sam, ices, om, om2, vpa, vpaM, vpaDDM, vpaDDMM, vpaDDMMM, eq, rfs,
+  save(om, om2, stk, sam, ices, om, om2, vpa, vpaM, vpaDDM, vpaDDMM, vpaDDMMM, eq08,
        df_om, df_helper,
        file=file.path(figuresdir, paste0(mystk, "_objects.RData")))
   
@@ -1075,35 +1019,155 @@ mystk     <- "mac";
   # ------------------------------------------------------------------------------
   # 5. MSE
   # ------------------------------------------------------------------------------
+  par["bref"]=refpts(eq08)["msy","biomass"]
   
-  # Forward projections with F=fmsy (fwd), 0.8xfmsy?, 1.0xfmsy, 1.2xfmsy?
+  startyear <- 2020; endyear <- 2050
   
-  # sr=fmle(as.FLSR(om,model="bevholt"),control=list(silent=TRUE))
-  # eq=FLBRP(om,sr=sr)
-  # 
-  # om=fwdWindow(om,end=maxyear,eq)
-  # f =fbar(om)[,ac(2021:maxyear)]%=%refpts(eq)["msy","harvest"]
-  # om=fwd(om,fbar=f,sr=eq)
-  # 
-  # om2=om
-  # om3=om
-  # om4=om
-  # 
-  # for (iYear in ac(2021:maxyear)){
-  #   om2=ddFn(iYear,om2,par)
-  #   om2=fwd(om2,fbar=f[,iYear]*0.8,sr=eq)
-  #   
-  #   om3=ddFn(iYear,om3,par)
-  #   om3=fwd(om3,fbar=f[,iYear],sr=eq)
-  #   
-  #   om4=ddFn(iYear,om4,par)
-  #   om4=fwd(om4,fbar=f[,iYear]*1.2,sr=eq)
-  # }
-  # 
-  # plot(FLStocks("fwd"=om,"0.8"=om2,"1.0"=om3,"1.2"=om4))
+  for (i in dimnames(vpaM)$year)
+    om=ddFn(i,vpaM,par,FALSE,FALSE, FALSE)
   
+  om=fwdWindow(window(om,end=startyear),end=endyear,eq08)
+  f =FLQuant(rep(seq(0,c(refpts(eq08)["crash","harvest"])*1.5,length.out=100),each=(endyear-startyear+1)),
+             dimnames=dimnames(fbar(om)[,ac(startyear:endyear)]))
+  om=fwd(om,fbar=f,sr=eq08)
   
+  oms=FLStocks("Base"     =om)
+  oms[["DD Mass"]]        =om
+  oms[["DD Mass, Mat"]]   =om
+  oms[["DD Mass, Mat, M"]]=om
+  
+  for (iYear in ac((startyear+1):endyear)){
+    
+    print(iYear)
+    
+    oms[["DD Mass"]]=ddFn(iYear,oms[["DD Mass"]],par,TRUE,FALSE,FALSE)
+    oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=f[,iYear],sr=eq08)
+    
+    oms[["DD Mass, Mat"]]=ddFn(iYear,oms[["DD Mass, Mat"]],par,TRUE,TRUE,FALSE)
+    oms[["DD Mass, Mat"]]=fwd(oms[["DD Mass, Mat"]],fbar=f[,iYear],sr=eq08)
+    
+    oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],par,TRUE,TRUE,TRUE)
+    oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=f[,iYear],sr=eq08)
+  }
+  
+  p1=ggplot(stock.wt(oms[[2]][,ac(endyear)]))+ 
+    geom_line(aes(age,data,group=iter))+
+    geom_line(aes(age,data),data=as.data.frame(stock.wt(oms[[1]][,ac(endyear)])),col="red")+
+    xlab("Age")+ylab("Mass-at-age") 
+  p2=ggplot(mat(oms[[2]][,ac(endyear)]))+
+    geom_line(aes(age,data,group=iter))+
+    geom_line(aes(age,data),data=as.data.frame(mat(oms[[1]][,ac(endyear)])),col="red")+
+    xlab("Age")+ylab("Mat-at-age")
+  p3=ggplot(m(oms[[2]][,ac(endyear)]))+
+    geom_line(aes(age,data,group=iter))+
+    geom_line(aes(age,data),data=as.data.frame(m(oms[[1]][,ac(endyear)])),col="red")+
+    xlab("Age")+ylab("M-at-age")
+  
+  d1=model.frame(FLQuants(oms[[1]][,ac(endyear)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+                          "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
+  d2=model.frame(FLQuants(oms[[2]][,ac(endyear)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+                          "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
+  p4=ggplot(d2)+
+    geom_line(aes(SSB,Yield))+
+    geom_line(aes(SSB,Yield),col="red",data=d1)
+  
+  ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+  
+
+  # equilibrium curves  
+  rfs=ldply(oms, function(x) { 
+    model.frame(FLQuants(x[,ac(endyear)],
+                         biomass=function(x) stock(x),
+                         ssb    =function(x) ssb(  x),
+                         catch  =function(x) catch(x),
+                         f      =function(x) fbar( x)),drop=TRUE)[,-1]})
+  
+  ggplot(rfs)+
+    geom_line(aes(ssb,catch,col=.id))+
+    xlab("SSB")+ylab("Catch")+
+    theme(legend.position="bottom")
+
+  # reference points
+  rfpts=ddply(rfs,.(.id), with, {  
+    flag=catch==max(catch)
+    data.frame(Bmsy  =biomass[flag],
+               SSBmsy=ssb[flag],
+               MSY   =catch[flag],
+               Fmsy  =f[flag],
+               Virgin=max(ssb),
+               B0    =max(biomass))})
+  
+  rfpts$Fmsy  
+  
+
+  # forward simulations
+  prj=list("1"=iter(oms[[1]],1:4),
+           "2"=iter(oms[[2]],1:4),
+           "3"=iter(oms[[3]],1:4),
+           "4"=iter(oms[[4]],1:4))
+  
+  F=fbar(prj[[1]][,ac((startyear+1):endyear)])%=%rep(rfpts$Fmsy,each=(endyear-startyear))
+  
+  control=as(FLQuants("f"=F),"fwdControl")
+  prj[[1]] =fwd(prj[[1]],control=control,sr=eq08)
+  
+  for (i in ac((startyear+1):endyear)) {
+    
+    print(i)
+    
+    prj[[2]] =ddFn(i,prj[[2]],par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+    control=as(FLQuants("f"=F[,i]),"fwdControl")
+    prj[[2]] =fwd(prj[[2]],control=control,sr=eq08)
+    
+    prj[[3]] =ddFn(i,prj[[3]],par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+    control=as(FLQuants("f"=F[,i]),"fwdControl")
+    prj[[3]] =fwd(prj[[3]],control=control,sr=eq08)
+    
+    prj[[4]] =ddFn(i,prj[[4]],par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
+    control=as(FLQuants("f"=F[,i]),"fwdControl")
+    prj[[4]] =fwd(prj[[4]],control=control,sr=eq08)
+  }  
+  
+  names(prj)=names(oms)
+  plot(FLStocks(prj[[1]]),iter=1:4)
+  plot(FLStocks(prj[[2]]),iter=1:4)
+  plot(FLStocks(prj[[3]]),iter=1:4)
+  plot(FLStocks(prj[[4]]),iter=1:4) 
+
+  plot(FLStocks(prj),iter=1:4)
+  plot(FLStocks(prj),iter=1:4) +scale_fill_manual(values=rep("white",4))
+  
+  # mse=hcrICES(fmsy,eql,rec(fmsy),
+  #             par,
+  #             start,   end,
+  #             interval,lag=lag,
+  #             err=err,
+  #             bndTac=c(0,Inf))
+
+  as.data.frame(FLStocks(prj)) %>% 
+    filter(slot %in% c("catch", "stock")) %>% 
+    ggplot(aes(x=year, y=data)) +
+    theme_bw() +
+    geom_line(aes(colour=iter)) +
+    facet_grid(slot ~cname , scales="free_y")
+  
+  plot(propagate(fbar(prj[[1]]),4)%*%FLQuant(seq(0.5,1.5,length.out=4),
+                                             dimnames=list(iter=1:4)),
+       probs=rep(0,5), 
+       worm=1:4)
   
 # } # end of stk loop
 
+df=ldply(prj, function(x) { 
+  model.frame(FLQuants(x,
+                       biomass=function(x) stock(x),
+                       ssb    =function(x) ssb(  x),
+                       catch  =function(x) catch(x),
+                       f      =function(x) fbar( x)),drop=TRUE)})
 
+df %>% 
+  tidyr::pivot_longer(names_to = "variable", values_to = "data", biomass:f) %>% 
+  ggplot(aes(x=year, y=data)) +
+  theme_bw() +
+  geom_line(aes(colour=iter)) +
+  facet_grid(variable ~.id , scales="free_y")
