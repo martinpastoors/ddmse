@@ -95,6 +95,22 @@ mystk     <- "mac";
   # 1. Introduction
   # ------------------------------------------------------------------------------
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   # ------------------------------------------------------------------------------
   # 2. Conditioning
   # ------------------------------------------------------------------------------
@@ -340,6 +356,23 @@ mystk     <- "mac";
   save(.,
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section2.RData", sep="_")))
 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   # ----------------------------------------------------------------------------
   # 3. Density dependence and theoretical OM
   # ----------------------------------------------------------------------------
@@ -625,18 +658,33 @@ mystk     <- "mac";
   #      file = file.path(dropboxdir, "results", mystk, paste(mystk,"section3.RData", sep="_")))
 
 
-  # ------------------------------------------------------------------------------
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    # ------------------------------------------------------------------------------
   # 4. OM based on ICES assessment
   # ------------------------------------------------------------------------------
-  load(file.path(dropboxdir, "data/om/parMac.RData"))
-  par_laurie <- par
+  # load(file.path(dropboxdir, "data/om/parMac.RData"))
+  # par_laurie <- par
   
   load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section3.RData", sep="_")))
 
-  bind_rows(
-    as.data.frame(par_laurie) %>% mutate(par="par_laurie"),
-    as.data.frame(par) %>% mutate(par="par")
-  )  
+  # bind_rows(
+  #   as.data.frame(par_laurie) %>% mutate(par="par_laurie"),
+  #   as.data.frame(par) %>% mutate(par="par")
+  # )  
+  
   section <- "04"
   
   ices=window(stk,start=1991)
@@ -726,8 +774,7 @@ mystk     <- "mac";
   # load(file.path(dropboxdir, paste0("data/om/par",mystk,".RData")))
   vpaM_par <- par
   vpaM_par["m1"]  =par["m1"] /myparams[myparams$stock==mystk,"m1scaler"]    
-  vpaM_par["m1"]  =par["m1"] /1   
-  
+  vpaM_par["m1"]  =par["m1"] /7.311  
   vpaM_par["w50"] =par["w50"]/myparams[myparams$stock==mystk,"w50scaler"]
 
   vpaM_par["matk"]=myparams[myparams$stock==mystk,"matk2"]               
@@ -769,7 +816,7 @@ mystk     <- "mac";
   dev.off()
   
   # BRP
-  eq08  =FLBRP(vpaM,sr=ab(vpaM_sr))
+  vpaM_eq  =FLBRP(vpaM,sr=ab(vpaM_sr))
   
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_brp.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
@@ -1107,16 +1154,10 @@ mystk     <- "mac";
     capture.output() %>% writeLines(., con=fileConn)
   close(fileConn)
   
-  # save objects
-  # save(om, om2, stk, sam, ices, vpa, vpaM, vpaDDM, vpaDDMM, vpaDDMMM, vpaM_eq,
-  #      df_om, df_helper,
-  #      file=file.path(figuresdir, paste0(mystk, "_objects.RData")))
-  
-  save(om, par, vpaM_par, stk, sam, ices, vpa, vpaM, vpaDDM, vpaDDMM, vpaDDMMM, vpaM_eq,
-       df_om, df_helper,
-       file=file.path(figuresdir, paste0(mystk, "_objects.RData")))
-  
-  load(file=file.path(figuresdir, paste0(mystk, "_objects.RData")))
+  # clean up and save
+  rm(dat, df, p, p1, p2, p3, p4, t, x, d1, d2, d3, d4, x)
+  save(.,
+       file = file.path(dropboxdir, "results", mystk, paste(mystk,"section4.RData", sep="_")))
   
   # ------------------------------------------------------------------------------
   # 5. MSE
