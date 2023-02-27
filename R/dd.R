@@ -1,5 +1,5 @@
-ddWt<-function(wt,biomass,bref,alpha=-0.2,min=0.5,max=1.5){
-  adj=(biomass%/%bref)^alpha
+ddWt<-function(wt,biomass,bref,delta=-0.2,min=0.5,max=1.5){
+  adj=(biomass%/%bref)^delta
   
   wt%*%qmin(qmax(adj,min),max)}
 
@@ -16,7 +16,7 @@ ddFn<-function(year,x,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE){
     dsr=discards.wt(x)[,year]/stock.wt(x)[,year]
     dsr[!is.finite(dsr)]=0
     
-    stock.wt(   x)[,year]=ddWt(stock.wt(x)[,year],biomass(x)[,ac(an(year)-1)],par["bref"],par["b"])
+    stock.wt(   x)[,year]=ddWt(stock.wt(x)[,year],biomass(x)[,ac(an(year)-1)],par["bref"],par["delta"])
     landings.wt(x)[,year]=stock.wt(x)[,year]*lsr
     discards.wt(x)[,year]=stock.wt(x)[,year]*dsr}
     
