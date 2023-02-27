@@ -69,8 +69,8 @@ myparams <- data.frame(
   maxage  = c(12                           , 10               ),
   maxyear = c(2050                         , 2050             ),
   m1scaler= c(8                            , 10               ),
-  w50scaler= c(1000                        , 500              ),
-  matk2   = c(30                           , 100               ) )
+  w50     = c(0.166                         , 0.17              ),
+  matk2   = c(28                           , 63               ) )
 
 save(myparams, file=file.path(dropboxdir, "data", "inputs", "myparams.RData"))
 
@@ -417,7 +417,7 @@ mystk     <- "mac";
             FLPar(c(bref =c(refpts(eq)["msy","biomass"]),
                     delta= myparams[myparams$stock==mystk,"delta"],
                     matk = myparams[myparams$stock==mystk,"matk"],
-                    w50  =par["a"]*par["l50"]^par["b"],
+                    w50  = par["a"]*par["l50"]^par["b"],
                     alpha=myparams[myparams$stock==mystk,"alpha"])))
 
   fileConn <-file(file.path(tablesdir, paste(section,mystk, "par.txt", sep="_")))
@@ -507,7 +507,7 @@ mystk     <- "mac";
     stock.wt(   x)=ddWt(stock.wt(eq),
                         biomass(x),
                         refpts(eq)["msy","biomass"],
-                        alpha=-0.2)
+                        delta=myparams[myparams$stock==mystk,"alpha"])
     landings.wt(x)=stock.wt(x)*lsr
     discards.wt(x)=stock.wt(x)*dsr
     x=brp(x)}
@@ -539,7 +539,7 @@ mystk     <- "mac";
     stock.wt(   x)=ddWt(stock.wt(eq),
                         biomass(x),
                         refpts(eq)["msy","biomass"],
-                        alpha=-0.2)
+                        delta=myparams[myparams$stock==mystk,"alpha"])
     landings.wt(x)=stock.wt(x)*lsr
     discards.wt(x)=stock.wt(x)*dsr
     
@@ -567,7 +567,7 @@ mystk     <- "mac";
   dsr=discards.wt(eq)/stock.wt(eq)
   # iterate
   for (i in seq(10)){
-    stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.2)
+    stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],delta=myparams[myparams$stock==mystk,"alpha"])
     landings.wt(x)=stock.wt(x)*lsr
     discards.wt(x)=stock.wt(x)*dsr
     
@@ -778,9 +778,7 @@ mystk     <- "mac";
   # load(file.path(dropboxdir, paste0("data/om/par",mystk,".RData")))
   vpaM_par <- par
   vpaM_par["m1"]  =par["m1"] /myparams[myparams$stock==mystk,"m1scaler"]    
-  vpaM_par["m1"]  =par["m1"] /7.311  
-  vpaM_par["w50"] =par["w50"]/myparams[myparams$stock==mystk,"w50scaler"]
-
+  vpaM_par["w50"] =myparams[myparams$stock==mystk,"w50"]
   vpaM_par["matk"]=myparams[myparams$stock==mystk,"matk2"]               
   # save(par, file=file.path(dropboxdir, paste0("data/om/par",mystk,".RData")))
   # =======================================================================================
@@ -925,7 +923,7 @@ mystk     <- "mac";
   # Setting Bref at BMSY!!
   
   vpaM_par["bref"]=subset(d1, Yield==max(Yield))[,"Biomass"]
-  vpaM_par["bref"]=refpts(vpaM_eq)["msy","biomass"]
+  # vpaM_par["bref"]=refpts(vpaM_eq)["msy","biomass"]
   # save(vpaM_par, file=file.path(dropboxdir, paste0("data/om/par",mystk,".RData")))
   
   ##############################################################################
@@ -936,6 +934,7 @@ mystk     <- "mac";
   ptm <- proc.time()
   
   vpaDDM=vpaM
+  # mat(vpaDDMM)[1] <-0
 
   i <- ac(2020)  
   for (i in ac(2020:2050)) {
@@ -944,6 +943,7 @@ mystk     <- "mac";
     vpaDDM =fwd(vpaDDM,control=control,sr=vpaM_eq)
   }
   
+
   p1=ggplot(stock.wt(vpaDDM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
   p2=ggplot(mat(vpaDDM[,"2030"]))+geom_line(aes(age,data,group=iter))+
@@ -982,7 +982,12 @@ mystk     <- "mac";
   for (i in ac(2020:2050)) {
     vpaDDMM =ddFn(i,vpaDDMM,vpaM_par,massFlag=TRUE,matFlag=TRUE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    vpaDDMM =fwd(vpaDDMM,control=control,sr=vpaM_eq)}
+    vpaDDMM =fwd(vpaDDMM,control=control,sr=vpaM_eq)
+  }
+  
+  # plot(mat(vpaDDMM))
+  # plot(vpaDDMM)
+  # plot(iter(vpaDDMM))
   
   p1=ggplot(stock.wt(vpaDDMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
@@ -1010,6 +1015,9 @@ mystk     <- "mac";
   
   # Stop the clock
   proc.time() - ptm
+  
+  # plot(mat(vpaDDMM)["2"])
+  # plot(stock.wt(vpaDDMM)["2"])
   
   # OM with DD in mass and maturity and M --------------------------------------
   
@@ -1200,9 +1208,9 @@ mystk     <- "mac";
   #              "2"=iter(oms[[2]],1:4),
   #              "3"=iter(oms[[3]],1:4),
   #              "4"=iter(oms[[4]],1:4))
-  prj=FLStocks("Base"=iter(oms[[1]],1:4),
-               "DD Mass"=iter(oms[[2]],1:4),
-               "DD Mass, Mat"=iter(oms[[3]],1:4),
+  prj=FLStocks("Base"           =iter(oms[[1]],1:4),
+               "DD Mass"        =iter(oms[[2]],1:4),
+               "DD Mass, Mat"   =iter(oms[[3]],1:4),
                "DD Mass, Mat, M"=iter(oms[[4]],1:4))
   
   F=fbar(prj[[1]][,ac(2020:2050)])%=%rep(rfpts$Fmsy,each=31)
@@ -1241,19 +1249,19 @@ mystk     <- "mac";
     x3=x1
     x4=x1
     for (iYr in ac(2020:2050)) {
+      
+      control=as(FLQuants("f"=F[,iYr]),"fwdControl")
+      
       ## DD M ##################################################         
       x2 =ddFn(iYr,x2,par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
-      control=as(FLQuants("f"=F[,iYr]),"fwdControl")
       x2 =fwd(x2,control=control,sr=vpaM_eq,residuals=devRec)
       
       ## DD MM##################################################
       x3 =ddFn(iYr,x3,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
-      control=as(FLQuants("f"=F[,iYr]),"fwdControl")
       x3 =fwd(x3,control=control,sr=vpaM_eq,residuals=devRec)
       
       ## DD MMM ################################################
       x4 =ddFn(iYr,x4,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
-      control=as(FLQuants("f"=F[,iYr]),"fwdControl")
       x4 =fwd(x4,control=control,sr=vpaM_eq,residuals=devRec)
     }  ## year loop
     
@@ -1309,6 +1317,6 @@ mystk     <- "mac";
               colour="black", linetype="dotted") +
     facet_grid(variable ~ .id, scales="free_y")
   
-
+  plot(prj[[1]],worm=1:4,probs=c(0))
 # } # end of stk loop
 
