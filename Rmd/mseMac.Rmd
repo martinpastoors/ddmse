@@ -67,6 +67,14 @@ library(mgcViz)
 theme_set(theme_bw(16))
 ```
 
+```{r}
+dirRuns="/home/laurie/Dropbox/ddmse/data/runs"
+```
+
+```{r, eval=FALSE}
+setwd("/home/laurie/Desktop/projects/ddmse/Rmd")
+```
+
 
 ```{r}
 source("../R/dd.R")
@@ -108,7 +116,7 @@ plot(FLStocks("ICES"=stk,"VPA"=vpa))
 
 
 ```{r, sr}
-load(paste("/home/laurie/Dropbox/pelagics/results/mac/figures/",tolower(stock),"_objects.RData",sep=""))
+load(paste("/home/laurie/Dropbox/pelagics/results/",tolower(stock),"/figures/",tolower(stock),"_objects.RData",sep=""))
 
 stk=window(iter(vpa,1),start=2000,end=2019)
 sr=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
@@ -144,19 +152,17 @@ dat=rbind(
 ```
 
 
-```{r, eqs}
-ggplot(dat)+
-  geom_line(aes(ssb,catch,col=What))
-```
-
-**Figure `r iFig=iFig+1; iFig`** Stock recruitment relationships
-
-
 ```{r, srs}
 ggplot(dat)+
   geom_line(aes(ssb,rec,col=What))
 ```
 
+**Figure `r iFig=iFig+1; iFig`** Stock recruitment relationships
+
+```{r, eqs}
+ggplot(dat)+
+  geom_line(aes(ssb,catch,col=What))
+```
 
 **Figure `r iFig=iFig+1; iFig`** Equilibrium curves for assumptions about density dependence
 
@@ -169,9 +175,10 @@ for (i in dimnames(vpaM)$year)
 ```
 
 ```{r, omCheck}
-om=fwdWindow(window(om,end=2020),end=2080,eq)
-f =FLQuant(rep(seq(0,c(refpts(eq)["crash","harvest"])*1.5,length.out=100),each=61),dimnames=dimnames(fbar(om)[,ac(2020:2080)]))
-om=fwd(om,fbar=f,sr=eq)
+om=fwdWindow(window(om,end=2020),end=2080,eqM)
+f =FLQuant(rep(seq(0,c(refpts(eq)["crash","harvest"])*1.5,length.out=100),each=61),
+           dimnames=dimnames(fbar(om)[,ac(2020:2080)]))
+om=fwd(om,fbar=f,sr=eqM)
 
 oms=FLStocks("Base"     =om)
 oms[["DD Mass"]]        =om
@@ -179,19 +186,19 @@ oms[["DD Mass, Mat"]]   =om
 oms[["DD Mass, Mat, M"]]=om
 for (iYear in ac(2020:2080)){
   oms[["DD Mass"]]=ddFn(iYear,oms[["DD Mass"]],par,TRUE,FALSE,FALSE)
-  oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=f[,iYear],sr=eq)
+  oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=f[,iYear],sr=eqM)
 
   oms[["DD Mass, Mat"]]=ddFn(iYear,oms[["DD Mass, Mat"]],par,TRUE,TRUE,FALSE)
-  oms[["DD Mass, Mat"]]=fwd(oms[["DD Mass, Mat"]],fbar=f[,iYear],sr=eq)
+  oms[["DD Mass, Mat"]]=fwd(oms[["DD Mass, Mat"]],fbar=f[,iYear],sr=eqM)
 
   oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],par,TRUE,TRUE,TRUE)
-  oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=f[,iYear],sr=eq)
-  }
+  oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=f[,iYear],sr=eqM)
+  } 
 ```
 
 
 ```{r, check2}
-p1=ggplot(stock.wt(oms[[2]][,ac(2080)]))+ 
+p1=ggplot(stock.wt(oms[[2]][,ac(2080)]))+  
   geom_line(aes(age,data,group=iter))+
   geom_line(aes(age,data),data=as.data.frame(stock.wt(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("Mass-at-age") 
@@ -218,7 +225,7 @@ ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 **Figure `r iFig=iFig+1; iFig`** Equilibrium curves and biological parameters for assumptions about density dependence
 
 ```{r, check3}
-p1=ggplot(stock.wt(oms[[3]][,ac(2080)]))+ 
+p1=ggplot(stock.wt(oms[[3]][,ac(2080)]))+  
   geom_line(aes(age,data,group=iter))+
   geom_line(aes(age,data),data=as.data.frame(stock.wt(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("Mass-at-age") 
@@ -245,7 +252,7 @@ ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 **Figure `r iFig=iFig+1; iFig`** Equilibrium curves and biological parameters for assumptions about density dependence
 
 ```{r, check4}
-p1=ggplot(stock.wt(oms[[4]][,ac(2080)]))+ 
+p1=ggplot(stock.wt(oms[[4]][,ac(2080)]))+  
   geom_line(aes(age,data,group=iter))+
   geom_line(aes(age,data),data=as.data.frame(stock.wt(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("Mass-at-age") 
@@ -399,8 +406,11 @@ prjs=mlply(data.frame(F=rfpts$Fmsy), function(F) {
             
             FLStocks(list("Base"=x1,"M"=x2,"MM"=x3,"MMM"=x4))        
     }) ## F loop
-         
-save(prjs,file=paste(dirRuns,"/",stock,"Prjs.RData",sep=""))
+```
+
+
+```{r, projectons-save}
+save(prjs,file=paste(dirRuns,"/",stock,"Prjs.RData",sep="")) 
 ```
 
 ```{r}
@@ -435,15 +445,4 @@ mse=hcrICES(fmsy,eql,rec(fmsy),
                       err=err,
                       bndTac=c(0,Inf))
 ```
-
-
-```{r, chk}
-dt1=model.frame(FLQuants("Rec"=rec(oms[[1]][,"2050"]),"SSB"=ssb(oms[[1]][,"2050"])),drop=T)
-dt2=model.frame(FLQuants("Rec"=rec(vpa[,"2050"]),"SSB"=ssb(vpa[,"2050"])),drop=T)
-
-ggplot()+
-  geom_line(aes(SSB,Rec),data=dt1)+
-  geom_line(aes(SSB,Rec),data=dt2)
-```
-
 
