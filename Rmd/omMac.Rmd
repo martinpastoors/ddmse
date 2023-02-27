@@ -172,6 +172,9 @@ sr  =fmle(sr,fixed=list(s=0.8,spr0=mean(spr0(vpa))),control=list(silent=TRUE))
 eq  =FLBRP(vpaM,ab(sr))
 vpaM=fwdWindow(vpaM,eq,end=2050) 
 
+# plot(sr)
+# plot(vpaM)
+
 F  =propagate(window(fbar(vpaM),start=2020),101)
 F[]=rep(c(seq(0,                               c(refpts(eq)["msy",  "harvest"]),length.out=51),
           seq(c(refpts(eq)["msy",  "harvest"]),c(refpts(eq)["crash","harvest"])*1.5,length.out=51)[-1]),each=dim(F)[2])
