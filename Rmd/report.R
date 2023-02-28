@@ -1203,11 +1203,7 @@ mystk     <- "mac";
                Virgin=max(ssb),
                B0    =max(biomass))})
   
-  # projection
-  # prj=FLStocks("1"=iter(oms[[1]],1:4),
-  #              "2"=iter(oms[[2]],1:4),
-  #              "3"=iter(oms[[3]],1:4),
-  #              "4"=iter(oms[[4]],1:4))
+  # projection with different Fs
   prj=FLStocks("Base"           =iter(oms[[1]],1:4),
                "DD Mass"        =iter(oms[[2]],1:4),
                "DD Mass, Mat"   =iter(oms[[3]],1:4),
@@ -1216,20 +1212,27 @@ mystk     <- "mac";
   F=fbar(prj[[1]][,ac(2020:2050)])%=%rep(rfpts$Fmsy,each=31)
   
   control=as(FLQuants("f"=F),"fwdControl")
-  prj[[1]] =fwd(prj[[1]],control=control,sr=vpaM_eq)
+  prj[[1]] =fwd(prj[[1]],
+                control=control,
+                sr=vpaM_eq)
   
   for (i in ac(2020:2050)) {
-    prj[[2]] =ddFn(i,prj[[2]],par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    prj[[2]] =fwd(prj[[2]],control=control,sr=vpaM_eq)
+    
+    prj[[2]] =ddFn(i,prj[[2]],par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+    prj[[2]] =fwd(prj[[2]],
+                  control=control,
+                  sr=vpaM_eq)
     
     prj[[3]] =ddFn(i,prj[[3]],par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
-    control=as(FLQuants("f"=F[,i]),"fwdControl")
-    prj[[3]] =fwd(prj[[3]],control=control,sr=vpaM_eq)
+    prj[[3]] =fwd(prj[[3]],
+                  control=control,
+                  sr=vpaM_eq)
     
     prj[[4]] =ddFn(i,prj[[4]],par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
-    control=as(FLQuants("f"=F[,i]),"fwdControl")
-    prj[[4]] =fwd(prj[[4]],control=control,sr=vpaM_eq)
+    prj[[4]] =fwd(prj[[4]],
+                  control=control,
+                  sr=vpaM_eq)
   }
   
   # Next running the stochastic loop
@@ -1242,7 +1245,10 @@ mystk     <- "mac";
     
     ## No DD ####################################################
     control=as(FLQuants("f"=F),"fwdControl")
-    x1     =fwd(base,control=control,sr=vpaM_eq,residuals=devRec)
+    x1     =fwd(base,
+                control=control,
+                sr=vpaM_eq,
+                residuals=devRec)
     
     ## With DD ####################################################
     x2=x1
@@ -1254,15 +1260,24 @@ mystk     <- "mac";
       
       ## DD M ##################################################         
       x2 =ddFn(iYr,x2,par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
-      x2 =fwd(x2,control=control,sr=vpaM_eq,residuals=devRec)
+      x2 =fwd(x2,
+              control=control,
+              sr=vpaM_eq,
+              residuals=devRec)
       
       ## DD MM##################################################
       x3 =ddFn(iYr,x3,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
-      x3 =fwd(x3,control=control,sr=vpaM_eq,residuals=devRec)
+      x3 =fwd(x3,
+              control=control,
+              sr=vpaM_eq,
+              residuals=devRec)
       
       ## DD MMM ################################################
       x4 =ddFn(iYr,x4,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
-      x4 =fwd(x4,control=control,sr=vpaM_eq,residuals=devRec)
+      x4 =fwd(x4,
+              control=control,
+              sr=vpaM_eq,
+              residuals=devRec)
     }  ## year loop
     
     FLStocks(list("Base"=x1,"M"=x2,"MM"=x3,"MMM"=x4))        
@@ -1270,11 +1285,19 @@ mystk     <- "mac";
   
   prj_df=ldply(prj, function(x) {
     model.frame(FLQuants(x,
+                         rec    =function(x) rec(x),
                          biomass=function(x) stock(x),
                          ssb    =function(x) ssb(  x),
                          catch  =function(x) catch(x),
-                         f      =function(x) fbar( x)),drop=TRUE)})
-
+                         f      =function(x) fbar( x)),drop=TRUE)}) %>% 
+    bind_cols()
+  prj_df %>% 
+    pivot_longer(names_to = "variable", values_to = "data", rec:f) %>% 
+    ggplot(aes(x=year, y=data)) +
+    theme_bw() +
+    geom_line(aes(colour=iter)) +
+    facet_grid(variable ~ .id, scales="free_y")
+  
   prjs_df=tibble()
   for (i in 1:length(prjs)) {
     prjs_df <-
@@ -1290,6 +1313,13 @@ mystk     <- "mac";
       )
   }
 
+  nyears = length(unique(prjs_df$year))
+  niters = length(unique(prjs_df$iter))
+  nscen  = length(unique(prjs_df$.id))
+  
+  prjs_df <- prjs_df %>% bind_cols(Fmsy = rep(rfpts$Fmsy, each=(nyears*niters*nscen)))
+
+
   p <- c(0.025, 0.5, 0.975)
   # p_names <- map_chr(p, ~paste0(.x*100, "%"))
   p_names <- c("lower","median","upper")
@@ -1299,22 +1329,23 @@ mystk     <- "mac";
   prjs_df_summ <-
     prjs_df %>% 
     pivot_longer(names_to = "variable", values_to = "data", rec:f) %>% 
-    group_by(.id, variable, year) %>% 
+    group_by(.id, Fmsy, variable, year) %>% 
     summarize_at(vars(data), tibble::lst(!!!p_funs)) 
     
-  basecase <-
-    prjs_df_summ %>% 
-    filter(.id == "Base") %>% 
-    ungroup() %>% 
-    dplyr::select(-.id)
+  # basecase <-
+  #   prjs_df_summ %>% 
+  #   filter(.id == "Base") %>% 
+  #   ungroup() %>% 
+  #   dplyr::select(-.id)
 
   prjs_df_summ %>% 
+    mutate(Fmsy = format(Fmsy, digits=2)) %>% 
     ggplot(aes(x=year, y=median)) +
     theme_bw() +
-    geom_ribbon(aes(ymin=lower, ymax=upper, fill=.id), alpha=0.3) +
-    geom_line(aes(colour=.id)) +
-    geom_line(data=basecase,
-              colour="black", linetype="dotted") +
+    geom_ribbon(aes(ymin=lower, ymax=upper, fill=Fmsy), alpha=0.3) +
+    geom_line(aes(colour=Fmsy)) +
+    # geom_line(data=basecase,
+    #           colour="black", linetype="dotted") +
     facet_grid(variable ~ .id, scales="free_y")
   
   plot(prj[[1]],worm=1:4,probs=c(0))
