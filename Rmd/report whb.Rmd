@@ -63,8 +63,11 @@ fig_nums <- captioner::captioner(prefix = "Figure", levels=1, type=c("n"), infix
 
 source("../R/dd.R")
 source("../R/pm.R")
+```
 
-source("/home/laurie/pCloudDrive/projects/ddmse/R/get_dropbox.r")
+
+```{r}
+source("../R/get_dropbox.R")
 
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 
@@ -153,6 +156,7 @@ All data and results are available on DropBox (https://www.dropbox.com/sh/k87x07
 
 # fig_nums(name    = "section2_fig", caption = "section2_fig", level = 1, display = FALSE)
 # tab_nums(name    = "section2_tab", caption = "section2_tab", level = 1, display = FALSE)
+section <- "02"
 
 ```
 
@@ -166,7 +170,7 @@ fig_nums(
   name    = "cond_waa", level = 1, display = FALSE,
   caption = paste0(mystkname, ". Weight at age by year and cohort"))
 
-knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "waa.jpg", sep="_")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section, mystk, "waa.jpg", sep="_")))
 
 ```
 
@@ -184,7 +188,7 @@ fig_nums(
   name    = "cond_mat", level = 1, display = FALSE,
   caption = paste0(mystkname, ". Maturity at age by year and cohort"))
 
-knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "mat.jpg", sep="_")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "mat.jpg", sep="_")))
 
 ```
 
@@ -203,7 +207,7 @@ fig_nums(
   name    = "cond_natmor", level = 1, display = FALSE,
   caption = paste0(mystkname, ". Natural mortality at age by year and cohort (all ages and years the same M)"))
 
-knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "m.jpg", sep="_")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "m.jpg", sep="_")))
 
 ```
 
@@ -222,7 +226,7 @@ fig_nums(
   name    = "cond_ddwaa", level = 1, display = FALSE,
   caption = paste0(mystkname, ". Density dependence and weight at age."))
 
-knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "dd_waa.jpg", sep="_")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "dd_waa.jpg", sep="_")))
 
 ```
 
@@ -240,7 +244,7 @@ fig_nums(
   name    = "cond_gammwaa", level = 1, display = FALSE,
   caption = paste0(mystkname, ". GAMM analysis of density dependence and weight at age."))
 
-knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "gamm.jpg", sep="_")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "gamm.jpg", sep="_")))
 
 ```
 
@@ -258,7 +262,7 @@ tab_nums(
   name    = "cond_gammsummary", level = 1, display = FALSE,
   caption = paste0(mystkname, ". GAMM summary of density dependence and weight at age."))
 
-cat(readLines(file.path(tablesdir, paste(mystk, "gamm summary.txt", sep="_"))), sep = '\n')
+cat(readLines(file.path(tablesdir, paste(section,mystk, "gamm summary.txt", sep="_"))), sep = '\n')
 
 ```
 
@@ -276,7 +280,7 @@ tab_nums(
   name    = "cond_gammcoefficients", level = 1, display = FALSE,
   caption = paste0(mystkname, ". GAMM coefficients of density dependence and weight at age."))
 
-cat(readLines(file.path(tablesdir, paste(mystk, "gamm coefficients.txt", sep="_"))), sep = '\n')
+cat(readLines(file.path(tablesdir, paste(section,mystk, "gamm coefficients.txt", sep="_"))), sep = '\n')
 
 ```
 
@@ -295,7 +299,7 @@ fig_nums(
   name    = "cond_lmwaa", level = 1, display = FALSE,
   caption = paste0(mystkname, ". LM analysis of density dependence and weight at age."))
 
-knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "lm_waa.jpg", sep="_")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "lm_waa.jpg", sep="_")))
 
 ```
 
@@ -313,7 +317,7 @@ tab_nums(
   name    = "cond_lmsummary", level = 1, display = FALSE,
   caption = paste0(mystkname, ". LM summary of density dependence and weight at age."))
 
-cat(readLines(file.path(tablesdir, paste(mystk, "lm summary.txt", sep="_"))), sep = '\n')
+cat(readLines(file.path(tablesdir, paste(section,mystk, "lm summary.txt", sep="_"))), sep = '\n')
 
 ```
 
@@ -331,7 +335,7 @@ fig_nums(
   name    = "cond_ddmat", level = 1, display = FALSE,
   caption = paste0(mystkname, ". Analysis of density dependence and maturity at age."))
 
-knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "dd_mat.jpg", sep="_")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "dd_mat.jpg", sep="_")))
 
 ```
 
@@ -351,7 +355,7 @@ fig_nums(
   name    = "cond_matogive", level = 1, display = FALSE,
   caption = paste0(mystkname, ". Estimated maturity ogive at weight"))
 
-knitr::include_graphics(path=file.path(figuresdir, paste(mystk, "mat_ogive.jpg", sep="_")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "mat_ogive.jpg", sep="_")))
 
 ```
 
@@ -375,36 +379,11 @@ $W_a = {\overline{W_a}} B^{{\beta}_a}$
 
 Where $\overline{W_a}$ and $\beta$ are estimated from a regression of mass-at-age ($W_a$) on total biomass ($B_a$), based on empirical data. $W_a$ is constrained so sizes do not become unfeasible large or small.
 
-```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
-
-fig_nums(
-  name    = "sim_dd_mass", level = 1, display = FALSE,
-  caption = "Simulation of density dependence in mass-at-age for different levels of biomass relative to Bmsy")
-
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_sim_dd_mass.jpg")))
-
-```
-
-_`r fig_nums("sim_dd_mass")`_
-
 ## Maturity-at-weight
 
 Maturity is then  modelled as a logistic function of mass-at-age i.e.
 
 $O(W_a) = 1/(1+e^{k(W_a-W_{50})})$
-
-```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
-
-fig_nums(
-  name    = "sim_dd_mat", level = 1, display = FALSE,
-  caption = "Simulation of density dependence in maturity-at-age for different levels of biomass relative to Bmsy")
-
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_sim_dd_maturity.jpg")))
-
-```
-
-_`r fig_nums("sim_dd_mat")`_
-
 
 ## Natural mortality
 
@@ -424,21 +403,23 @@ $ln(M_1) =(W/a)^{1/b}(\alpha + \beta ln(L_{\infty}) + \gamma ln(k))$
 
 For DD there is a relationship between Mass at age $M_a$ and total biomass ($B$)
 
-Mackerel:
+<!-- Mackerel: -->
 
-$M = 0.0232B + 0.0524$
+<!-- $M = 0.0232B + 0.0524$ -->
 
 ```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
-fig_nums(
-  name    = "sim_dd_m", level = 1, display = FALSE,
-  caption = "Simulation of density dependence in M-at-age for different levels of biomass relative to Bmsy")
+section <- "03"
 
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_sim_dd_m.jpg")))
+fig_nums(
+  name    = "sim_dd3", level = 1, display = FALSE,
+  caption = "Simulation of density dependence in mass-at-age, maturity at age and Natural mortality at age for different levels of biomass relative to Bmsy")
+
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"sim_dd3.jpg", sep="_")))
 
 ```
 
-_`r fig_nums("sim_dd_m")`_
+_`r fig_nums("sim_dd3")`_
 
 Comparison of equilibrium yield plots for simulation with and without density-dependent processes
 
@@ -448,11 +429,12 @@ fig_nums(
   name    = "sim_yield", level = 1, display = FALSE,
   caption = "Simulation of density dependence in M-at-age for different levels of biomass relative to Bmsy")
 
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_eq_yield.jpg")))
+knitr::include_graphics(
+  path=file.path(figuresdir, paste(section,mystk,"eq_yield.jpg",sep="_")))
 
 ```
 
-_`r fig_nums("sim_dd_m")`_
+_`r fig_nums("sim_yield")`_
 
 
 
@@ -469,15 +451,17 @@ Stock assessments with SAM (non-DD), density-dependent SAM, VPA based on SAM (no
 
 ```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
+section <- "04"
+
 fig_nums(
   name    = "om_assessments", level = 1, display = FALSE,
   caption = "Comparison of different assessments. VPA-M is used going forward")
 
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_comparing_assessments.jpg")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"comparing_assessments.jpg",sep="_")))
 
 ```
 
-_`r fig_nums("om_VPADDM")`_
+_`r fig_nums("om_assessments")`_
 
 \newpage
 
@@ -489,7 +473,8 @@ fig_nums(
   name    = "om_VPADDM", level = 1, display = FALSE,
   caption = "Simulation of density dependence in Mass-at-age")
 
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_VPADDM_4panels.jpg")))
+knitr::include_graphics(path=file.path(figuresdir, 
+                                       paste(section,mystk,"VPADDM_4panels.jpg", sep="_")))
 
 ```
 
@@ -505,7 +490,7 @@ fig_nums(
   name    = "om_VPADDMM", level = 1, display = FALSE,
   caption = "Simulation of density dependence in Mass-at-age and Maturity at age")
 
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_VPADDMM_4panels.jpg")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"VPADDMM_4panels.jpg",sep="_")))
 
 ```
 
@@ -521,7 +506,7 @@ fig_nums(
   name    = "om_VPADDMMM", level = 1, display = FALSE,
   caption = "Simulation of density dependence in Mass-at-age, maturity at age and M at age")
 
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_VPADDMMM_4panels.jpg")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"VPADDMMM_4panels.jpg",sep="_")))
 
 ```
 
@@ -529,15 +514,22 @@ _`r fig_nums("om_VPADDMMM")`_
 
 \newpage
 
-**Comparison of equilibrium curves for density dependence analyses: biomass against yield**
+**Comparison of equilibrium curves for density dependence analyses: biomass against yield and F**
 
 ```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "om_eqyield", level = 1, display = FALSE,
-  caption = "Equilibrium curves for density dependence analyses: biomass against yield")
+  caption = "Equilibrium curves for density dependence analyses: biomass against yield and biomass against F")
 
-knitr::include_graphics(path=file.path(figuresdir, paste0(mystk,"_comparing_dd.jpg")))
+# print("test")
+# print(figuresdir)
+# print(paste(section,mystk,"om_biomass_yield_F.jpg",sep="_"))
+# print(file.path(figuresdir,paste(section,mystk,"om_biomass_yield_F.jpg",sep="_")))    
+
+knitr::include_graphics(
+  path=file.path(figuresdir,paste(section,mystk,"om_biomass_yield_F.jpg",sep="_")))
+
 
 ```
 
@@ -553,11 +545,89 @@ _`r fig_nums("om_eqyield")`_
 
 # Forward projections without feedback
 
+[explanations here]
+
 ```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
+section <- "05"
+
+fig_nums(
+  name    = "mse_determ1", level = 1, display = FALSE,
+  caption = "Deterministic projections at Fmsy for different scenarios")
+
+knitr::include_graphics(path=
+                    file.path(figuresdir,paste(section,mystk,"deterministic_projections_at_Fmsy.jpg",sep="_")))
+```
+
+_`r fig_nums("mse_determ1")`_
+
+\newpage
+
+**Deterministic projections at Fmsy for different scenarios: trends in weight, maturity and M at age**
+
+```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "mse_determ2", level = 1, display = FALSE,
+  caption = "Deterministic projections at Fmsy for different scenarios: trends in weight, maturity and M at age")
+
+knitr::include_graphics(path=
+                    file.path(figuresdir,paste(section,mystk,"deterministic_projections_of_MMM.jpg",sep="_")))
 
 ```
 
+_`r fig_nums("mse_determ2")`_
+
+\newpage
+
+**Stochastic projections at Fmsy for different scenarios**
+
+```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "mse_sim1", level = 1, display = FALSE,
+  caption = "Stochastic projections at Fmsy for different scenarios")
+
+knitr::include_graphics(path=
+                    file.path(figuresdir,paste(section,mystk,"stochastic_projections_at_Fmsy.jpg",sep="_")))
+
+```
+
+_`r fig_nums("mse_sim1")`_
+
+\newpage
+
+**Histograms of probability distributions in 2050 for different scenarios**
+
+```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "mse_eq2050", level = 1, display = FALSE,
+  caption = "Histograms of probability distributions in 2050 for different scenarios")
+
+knitr::include_graphics(path=
+                    file.path(figuresdir,paste(section,mystk,"histograms-2050.jpg",sep="_")))
+
+```
+
+_`r fig_nums("mse_eq2050")`_
+
+\newpage
+
+**Stochastic projections at all Fmsy's from all scenarios**
+
+```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "mse_sim2", level = 1, display = FALSE,
+  caption = "Stochastic projections at all Fmsy's from all scenarios")
+
+knitr::include_graphics(path=
+                    file.path(figuresdir,paste(section,mystk,"stochastic_projections_at_different_Fmsys.jpg",sep="_")))
+
+```
+
+_`r fig_nums("mse_eq2050")`_
 
 <!-- =============================================================================================================== -->
 <!-- Section 6: Discussion and conclusions                                                                           -->
