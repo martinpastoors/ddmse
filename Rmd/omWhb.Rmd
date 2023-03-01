@@ -3,7 +3,7 @@ title: "**Density Dependence**"
 subtitle: "Blue whiting: Operating Model with density dependence in mass, maturity and M-at-age"
 author: "L Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: pdf_document
 mathjax: TRUE
 
 tags: FLR FLCore introduction
@@ -264,6 +264,9 @@ ggplot(d)+
   geom_line(aes(SSB,Yield,col=What))
 ```
 
+```{r}
+save(vpaM,vpaDDM,vpaDDMM,vpaDDMMM,par,file=file.path("/home/laurie/Desktop/projects/ddmse/data/om","omWhb.RData"))
+```
 
 # Funding
 

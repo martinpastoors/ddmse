@@ -3,7 +3,7 @@ title: "**Blue Whiting**"
 subtitle: "Emprirical evidence for density dependence"
 author: "L Kell & M Pastoors"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: word_document
+output: pdf_document
 mathjax: TRUE
 
 tags: FLR FLCore introduction
@@ -48,7 +48,7 @@ library(mgcViz)
 
 theme_set(theme_bw(16))
 
-source("../R/get_dropbox.R")
+source("../R/get_dropbox.r")
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/pelagics"

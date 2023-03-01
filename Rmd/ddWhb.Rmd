@@ -3,7 +3,7 @@ title: "**Density Dependence**"
 subtitle: "Blue Whiting: density dependence in mass, maturity and M-at-age"
 author: "L Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: pdf_document
 mathjax: TRUE
 
 tags: FLR FLCore introduction
@@ -196,7 +196,7 @@ lsr=landings.wt(eq)/stock.wt(eq)
 dsr=discards.wt(eq)/stock.wt(eq)
 # iterate
 for (i in seq(10)){
-  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.2)
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],delta=-0.2)
   landings.wt(x)=stock.wt(x)*lsr
   discards.wt(x)=stock.wt(x)*dsr
   x=brp(x)}
@@ -220,7 +220,7 @@ lsr=landings.wt(eq)/stock.wt(eq)
 dsr=discards.wt(eq)/stock.wt(eq)
 # iterate
 for (i in seq(10)){
-  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.2)
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],delta=-0.2)
   landings.wt(x)=stock.wt(x)*lsr
   discards.wt(x)=stock.wt(x)*dsr
 
@@ -247,7 +247,7 @@ dsr=discards.wt(eq)/stock.wt(eq)
 
 # iterate
 for (i in seq(10)){
-  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],alpha=-0.2)
+  stock.wt(   x)=ddWt(stock.wt(eq),biomass(x),refpts(eq)["msy","biomass"],delta=-0.2)
   landings.wt(x)=stock.wt(x)*lsr
   discards.wt(x)=stock.wt(x)*dsr
 

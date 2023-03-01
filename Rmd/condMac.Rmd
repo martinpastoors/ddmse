@@ -3,7 +3,7 @@ title: "**Nort East Atlantic Mackerel**"
 subtitle: "Mackerel: Emprirical evidence for density dependence"
 author: "L Kell & M Pastoors"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: word_document
+output: pdf_document
 mathjax: TRUE
 
 tags: FLR FLCore introduction
@@ -51,7 +51,7 @@ theme_set(theme_bw(16))
 
 
 ```{r, dropbox}
-source("../R/get_dropbox.R")
+source("../R/get_dropbox.r")
 
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 if ("try-error"%in%is(dropboxdir))

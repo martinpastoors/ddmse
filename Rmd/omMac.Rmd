@@ -3,7 +3,7 @@ title: "**Operating model**"
 subtitle: "Mackerel: Operating Model with density dependence in mass, maturity and M-at-age"
 author: "L Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: word_document
+output: pdf_document
 mathjax: TRUE
 
 tags: FLR FLCore introduction
@@ -13,7 +13,6 @@ license: Creative Commons Attribution-ShareAlike 4.0 International Public Licens
 
 
 ```{r warning=FALSE, cache=FALSE, include=FALSE, knitr, eval=TRUE}
-
 knitr::opts_chunk$set(echo = FALSE)
 # getwd()
 library(knitr)
@@ -34,7 +33,9 @@ opts_chunk$set(cache     =TRUE,
 
 iFig=0
 iTab=0
+```
 
+```{r, pkgs}
 library(FLCore)
 library(FLBRP)
 library(FLasher)
@@ -61,8 +62,11 @@ library(mgcViz)
 library(compositions)
   
 theme_set(theme_bw(16))
+```
 
-source("../R/get_dropbox.R")
+
+```{r, dropbox}
+source("../R/get_dropbox.r")
 
 dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
 
@@ -74,20 +78,13 @@ if ("try-error"%in% is(dropboxdir))
 
 # source("~/Desktop/projects/ddmse/R/dd.R")
 source("../R/dd.R")
-
 ```
 
 ```{r echo=FALSE, warning=FALSE, cache=FALSE, eval=TRUE}
-
 load(file.path(dropboxdir,"data/om/mac.RData"))
-
 ```
 
 ```{r echo=FALSE, warning=FALSE, cache=FALSE, eval=TRUE}
-
-# Start the clock
-ptm <- proc.time()
-
 load(file.path(dropboxdir,"data/inputs/ices.RData"))
 ices=ices[["mac.27.nea"]]
 ices=window(ices,start=1991)
@@ -97,28 +94,23 @@ sr  =fmle(sr,fixed=list(s=0.8,spr0=mean(spr0(ices))),control=list(silent=TRUE))
 eq  =FLBRP(ices,ab(sr))
 ices=fwdWindow(ices,eq,end=2050) 
 
-F  =propagate(window(fbar(ices),start=2020),101)
+F  =propagate(window(fbar(ices),end=2050),101)
 F[]=rep(c(seq(0,                               c(refpts(eq)["msy",  "harvest"]),length.out=51),
           seq(c(refpts(eq)["msy",  "harvest"]),c(refpts(eq)["crash","harvest"])*1.2,length.out=51)[-1]),each=dim(F)[2])
 
-control=as(FLQuants("f"=F),"fwdControl")
-ices   =fwd(ices,control=control,sr=eq)
+control=as(FLQuants("f"=F[,-1]),"fwdControl")
+ices   =fwd(propagate(ices,101),control=control,sr=eq)
 
 dices=model.frame(FLQuants(ices[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
                                          "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
 ggplot(dices)+
   geom_line(aes(SSB,Yield))
-
-# Stop the clock
-proc.time() - ptm
-
 ```
 
 **Figure `r iFig=iFig+1; iFig`** . 
 
 
 ```{r, vpa}
-
 # Start the clock
 ptm <- proc.time()
 
@@ -152,11 +144,11 @@ proc.time() - ptm
 
 
 ```{r, vpaM}
-
 # Start the clock
 ptm <- proc.time()
 
-load(file.path(dropboxdir, "data/om/parMac.RData"))
+#load(file.path(dropboxdir, "data/om/parMac.RData"))
+load("/home/laurie/Desktop/projects/ddmse/data/om/parMac.RData")
 par["m1"]  =par["m1"]/10
 par["w50"] =par["w50"]/1000
 par["matk"]=30

@@ -3,7 +3,7 @@ title: "**Density Dependence**"
 subtitle: "MSE for Mackerel"
 author: "L Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: pdf_document
 mathjax: TRUE
 tags: FLR FLCore introduction
 license: Creative Commons Attribution-ShareAlike 4.0 International Public License
@@ -29,8 +29,8 @@ opts_chunk$set(cache     =TRUE,
                error     =FALSE, 
                echo      =FALSE, 
                eval      =TRUE,cache   =TRUE,
-               cache.path="../cache/mseMac/",
-               fig.path  ="../tex/figs/mseMac/",
+               cache.path="../cache/mac/mse/",
+               fig.path  ="../tex/figs/mac/mse/",
                fig.width =8,
                fig.height=6,
                dev       ="png")
@@ -101,11 +101,11 @@ discards.wt(stk)[1]=0.01
 ```
 
 ```{r, pars}
-par=FLPar(c(m1=0.15/(0.2^-0.288),m2=-0.288,bref=NA,b=-0.3,matk=30.1,w50=0.2))
+params=FLPar(c(m1=0.15/(0.2^-0.288),m2=-0.288,bref=NA,delta=-0.3,matk=30,w50=0.17))
 ```
 
 ```{r, m}
-m(stk)=par["m1"]%*%(stock.wt(stk)%^%par["m2"])
+m(stk)=params["m1"]%*%(stock.wt(stk)%^%params["m2"])
 vpa=stk+VPA(stk)
 ```
 
@@ -168,10 +168,15 @@ ggplot(dat)+
 
 
 ```{r, ddM}
-par["bref"]=refpts(eqM)["msy","biomass"]
+params["bref"]=refpts(eqM)["msy","biomass"]
+
 
 for (i in dimnames(vpaM)$year)
-  om=ddFn(i,vpaM,par,FALSE,FALSE,TRUE)
+  om=ddFn(i,vpaM,params,FALSE,FALSE,TRUE) 
+```
+
+```{r}
+save(params,file="~/Desktop/tmp/parMac.RData")  
 ```
 
 ```{r, omCheck}
@@ -185,13 +190,13 @@ oms[["DD Mass"]]        =om
 oms[["DD Mass, Mat"]]   =om
 oms[["DD Mass, Mat, M"]]=om
 for (iYear in ac(2020:2080)){
-  oms[["DD Mass"]]=ddFn(iYear,oms[["DD Mass"]],par,TRUE,FALSE,FALSE)
+  oms[["DD Mass"]]=ddFn(iYear,oms[["DD Mass"]],params,TRUE,FALSE,FALSE)
   oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=f[,iYear],sr=eqM)
 
-  oms[["DD Mass, Mat"]]=ddFn(iYear,oms[["DD Mass, Mat"]],par,TRUE,TRUE,FALSE)
+  oms[["DD Mass, Mat"]]=ddFn(iYear,oms[["DD Mass, Mat"]],params,TRUE,TRUE,FALSE)
   oms[["DD Mass, Mat"]]=fwd(oms[["DD Mass, Mat"]],fbar=f[,iYear],sr=eqM)
 
-  oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],par,TRUE,TRUE,TRUE)
+  oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],params,TRUE,TRUE,TRUE)
   oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=f[,iYear],sr=eqM)
   } 
 ```
@@ -309,7 +314,7 @@ rfpts=ddply(rfs,.(.id), with, {
 rfpts
 ```
 
-```{r, projectons-1}
+```{r, projections-1}
 prj=FLStocks("1"=iter(oms[[1]],1:4),
              "2"=iter(oms[[2]],1:4),
              "3"=iter(oms[[3]],1:4),
@@ -318,25 +323,25 @@ prj=FLStocks("1"=iter(oms[[1]],1:4),
 F=fbar(prj[[1]][,ac(2020:2080)])%=%rep(rfpts$Fmsy,each=61)
     
 control=as(FLQuants("f"=F),"fwdControl")
-prj[[1]] =fwd(prj[[1]],control=control,sr=eq)
+prj[[1]] =fwd(prj[[1]],control=control,sr=eqM)
 
 for (i in ac(2020:2080)) {
-    prj[[2]] =ddFn(i,prj[[2]],par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+    prj[[2]] =ddFn(i,prj[[2]],params,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    prj[[2]] =fwd(prj[[2]],control=control,sr=eq)
+    prj[[2]] =fwd(prj[[2]],control=control,sr=eqM)
   
-    prj[[3]] =ddFn(i,prj[[3]],par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+    prj[[3]] =ddFn(i,prj[[3]],params,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    prj[[3]] =fwd(prj[[3]],control=control,sr=eq)
+    prj[[3]] =fwd(prj[[3]],control=control,sr=eqM)
   
-    prj[[4]] =ddFn(i,prj[[4]],par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
+    prj[[4]] =ddFn(i,prj[[4]],params,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    prj[[4]] =fwd(prj[[4]],control=control,sr=eq)
+    prj[[4]] =fwd(prj[[4]],control=control,sr=eqM)
     }
 ```
 
 ```{r}
-plot(FLStocks(prj[[1]]),iter=1:4) 
+plot(FLStocks(prj[[1]]),probs=c(0), worm=1:4) 
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming no density dependence
@@ -344,19 +349,19 @@ plot(FLStocks(prj[[1]]),iter=1:4)
 
 ```{r}
 names(prj)=names(oms)
-plot(FLStocks(prj[[2]]),iter=1:4)
+plot(FLStocks(prj[[2]]),probs=c(0), worm=1:4)
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming density dependence in mass-at-age only
 
 ```{r}
-plot(FLStocks(prj[[3]]),iter=1:4)
+plot(FLStocks(prj[[3]]),probs=c(0), worm=1:4)
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming density dependence in mass and maturity-at-age only
 
 ```{r}
-plot(FLStocks(prj[[4]]),iter=1:4)
+plot(FLStocks(prj[[4]]),probs=c(0), worm=1:4)
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming density dependence in mass, maturity and natural mortality-at-age
@@ -369,7 +374,7 @@ ldply(prj,ldply, function(x) model.frame(FLQuants(x,biomass=function(x) biomass(
 ```
 
 
-```{r, projectons-2}
+```{r, projections-2}
 devRec=rlnorm(100,rec(prj[[1]])[,ac(2020:2080),,,,1]%=%0,0.3)
 
 base=propagate(iter(prj[[1]],1),100)
@@ -388,20 +393,19 @@ prjs=mlply(data.frame(F=rfpts$Fmsy), function(F) {
             x3=x1
             x4=x1
             for (iYr in ac(2020:2080)) {
-              ## DD M ##################################################         
-              x2 =ddFn(iYr,x2,par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
               control=as(FLQuants("f"=F[,iYr]),"fwdControl")
-              x2 =fwd(x2,control=control,sr=eq,residuals=devRec)
+              
+              ## DD M ##################################################         
+              x2 =ddFn(iYr,x2,params,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+              x2 =fwd(x2,control=control,sr=eqM,residuals=devRec)
                  
               ## DD MM##################################################
-              x3 =ddFn(iYr,x3,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
-              control=as(FLQuants("f"=F[,iYr]),"fwdControl")
-              x3 =fwd(x3,control=control,sr=eq,residuals=devRec)
+              x3 =ddFn(iYr,x3,params,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
+              x3 =fwd(x3,control=control,sr=eqM,residuals=devRec)
   
               ## DD MMM ################################################
-              x4 =ddFn(iYr,x4,par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
-              control=as(FLQuants("f"=F[,iYr]),"fwdControl")
-              x4 =fwd(x4,control=control,sr=eq,residuals=devRec)
+              x4 =ddFn(iYr,x4,params,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
+              x4 =fwd(x4,control=control,sr=eqM,residuals=devRec)
               }  ## year loop
             
             FLStocks(list("Base"=x1,"M"=x2,"MM"=x3,"MMM"=x4))        
@@ -439,10 +443,39 @@ plot(FLStocks(prjs[[4]]))
 
 ```{r, MSE, eval=FALSE}
 mse=hcrICES(fmsy,eql,rec(fmsy),
-                      par,
+                      params,
                       start,   end,
                       interval,lag=lag,
                       err=err,
                       bndTac=c(0,Inf))
+```
+
+```{r}
+ggarrange(plot(prjs[[1]]) +
+               theme(axis.ticks.y = element_blank(),
+                     plot.margin = margin(r = 1),
+                     strip.text.y = element_text(size=0)), 
+          plot(prjs[[2]]) + 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank(),
+                     plot.margin = margin(r = 1, l = 1),
+                     strip.text.y = element_text(size=0)), 
+          plot(prjs[[3]]) + 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank(),
+                     plot.margin = margin(l = 1),
+                     strip.text.y = element_text(size=0)),
+          plot(prjs[[4]]) + 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank(),
+                     plot.margin = margin(l = 1)  ),
+          nrow = 1, common.legend = TRUE, widths=c(1.4,1,1,1))
+```
+
+```{r}
+save(params,file="~/Desktop/tmp/params.RData")
 ```
 
