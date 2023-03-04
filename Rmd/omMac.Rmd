@@ -87,7 +87,7 @@ load(file.path(dropboxdir,"data/om/mac.RData"))
 ```{r echo=FALSE, warning=FALSE, cache=FALSE, eval=TRUE}
 load(file.path(dropboxdir,"data/inputs/ices.RData"))
 ices=ices[["mac.27.nea"]]
-ices=window(ices,start=1991)
+#ices=window(ices,start=1991)
 
 sr  =as.FLSR(ices,model=bevholtSV)
 sr  =fmle(sr,fixed=list(s=0.8,spr0=mean(spr0(ices))),control=list(silent=TRUE))

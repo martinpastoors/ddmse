@@ -1202,10 +1202,10 @@ mystk     <- "whb";
   
   
   # projection with different Fs
-  prj=FLStocks("Base" =iter(oms[[1]],1:4),
-               "M"    =iter(oms[[2]],1:4),
-               "MM"   =iter(oms[[3]],1:4),
-               "MMM"  =iter(oms[[4]],1:4))
+  prj=FLStocks("Base" =fwdWindow(window(iter(oms[[1]],1:4),end=2020),end=2050,eqM),
+               "M"    =fwdWindow(window(iter(oms[[2]],1:4),end=2020),end=2050,eqM),
+               "MM"   =fwdWindow(window(iter(oms[[3]],1:4),end=2020),end=2050,eqM),
+               "MMM"  =fwdWindow(window(iter(oms[[4]],1:4),end=2020),end=2050,eqM))
   
   F=fbar(prj[[1]][,ac(2020:2050)])%=%rep(rfpts$Fmsy,each=31)
   
@@ -1224,7 +1224,7 @@ mystk     <- "whb";
                   control=control,
                   sr=vpaM_eq)
     
-    prj[[3]] =ddFn(i,prj[[3]],vpaM_par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+    prj[[3]] =ddFn(i,prj[[3]],vpaM_par,massFlag=TRUE,matFlag=TRUE,mFlag=FALSE)
     prj[[3]] =fwd(prj[[3]],
                   control=control,
                   sr=vpaM_eq)
@@ -1315,7 +1315,7 @@ mystk     <- "whb";
   
   # Next running the stochastic loop
   devRec=rlnorm(100,rec(prj[[1]])[,ac(2020:2050),,,,1]%=%0,0.3)
-  base=propagate(iter(prj[[1]],1),100)
+  base=fwdWindow(window(propagate(iter(prj[[1]],1),100),end=2020),end=2050,eqM)
   prjs=mlply(data.frame(F=rfpts$Fmsy), function(F) {
     
     ## FMSY estimate by OM ######################################
@@ -1346,7 +1346,7 @@ mystk     <- "whb";
               residuals=devRec)
       
       ## DD MM##################################################
-      x3 =ddFn(iYr,x3,vpaM_par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
+      x3 =ddFn(iYr,x3,vpaM_par,massFlag=TRUE,matFlag=TRUE,mFlag=FALSE)
       x3 =fwd(x3,
               control=control,
               sr=vpaM_eq,

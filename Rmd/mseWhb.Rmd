@@ -100,25 +100,19 @@ discards.wt(stk)[1]=0.01
 params=FLPar(c(m1=0.15/(0.2^-0.288),m2=-0.288,bref=NA,delta=-0.2,matk=62.1, w50=0.08))  
 ```
 
-```{r}
-#load(file.path("/home/laurie/Desktop/projects/ddmse/data/om","omWhb.RData"))
-#params=par[c(19,20,21,22,24,25)]
-```
-
-
 ```{r, m}
 m(stk)=params["m1"]%*%(stock.wt(stk)%^%params["m2"])
-vpa=stk+VPA(stk) 
+vpa=stk+VPA(stk)
 ```
 
 
 ```{r, vpa}
-plot(FLStocks("ICES"=stk,"VPA"=vpa)) 
+plot(FLStocks("ICES"=stk,"VPA"=vpa))
 ```
 
 
 ```{r, sr}
-load("/home/laurie/Desktop/projects/ddmse/data/om/omWhb.RData")
+load(paste("/home/laurie/Dropbox/pelagics/results/",tolower(stock),"/figures/",tolower(stock),"_objects.RData",sep=""))
 
 stk=window(iter(vpa,1),start=2000,end=2019)
 sr=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk))),
@@ -145,7 +139,7 @@ srDDMMM=fmle(as.FLSR(stk,model="bevholtSV"),fixed=list(s=0.8,spr0=mean(spr0(stk)
                 control=list(silent=TRUE))
 eqDDMMM=FLBRP(stk,sr=ab(srDDMMM))
 
-dat=rbind(
+eqCs=rbind(
   cbind(What="ICES",    model.frame(FLQuants(eq,rec=rec,ssb=ssb,catch=catch),drop=T)),
   cbind(What="VPA",     model.frame(FLQuants(eqM,rec=rec,ssb=ssb,catch=catch),drop=T)),
   cbind(What="VPA M",   model.frame(FLQuants(eqDDM,rec=rec,ssb=ssb,catch=catch),drop=T)),
@@ -155,14 +149,14 @@ dat=rbind(
 
 
 ```{r, srs}
-ggplot(dat)+
+ggplot(eqCs)+
   geom_line(aes(ssb,rec,col=What))
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Stock recruitment relationships
 
 ```{r, eqs}
-ggplot(dat)+
+ggplot(eqCs)+
   geom_line(aes(ssb,catch,col=What))
 ```
 
@@ -170,37 +164,29 @@ ggplot(dat)+
 
 
 ```{r, ddM}
-params["bref"]=refpts(eqM)["msy","biomass"]*0.5
+params["bref"]=refpts(eqM)["msy","biomass"]
 
-for (i in dimnames(vpaM)$year) 
+for (i in dimnames(vpaM)$year)
   om=ddFn(i,vpaM,params,FALSE,FALSE,TRUE) 
 ```
 
-
-```{r}
-save(om,eqM,params,file="~/Desktop/tmp/t.RData") 
-```
-
 ```{r, omCheck}
-om=fwdWindow(window(om,end=2020),end=2050,eqM)
-f =FLQuant(rep(seq(0,c(refpts(eqM)["crash","harvest"])*1.5,length.out=100),each=31),
-           dimnames=dimnames(fbar(om)[,ac(2020:2050)]))
+om=fwdWindow(window(om,end=2020),end=2080,eqM)
+f =FLQuant(rep(seq(0,c(refpts(eq)["crash","harvest"])*1.5,length.out=100),each=61),
+           dimnames=dimnames(fbar(om)[,ac(2020:2080)]))
 om=fwd(om,fbar=f,sr=eqM)
-
-#dimnames(params)$params[4]="delta"
 
 oms=FLStocks("Base"     =om)
 oms[["DD Mass"]]        =om
 oms[["DD Mass, Mat"]]   =om
 oms[["DD Mass, Mat, M"]]=om
-
-for (iYear in ac(2020:2050)){ 
+for (iYear in ac(2020:2080)){
   oms[["DD Mass"]]=ddFn(iYear,oms[["DD Mass"]],params,TRUE,FALSE,FALSE)
   oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=f[,iYear],sr=eqM)
- 
+
   oms[["DD Mass, Mat"]]=ddFn(iYear,oms[["DD Mass, Mat"]],params,TRUE,TRUE,FALSE)
   oms[["DD Mass, Mat"]]=fwd(oms[["DD Mass, Mat"]],fbar=f[,iYear],sr=eqM)
- 
+
   oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],params,TRUE,TRUE,TRUE)
   oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=f[,iYear],sr=eqM)
   } 
@@ -208,22 +194,22 @@ for (iYear in ac(2020:2050)){
 
 
 ```{r, check2}
-p1=ggplot(stock.wt(oms[[2]][,ac(2050)]))+  
+p1=ggplot(stock.wt(oms[[2]][,ac(2080)]))+  
   geom_line(aes(age,data,group=iter))+
-  geom_line(aes(age,data),data=as.data.frame(stock.wt(oms[[1]][,ac("2050")])),col="red")+
+  geom_line(aes(age,data),data=as.data.frame(stock.wt(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("Mass-at-age") 
-p2=ggplot(mat(oms[[2]][,ac(2050)]))+
+p2=ggplot(mat(oms[[2]][,ac(2080)]))+
   geom_line(aes(age,data,group=iter))+
-  geom_line(aes(age,data),data=as.data.frame(mat(oms[[1]][,ac("2050")])),col="red")+
+  geom_line(aes(age,data),data=as.data.frame(mat(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("Mat-at-age")
-p3=ggplot(m(oms[[2]][,ac(2050)]))+
+p3=ggplot(m(oms[[2]][,ac(2080)]))+
   geom_line(aes(age,data,group=iter))+
-  geom_line(aes(age,data),data=as.data.frame(m(oms[[1]][,ac("2050")])),col="red")+
+  geom_line(aes(age,data),data=as.data.frame(m(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("M-at-age")
 
-d1=model.frame(FLQuants(oms[[1]][,ac(2050)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+d1=model.frame(FLQuants(oms[[1]][,ac(2080)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
                                            "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
-d2=model.frame(FLQuants(oms[[2]][,ac(2050)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+d2=model.frame(FLQuants(oms[[2]][,ac(2080)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
                                            "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
 p4=ggplot(d2)+
   geom_line(aes(SSB,Yield))+
@@ -235,22 +221,22 @@ ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 **Figure `r iFig=iFig+1; iFig`** Equilibrium curves and biological parameters for assumptions about density dependence
 
 ```{r, check3}
-p1=ggplot(stock.wt(oms[[3]][,ac(2050)]))+  
+p1=ggplot(stock.wt(oms[[3]][,ac(2080)]))+  
   geom_line(aes(age,data,group=iter))+
-  geom_line(aes(age,data),data=as.data.frame(stock.wt(oms[[1]][,ac("2050")])),col="red")+
+  geom_line(aes(age,data),data=as.data.frame(stock.wt(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("Mass-at-age") 
-p2=ggplot(mat(oms[[3]][,ac(2050)]))+
+p2=ggplot(mat(oms[[3]][,ac(2080)]))+
   geom_line(aes(age,data,group=iter))+
-  geom_line(aes(age,data),data=as.data.frame(mat(oms[[1]][,ac("2050")])),col="red")+
+  geom_line(aes(age,data),data=as.data.frame(mat(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("Mat-at-age")
-p3=ggplot(m(oms[[3]][,ac(2050)]))+
+p3=ggplot(m(oms[[3]][,ac(2080)]))+
   geom_line(aes(age,data,group=iter))+
-  geom_line(aes(age,data),data=as.data.frame(m(oms[[1]][,ac("2050")])),col="red")+
+  geom_line(aes(age,data),data=as.data.frame(m(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("M-at-age")
 
-d1=model.frame(FLQuants(oms[[1]][,ac(2050)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+d1=model.frame(FLQuants(oms[[1]][,ac(2080)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
                                            "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
-d3=model.frame(FLQuants(oms[[3]][,ac(2050)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+d3=model.frame(FLQuants(oms[[3]][,ac(2080)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
                                            "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
 p4=ggplot(d3)+
   geom_line(aes(SSB,Yield))+
@@ -262,22 +248,22 @@ ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 **Figure `r iFig=iFig+1; iFig`** Equilibrium curves and biological parameters for assumptions about density dependence
 
 ```{r, check4}
-p1=ggplot(stock.wt(oms[[4]][,ac(2050)]))+  
+p1=ggplot(stock.wt(oms[[4]][,ac(2080)]))+  
   geom_line(aes(age,data,group=iter))+
-  geom_line(aes(age,data),data=as.data.frame(stock.wt(oms[[1]][,ac("2050")])),col="red")+
+  geom_line(aes(age,data),data=as.data.frame(stock.wt(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("Mass-at-age") 
-p2=ggplot(mat(oms[[4]][,ac(2050)]))+
+p2=ggplot(mat(oms[[4]][,ac(2080)]))+
   geom_line(aes(age,data,group=iter))+
-  geom_line(aes(age,data),data=as.data.frame(mat(oms[[1]][,ac("2050")])),col="red")+
+  geom_line(aes(age,data),data=as.data.frame(mat(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("Mat-at-age")
-p3=ggplot(m(oms[[4]][,ac(2050)]))+
+p3=ggplot(m(oms[[4]][,ac(2080)]))+
   geom_line(aes(age,data,group=iter))+
-  geom_line(aes(age,data),data=as.data.frame(m(oms[[1]][,ac("2050")])),col="red")+
+  geom_line(aes(age,data),data=as.data.frame(m(oms[[1]][,ac("2080")])),col="red")+
   xlab("Age")+ylab("M-at-age")
 
-d1=model.frame(FLQuants(oms[[4]][,ac(2050)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+d1=model.frame(FLQuants(oms[[1]][,ac(2080)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
                                            "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
-d4=model.frame(FLQuants(oms[[2]][,ac(2050)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
+d4=model.frame(FLQuants(oms[[4]][,ac(2080)],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
                                            "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
 p4=ggplot(d4)+
   geom_line(aes(SSB,Yield))+
@@ -289,14 +275,14 @@ ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 **Figure `r iFig=iFig+1; iFig`** Equilibrium curves and biological parameters for assumptions about density dependence
 
 ```{r, eqlCurves}
-rfs=ldply(oms, function(x) { 
-  model.frame(FLQuants(x[,"2050"],
+eqCurves=ldply(oms, function(x) { 
+  model.frame(FLQuants(x[,"2080"],
              biomass=function(x) stock(x),
              ssb    =function(x) ssb(  x),
              catch  =function(x) catch(x),
              f      =function(x) fbar( x)),drop=TRUE)[,-1]})
-
-ggplot(rfs)+
+  
+ggplot(eqCurves)+
   geom_line(aes(ssb,catch,col=.id))+
   xlab("SSB")+ylab("Catch")+
   theme(legend.position="bottom")
@@ -307,7 +293,7 @@ ggplot(rfs)+
 **Table `r iTab=iTab+1; iTab`** Reference points
 
 ```{r, refptsTable}
-rfpts=ddply(rfs,.(.id), with, {  
+rfpts=ddply(eqCurves,.(.id), with, {  
   flag=catch==max(catch)
   data.frame(Bmsy  =biomass[flag],
              SSBmsy=ssb[flag],
@@ -320,26 +306,30 @@ rfpts
 ```
 
 ```{r}
-save(oms,eqM,refpts,file="~/Desktop/tmp/t.RData")
+save(om,eqM,rfpts,params,file="~/Desktop/tmp/t.RData")
 ```
 
 ```{r, projections-1}
-prj=FLStocks("1"=iter(oms[[1]],1:4),
-             "2"=iter(oms[[2]],1:4),
-             "3"=iter(oms[[3]],1:4),
-             "4"=iter(oms[[4]],1:4))
+load("~/Desktop/tmp/t.RData")
+source("/home/laurie/Desktop/projects/ddmse/R/dd.R")
 
-F=fbar(prj[[1]][,ac(2020:2050)])%=%rep(rfpts$Fmsy,each=31)
-    
+om=fwdWindow(window(iter(om,51),end=2020),end=2080,eqM)
+F =propagate(fbar(om[,ac(2020:2080)]),4)
+F[]=rep(rfpts$Fmsy,each=61)
 control=as(FLQuants("f"=F),"fwdControl")
-prj[[1]] =fwd(prj[[1]],control=control,sr=eqM)
 
-for (i in ac(2020:2050)) {
+om =fwd(om,control=control,sr=eqM)
+
+prj=FLStocks("Base"     =om)
+prj[["DD Mass"]]        =om
+prj[["DD Mass, Mat"]]   =om
+prj[["DD Mass, Mat, M"]]=om
+for (i in ac(2020:2080)) {
     prj[[2]] =ddFn(i,prj[[2]],params,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
     prj[[2]] =fwd(prj[[2]],control=control,sr=eqM)
   
-    prj[[3]] =ddFn(i,prj[[3]],params,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+    prj[[3]] =ddFn(i,prj[[3]],params,massFlag=TRUE,matFlag=TRUE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
     prj[[3]] =fwd(prj[[3]],control=control,sr=eqM)
   
@@ -348,6 +338,24 @@ for (i in ac(2020:2050)) {
     prj[[4]] =fwd(prj[[4]],control=control,sr=eqM)
     }
 ```
+
+
+```{r}
+ts=ldply(prj, function(x) model.frame(FLQuants(x, ssb  =function(x) ssb(  x), 
+                                                  f    =function(x) fbar(x), 
+                                                  catch=function(x) catch(x)),drop=T))
+ts=transform(ts,What=.id)
+ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
+
+#plot(prj,probs=0,worm=seq(4))+facet_grid(qname~stock,scale="free")
+
+ggplot()+
+  geom_line( aes(ssb,catch,col=.id),   data=eqCurves)+
+  geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2040))
+
+cast(subset(ts,year==2080),iter~What,value="catch")
+```
+
 
 ```{r}
 plot(FLStocks(prj[[1]]),probs=c(0), worm=1:4) 
@@ -376,48 +384,46 @@ plot(FLStocks(prj[[4]]),probs=c(0), worm=1:4)
 **Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming density dependence in mass, maturity and natural mortality-at-age
 
 ```{r, eval=FALSE}
-ldply(prj,ldply, function(x) model.frame(FLQuants(x,biomass=function(x) biomass(x)[,"2050"],
-                                                    ssb    =function(x) ssb(    x)[,"2050"],
-                                                    catch  =function(x) catch(  x)[,"2050"],
-                                                    f      =function(x) fbar(   x)[,"2050"]),drop=T)) 
+ldply(prj,ldply, function(x) model.frame(FLQuants(x,biomass=function(x) biomass(x)[,"2080"],
+                                                    ssb    =function(x) ssb(    x)[,"2080"],
+                                                    catch  =function(x) catch(  x)[,"2080"],
+                                                    f      =function(x) fbar(   x)[,"2080"]),drop=T)) 
 ```
 
-
 ```{r, projections-2}
-devRec=rlnorm(100,rec(prj[[1]])[,ac(2020:2050),,,,1]%=%0,0.3)
+base=propagate(iter(fwdWindow(window(prj[[1]],end=2020),end=2080,eqM),1),100)
+devRec=rlnorm(100,rec(base)[,ac(2020:2080),,,,1]%=%0,0.3)
 
-base=propagate(iter(prj[[1]],1),100)
-     
 prjs=mlply(data.frame(F=rfpts$Fmsy), function(F) {
               
-            ## FMSY estimate by OM ######################################
-            F=FLQuant(F,dimnames=list(year=2020:2050))
+    ## FMSY estimate by OM ######################################
+    F=FLQuant(F,dimnames=list(year=2020:2080))
          
-            ## No DD ####################################################
-            control=as(FLQuants("f"=F),"fwdControl")
-            x1     =fwd(base,control=control,sr=eq,residuals=devRec)
+    ## No DD ####################################################
+    control=as(FLQuants("f"=F),"fwdControl")
+    x1     =fwd(base,control=control,sr=eqM,residuals=devRec)
            
-            ## With DD ####################################################
-            x2=x1
-            x3=x1
-            x4=x1
-            for (iYr in ac(2020:2050)) {
-              control=as(FLQuants("f"=F[,iYr]),"fwdControl")
+    ## With DD ####################################################
+    x2=x1
+    x3=x1
+    x4=x1
+    for (iYr in ac(2020:2080)) {
+        control=as(FLQuants("f"=F[,iYr]),"fwdControl")
               
-              ## DD M ##################################################         
-              x2 =ddFn(iYr,x2,params,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
-              x2 =fwd(x2,control=control,sr=eqM,residuals=devRec)
+          ## DD M ##################################################         
+          x2 =ddFn(iYr,x2,params,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+          x2 =fwd(x2,control=control,sr=eqM,residuals=devRec)
                  
-              ## DD MM##################################################
-              x3 =ddFn(iYr,x3,params,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
-              x3 =fwd(x3,control=control,sr=eqM,residuals=devRec)
+          ## DD MM##################################################
+          x3 =ddFn(iYr,x3,params,massFlag=TRUE,matFlag=TRUE,mFlag=FALSE)
+          x3 =fwd(x3,control=control,sr=eqM,residuals=devRec)
   
-              ## DD MMM ################################################
-              x4 =ddFn(iYr,x4,params,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
-              x4 =fwd(x4,control=control,sr=eqM,residuals=devRec)
-              }  ## year loop
+          ## DD MMM ################################################
+          x4 =ddFn(iYr,x4,params,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
+          x4 =fwd(x4,control=control,sr=eqM,residuals=devRec)
+          }  
             
-            FLStocks(list("Base"=x1,"M"=x2,"MM"=x3,"MMM"=x4))        
+    FLStocks(list("Base"=x1,"M"=x2,"MM"=x3,"MMM"=x4))        
     }) ## F loop
 ```
 
@@ -460,10 +466,6 @@ mse=hcrICES(fmsy,eql,rec(fmsy),
 ```
 
 ```{r}
-save(prjs,file="~/Desktop/tmp/t.RData")
-```
-
-```{r}
 ggarrange(plot(prjs[[1]]) +
                theme(axis.ticks.y = element_blank(),
                      plot.margin = margin(r = 1),
@@ -488,4 +490,15 @@ ggarrange(plot(prjs[[1]]) +
           nrow = 1, common.legend = TRUE, widths=c(1.4,1,1,1))
 ```
 
+
+```{r}
+save(prjs,file="~/Desktop/tmp/t.RData")  
+
+load("~/Desktop/tmp/t.RData")
+
+smry=mdply(names(prjs), function(x) mdply(names(prjs[[x]]),
+            function(y) cbind(A=x,B=y,model.frame(FLQuants(prjs[[x]][[y]][,"2040"], F=fbar,SSB=ssb,Catch=catch),drop=T))))
+cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=median(Catch),F=median(F))),A~B,value="F")
+cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=median(Catch),F=median(F))),A~B,value="Catch")
+```
 
