@@ -305,12 +305,7 @@ rfpts=ddply(eqCurves,.(.id), with, {
 rfpts
 ```
 
-```{r}
-save(om,eqM,rfpts,params,file="~/Desktop/tmp/t.RData")
-```
-
 ```{r, projections-1}
-load("~/Desktop/tmp/t.RData")
 source("/home/laurie/Desktop/projects/ddmse/R/dd.R")
 
 om=fwdWindow(window(iter(om,51),end=2020),end=2080,eqM)
@@ -492,10 +487,6 @@ ggarrange(plot(prjs[[1]]) +
 
 
 ```{r}
-save(prjs,file="~/Desktop/tmp/t.RData")  
-
-load("~/Desktop/tmp/t.RData")
-
 smry=mdply(names(prjs), function(x) mdply(names(prjs[[x]]),
             function(y) cbind(A=x,B=y,model.frame(FLQuants(prjs[[x]][[y]][,"2040"], F=fbar,SSB=ssb,Catch=catch),drop=T))))
 cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=median(Catch),F=median(F))),A~B,value="F")
