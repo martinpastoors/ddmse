@@ -85,6 +85,10 @@ load(file.path(dropboxdir,"data/om/mac.RData"))
 ```
 
 ```{r echo=FALSE, warning=FALSE, cache=FALSE, eval=TRUE}
+library(FLCore)
+library(FLBRP)
+library(FLasher)
+
 load(file.path(dropboxdir,"data/inputs/ices.RData"))
 ices=ices[["mac.27.nea"]]
 #ices=window(ices,start=1991)

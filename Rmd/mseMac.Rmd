@@ -347,10 +347,15 @@ ts=transform(ts,What=.id)
 ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
 
 #plot(prj,probs=0,worm=seq(4))+facet_grid(qname~stock,scale="free")
+```
 
+
+```{r, check, fig.height=6,fig.width=8}
 ggplot()+
   geom_line( aes(ssb,catch,col=.id),   data=eqCurves)+
-  geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2040))
+  geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2040))+
+  theme_bw()+theme(legend.position="bottom")+
+  xlab("SSB")+ylab("Yield")
 ```
 
 

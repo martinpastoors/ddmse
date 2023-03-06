@@ -173,7 +173,7 @@ for (i in dimnames(vpaM)$year)
 
 ```{r, omCheck}
 om=fwdWindow(window(om,end=2020),end=2080,eqM)
-f =FLQuant(rep(seq(0,c(refpts(eq)["crash","harvest"])*1.5,length.out=100),each=61),
+f =FLQuant(rep(seq(0,c(refpts(eq)["crash","harvest"])*1.25,length.out=100),each=61),
            dimnames=dimnames(fbar(om)[,ac(2020:2080)]))
 om=fwd(om,fbar=f,sr=eqM)
 
@@ -216,7 +216,7 @@ p4=ggplot(d2)+
   geom_line(aes(SSB,Yield))+
   geom_line(aes(SSB,Yield),col="red",data=d1)
 
-ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+ ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Equilibrium curves and biological parameters for assumptions about density dependence
@@ -243,7 +243,7 @@ p4=ggplot(d3)+
   geom_line(aes(SSB,Yield))+
   geom_line(aes(SSB,Yield),col="red",data=d1)
 
-ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+ ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Equilibrium curves and biological parameters for assumptions about density dependence
@@ -270,7 +270,7 @@ p4=ggplot(d4)+
   geom_line(aes(SSB,Yield))+
   geom_line(aes(SSB,Yield),col="red",data=d1)
 
-ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+ ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 ```
 
 **Figure `r iFig=iFig+1; iFig`** Equilibrium curves and biological parameters for assumptions about density dependence
@@ -357,7 +357,7 @@ cast(subset(ts,year==2080),iter~What,value="catch")
 
 
 ```{r}
-ggarrange(plot(FLStocks(prj[[1]]),probs=c(0), worm=1:4)+ 
+ ggarrange(plot(FLStocks(prj[[1]]),probs=c(0), worm=1:4)+ 
                theme(axis.ticks.y = element_blank(),
                      plot.margin = margin(r = 1),
                      strip.text.y = element_text(size=0)), 
@@ -431,7 +431,7 @@ cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=media
 
 
 ```{r}
-ggarrange(plot(prjs[[1]])+ 
+ ggarrange(plot(prjs[[1]])+ 
                theme(axis.ticks.y = element_blank(),
                      plot.margin = margin(r = 1),
                      strip.text.y = element_text(size=0)), 
@@ -506,7 +506,7 @@ cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=media
 ```
 
 ```{r}
-ggarrange(plot(prjs[[1]]) +
+ ggarrange(plot(prjs[[1]]) +
                theme(axis.ticks.y = element_blank(),
                      plot.margin = margin(r = 1),
                      strip.text.y = element_text(size=0)), 
