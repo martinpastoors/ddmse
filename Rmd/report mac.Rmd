@@ -1,6 +1,6 @@
 ---
 output:
-  html_document:
+  word_document:
     reference_docx: ../report_template.dotx
 mathjax: TRUE
 bibliography: refs.bib
@@ -76,7 +76,7 @@ mystk     <- "mac"; mystkname <- "Northeast Atlantic mackerel"; mylatin <- "Scom
 # mystk     <- "whb"; mystkname <- "Blue whiting";                mylatin <- "Micromesistius poutassou" 
 maxyear <- 2050
 
-load(file=file.path(dropboxdir,paste0("data/om/",mystk,"/parMat.RData")))
+load(file=file.path(dropboxdir,paste0("data/om/",mystk,"matPar.RData")))
 ```
 
 ```{r}
@@ -189,7 +189,7 @@ section <- "02"
 
 Trends in (stock) mass-at-age are shown in figure 1. Weight-at-age in the stock is calculated as the average of the weight-at-age in the three spawning components, weighted by the relative size of each component (as estimated in the egg surveys). The decreasing trend in weight-at-age observed since 2005 for fish of age 3 and older seems to have stopped in 2013 and values in the last 8 years show an increasing trend.
 
-```{r, echo=FALSE, out.width = "400px", fig.align="left", message=FALSE, warning=FALSE, cache=FALSE}
+```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "cond_waa", level = 1, display = FALSE,
@@ -338,10 +338,6 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "dd_mat.
 A maturity at weight ogive was generated from this formula:
 
 $f(x) = \frac{1}{1+e^{-k(x-x_0)}}$
-
-```{r}
-load("~/Dropbox/DDMSE/data/om/mac/parMat.RData") 
-```
 
 This resulted in the parameters k=`r  format(matPar$par[1], digits=4)` and $W_{50}$=`r  format(matPar$par[2], digits=4)` which have been used in subsequent simulations.
 
