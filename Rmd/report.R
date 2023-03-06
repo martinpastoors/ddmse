@@ -44,10 +44,10 @@ source("R/dd.R")
 source("R/get_dropbox.r")
 source("R/pm.R")
 
-dropboxdir<-try(file.path(get_dropbox(), "pelagics"))
+dropboxdir<-try(file.path(get_dropbox(), "DDMSE"))
 
 if ("try-error" %in% is(dropboxdir)) 
-  dropboxdir="~/Dropbox/pelagics"
+  dropboxdir="~/Dropbox/DDMSE"
 
 myparams <- data.frame(
   stock    = c("mac"                       , "whb"            ),
@@ -74,8 +74,8 @@ myparams <- data.frame(
 
 # save(myparams, file=file.path(dropboxdir, "data", "inputs", "myparams.RData"))
 
-# mystk     <- "mac";  
-mystk     <- "whb";  
+mystk     <- "mac";  
+# mystk     <- "whb";  
 # for (mystk in c("mac","whb")) {
   
   mystkname  <- myparams[myparams$stock==mystk,"mystkname"]
@@ -355,10 +355,10 @@ mystk     <- "whb";
 
   # clean up and save
   rm(dat, gmr, m, mat, p, p1, p2, ts, wt, wt2)
-  save(.,
+  save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section2.RData", sep="_")))
 
-  
+
   
   
   
@@ -585,9 +585,8 @@ mystk     <- "whb";
                            f      =function(x) fbar(x)),
                   drop=T) %>% mutate(scen="DD mass+mat+M")
     )
-  save(df,file=paste(dropboxdir,"/data/results/",mystk,"Eq.RData",sep=""))
-  # load(   file=paste(dropboxdir,"/data/results/",mystk,"Eq.RData",sep=""))
-  
+  save(df,file=file.path(dropboxdir,"data", "om", paste(mystk, "Eq.RData", sep="_")))
+
   p <-
     df %>% 
     mutate(scen = factor(scen, levels=c("no-DD", "DD mass", "DD mass+mat", "DD mass+mat+M"))) %>% 
@@ -602,7 +601,7 @@ mystk     <- "whb";
   
   
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "eq_yield.jpg", sep="_")),
-       width=10, height=10, units="in", res=300)
+       width=10, height=6, units="in", res=300)
   print(p) 
   dev.off()
   
@@ -675,7 +674,7 @@ mystk     <- "whb";
 
   # clean up and save
   rm(dat, df, p, p1, p2, p3, t, x)
-  save(.,
+  save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section3.RData", sep="_")))
 
 
@@ -980,8 +979,8 @@ mystk     <- "whb";
     d2 %>% mutate(scen="vpa-DDM"))
   
   p4=ggplot(d2)+
-    geom_line(aes(SSB,Yield),col="red")+
-    geom_line(aes(SSB,Yield),col="black",data=d1)
+    geom_line(aes(SSB,Yield),col="black")+
+    geom_line(aes(SSB,Yield),col="red",data=d1)
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
 
@@ -1024,8 +1023,8 @@ mystk     <- "whb";
     d3 %>% mutate(scen="vpa-DDMM"))
   
   p4=ggplot(d3)+
-    geom_line(aes(SSB,Yield),col="red")+
-    geom_line(aes(SSB,Yield),col="black",data=d1)
+    geom_line(aes(SSB,Yield),col="black")+
+    geom_line(aes(SSB,Yield),col="red",data=d1)
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
   
@@ -1072,8 +1071,8 @@ mystk     <- "whb";
     left_join(df_om)
   
   p4=ggplot(d4)+
-    geom_line(aes(SSB,Yield),col="red")+
-    geom_line(aes(SSB,Yield),col="black",data=d1)
+    geom_line(aes(SSB,Yield),col="black")+
+    geom_line(aes(SSB,Yield),col="red",data=d1)
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
   
@@ -1189,7 +1188,7 @@ mystk     <- "whb";
 
   # clean up and save
   rm(dat, df, p, p1, p2, p3, p4, t, x, d1, d2, d3, d4, x)
-  save(.,
+  save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section4.RData", sep="_")))
   
   # ------------------------------------------------------------------------------
@@ -1315,8 +1314,11 @@ mystk     <- "whb";
   # Next running the stochastic loop
   devRec=rlnorm(100,rec(prj[[1]])[,ac(2020:2050),,,,1]%=%0,0.3)
   base=fwdWindow(window(propagate(iter(prj[[1]],1),100),end=2020),end=2050,vpaM_eq)
-  prjs=mlply(data.frame(F=rfpts$Fmsy), function(F) {
-    
+  
+  prjs=mlply(data.frame(F=rfpts$Fmsy), 
+             .progress = "tk", 
+             function(F) {
+
     ## FMSY estimate by OM ######################################
     F=FLQuant(F,dimnames=list(year=2020:2050))
     
@@ -1332,6 +1334,8 @@ mystk     <- "whb";
     x3=x1
     x4=x1
     for (iYr in ac(2020:2050)) {
+      
+      print(iYr)
       
       control=as(FLQuants("f"=F[,iYr]),"fwdControl")
       
@@ -1524,7 +1528,7 @@ mystk     <- "whb";
   dev.off()
 
   rm(p, p1, p2, p3, p4)
-  save(.,
+  save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   
 # } # end of stk loop
