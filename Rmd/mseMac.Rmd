@@ -40,12 +40,12 @@ iTab=0
 ```
 
 ```{r, pkgs}
-library(FLCore)    # install.packages("FLCore", repos="http://flr-project.org/R")
-library(FLBRP)     # install.packages("FLBRP", repos="http://flr-project.org/R")
-library(FLasher)   # install.packages("FLasher", repos="http://flr-project.org/R")
+library(FLCore)    # install.packages("FLCore",   repos="http://flr-project.org/R")
+library(FLBRP)     # install.packages("FLBRP",    repos="http://flr-project.org/R")
+library(FLasher)   # install.packages("FLasher",  repos="http://flr-project.org/R")
 library(FLAssess)  # install.packages("FLAssess", repos="http://flr-project.org/R")
-library(FLife)     # install.packages("FLife", repos="http://flr-project.org/R")
-library(ggplotFL)
+library(FLife)     # install.packages("FLife",    repos="http://flr-project.org/R")
+library(ggplotFL)  # install.packages("ggplotFL", repos="http://flr-project.org/R")
 
 library(popbio)
 
@@ -351,43 +351,41 @@ ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
 ggplot()+
   geom_line( aes(ssb,catch,col=.id),   data=eqCurves)+
   geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2040))
+```
 
+
+```{r}
 cast(subset(ts,year==2080),iter~What,value="catch")
 ```
 
 
 ```{r}
-plot(FLStocks(prj[[1]]),probs=c(0), worm=1:4) 
+ggarrange(plot(FLStocks(prj[[1]]),probs=c(0), worm=1:4)+ 
+               theme(axis.ticks.y = element_blank(),
+                     plot.margin = margin(r = 1),
+                     strip.text.y = element_text(size=0)), 
+          plot(FLStocks(prj[[2]]),probs=c(0), worm=1:4)+ 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank(),
+                     plot.margin = margin(r = 1, l = 1),
+                     strip.text.y = element_text(size=0)), 
+          plot(FLStocks(prj[[3]]),probs=c(0), worm=1:4)+ 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank(),
+                     plot.margin = margin(l = 1),
+                     strip.text.y = element_text(size=0)),
+          plot(FLStocks(prj[[4]]),probs=c(0), worm=1:4)+ 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank(),
+                     plot.margin = margin(l = 1)  ),
+          nrow = 1, common.legend = TRUE, widths=c(1.4,1,1,1)) 
 ```
 
-**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming no density dependence
+**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models,  with  $F_{MSY}$ 
 
-
-```{r}
-names(prj)=names(oms)
-plot(FLStocks(prj[[2]]),probs=c(0), worm=1:4)
-```
-
-**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming density dependence in mass-at-age only
-
-```{r}
-plot(FLStocks(prj[[3]]),probs=c(0), worm=1:4)
-```
-
-**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming density dependence in mass and maturity-at-age only
-
-```{r}
-plot(FLStocks(prj[[4]]),probs=c(0), worm=1:4)
-```
-
-**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at $F_{MSY}$ assuming density dependence in mass, maturity and natural mortality-at-age
-
-```{r, eval=FALSE}
-ldply(prj,ldply, function(x) model.frame(FLQuants(x,biomass=function(x) biomass(x)[,"2080"],
-                                                    ssb    =function(x) ssb(    x)[,"2080"],
-                                                    catch  =function(x) catch(  x)[,"2080"],
-                                                    f      =function(x) fbar(   x)[,"2080"]),drop=T)) 
-```
 
 ```{r, projections-2}
 base=propagate(iter(fwdWindow(window(prj[[1]],end=2020),end=2080,eqM),1),100)
@@ -427,41 +425,87 @@ prjs=mlply(data.frame(F=rfpts$Fmsy), function(F) {
 ```
 
 
+```{r}
+smry=mdply(names(prjs), function(x) mdply(names(prjs[[x]]),  
+            function(y) cbind(A=x,B=y,model.frame(FLQuants(prjs[[x]][[y]][,"2040"], F=fbar,SSB=ssb,Catch=catch),drop=T))))
+
+cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=median(Catch),F=median(F))),A~B,value="Catch")
+```
+
+
+```{r}
+ggarrange(plot(prjs[[1]])+ 
+               theme(axis.ticks.y = element_blank(),
+                     plot.margin = margin(r = 1),
+                     strip.text.y = element_text(size=0)), 
+          plot(prjs[[2]]) + 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank(),
+                     plot.margin = margin(r = 1, l = 1),
+                     strip.text.y = element_text(size=0)), 
+          plot(prjs[[3]]) + 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank(),
+                     plot.margin = margin(l = 1),
+                     strip.text.y = element_text(size=0)),
+          plot(prjs[[4]]) + 
+               theme(axis.text.y = element_blank(),
+                     axis.ticks.y = element_blank(),
+                     axis.title.y = element_blank(),
+                     plot.margin = margin(l = 1)  ),
+          nrow = 1, common.legend = TRUE, widths=c(1.4,1,1,1)) 
+```
+
+**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models,  with  $F_{MSY}$ 
+
+
 ```{r, projectons-save}
-save(prjs,file=paste(dirRuns,"/",stock,"Prjs.RData",sep="")) 
+save(prjs,file=paste(dirRuns,"/",stock,"Prjs.RData",sep=""))
+```
+
+```{r, projections-3}
+base=iter(fwdWindow(window(prj[[1]],end=2020),end=2080,eqM),1)
+
+prjs=mlply(data.frame(F=rfpts$Fmsy), function(F) {
+              
+    ## FMSY estimate by OM ######################################
+    F=FLQuant(F,dimnames=list(year=2020:2080))
+         
+    ## No DD ####################################################
+    control=as(FLQuants("f"=F),"fwdControl")
+    x1     =fwd(iter(base,1),control=control,sr=eqM)
+           
+    ## With DD ####################################################
+    x2=x1
+    x3=x1
+    x4=x1
+    for (iYr in ac(2020:2080)) {
+        control=as(FLQuants("f"=F[,iYr]),"fwdControl")
+              
+          ## DD M ##################################################         
+          x2 =ddFn(iYr,x2,params,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
+          x2 =fwd(x2,control=control,sr=eqM)
+                 
+          ## DD MM##################################################
+          x3 =ddFn(iYr,x3,params,massFlag=TRUE,matFlag=TRUE,mFlag=FALSE)
+          x3 =fwd(x3,control=control,sr=eqM)
+  
+          ## DD MMM ################################################
+          x4 =ddFn(iYr,x4,params,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
+          x4 =fwd(x4,control=control,sr=eqM)
+          }  
+            
+    FLStocks(list("Base"=x1,"M"=x2,"MM"=x3,"MMM"=x4))        
+    }) ## F loop
 ```
 
 ```{r}
-plot(FLStocks(prjs[[1]])) 
-```
+smry=mdply(names(prjs), function(x) mdply(names(prjs[[x]]),  
+            function(y) cbind(A=x,B=y,model.frame(FLQuants(prjs[[x]][[y]][,"2040"], F=fbar,SSB=ssb,Catch=catch),drop=T))))
 
-**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, at Base $F_{MSY}$ 
-
-```{r}
-plot(FLStocks(prjs[[2]])) 
-```
-
-**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models, with  $F_{MSY}$ for density dependence in mass-at-age 
-
-```{r}
-plot(FLStocks(prjs[[3]])) 
-```
-
-**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models,  with  $F_{MSY}$ for density dependence in mass, maturity-at-age
-
-```{r}
-plot(FLStocks(prjs[[4]])) 
-```
-
-**Figure `r iFig=iFig+1; iFig`** Projections for Operating Models,  with  $F_{MSY}$ for density dependence in mass, maturity, natural mortality-at-age
-
-```{r, MSE, eval=FALSE}
-mse=hcrICES(fmsy,eql,rec(fmsy),
-                      params,
-                      start,   end,
-                      interval,lag=lag,
-                      err=err,
-                      bndTac=c(0,Inf))
+cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=median(Catch),F=median(F))),A~B,value="Catch")
 ```
 
 ```{r}
@@ -486,14 +530,17 @@ ggarrange(plot(prjs[[1]]) +
                      axis.ticks.y = element_blank(),
                      axis.title.y = element_blank(),
                      plot.margin = margin(l = 1)  ),
-          nrow = 1, common.legend = TRUE, widths=c(1.4,1,1,1))
+          nrow = 1, common.legend = TRUE, widths=c(1.4,1,1,1)) 
 ```
 
 
-```{r}
-smry=mdply(names(prjs), function(x) mdply(names(prjs[[x]]),
-            function(y) cbind(A=x,B=y,model.frame(FLQuants(prjs[[x]][[y]][,"2040"], F=fbar,SSB=ssb,Catch=catch),drop=T))))
-cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=median(Catch),F=median(F))),A~B,value="F")
-cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=median(Catch),F=median(F))),A~B,value="Catch")
+```{r, MSE, eval=FALSE}
+mse=hcrICES(fmsy,eql,rec(fmsy),
+                      params,
+                      start,   end,
+                      interval,lag=lag,
+                      err=err,
+                      bndTac=c(0,Inf))
 ```
+
 
