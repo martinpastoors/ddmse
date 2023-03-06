@@ -706,6 +706,8 @@ mystk     <- "mac";
   #   as.data.frame(par_laurie) %>% mutate(par="par_laurie"),
   #   as.data.frame(par) %>% mutate(par="par")
   # )  
+
+  rm(eq, control)
   
   section <- "04"
   
@@ -721,24 +723,23 @@ mystk     <- "mac";
                                "Rec"=function(x) rec(x)),drop=T) %>% mutate(scen="sam")
   
   # Start with the SAM assessment in forward projection
-  sr  = fmle(as.FLSR(window(ices, start=1999, end=2020),model="bevholtSV"),
-             fixed=list(s=0.8, spr0=mean(spr0(ices))), 
-             control=list(silent=TRUE))
-  eq  = FLBRP(ices,ab(sr))
-  sam = fwdWindow(ices,eq,end=2050) 
+  sam_sr  = fmle(as.FLSR(window(ices, start=1999, end=2020),model="bevholtSV"),
+                 fixed=list(s=0.8, spr0=mean(spr0(ices))), 
+                 control=list(silent=TRUE))
+  sam_eq  = FLBRP(ices,ab(sam_sr))
+  sam     = fwdWindow(ices,sam_eq,end=2050) 
 
-  sam_sr = sr
-  sam_eq = eq  
-  
   # plot(sam_sr)
   
   F  =propagate(window(fbar(sam),start=2020),101)
-  F[]=rep(c(seq(0,                               c(refpts(eq)["msy",  "harvest"]),length.out=51),
-            seq(c(refpts(eq)["msy",  "harvest"]),c(refpts(eq)["crash","harvest"])*1.2,length.out=51)[-1]),each=dim(F)[2])
+  F[]=rep(c(seq(0,                                   c(refpts(sam_eq)["msy",  "harvest"]),length.out=51),
+            seq(c(refpts(sam_eq)["msy",  "harvest"]),c(refpts(sam_eq)["crash","harvest"])*1.2,length.out=51)[-1]),each=dim(F)[2])
   # F[]=rep(c(seq(0,                               c(refpts(eq)["crash","harvest"])*1.2,length.out=101)),each=dim(F)[2])
   
-  control=as(FLQuants("f"=F),"fwdControl")
-  sam   =fwd(sam,control=control,sr=eq)
+  sam_control=as(FLQuants("f"=F),"fwdControl")
+  sam        =fwd(sam,
+                  control=sam_control,
+                  sr=sam_eq)
   
   df_om  =model.frame(FLQuants(sam[,"2050"], "Biomass"=function(x) biomass(x),
                                     "SSB"=function(x) ssb(x),
@@ -751,7 +752,8 @@ mystk     <- "mac";
   # run VPA
   vpa =ices+FLAssess:::VPA(ices)
   stock(vpa) = computeStock(vpa)
-
+  name(vpa)  = paste(mystkname, "VPA")
+  
   # add to assess_df
   assess_df <-
     bind_rows(
@@ -762,25 +764,24 @@ mystk     <- "mac";
                                 "Yield"=function(x) catch(x),
                                 "Rec"=function(x) rec(x)),drop=T) %>% mutate(scen="vpa") )
     
-  sr  =fmle(as.FLSR(window(vpa, start=1999, end=2020),model="bevholtSV"),
-            fixed=list(s   =0.8, 
-                       spr0=mean(spr0(vpa))), 
+  vpa_sr  =fmle(as.FLSR(window(vpa, start=1999, end=2020),
+                        model="bevholtSV"),
+            fixed=list(s   =0.8, spr0=mean(spr0(vpa))), 
             control=list(silent=TRUE))
-  eq  =FLBRP(vpa,ab(sr))
-  vpa =fwdWindow(vpa,eq,end=2050) 
-  
-  vpa_sr = sr
-  vpa_eq = eq  
+  vpa_eq  = FLBRP(vpa,ab(vpa_sr))
+  vpa     = fwdWindow(vpa,vpa_eq,end=2050) 
   
   # plot(vpa_sr)
   
   F  =propagate(window(fbar(vpa),start=2020),101)
-  F[]=rep(c(seq(0,                               c(refpts(eq)["msy",  "harvest"]),length.out=51),
-            seq(c(refpts(eq)["msy",  "harvest"]),c(refpts(eq)["crash","harvest"])*1.2,length.out=51)[-1]),each=dim(F)[2])
+  F[]=rep(c(seq(0,                                   c(refpts(vpa_eq)["msy",  "harvest"]),length.out=51),
+            seq(c(refpts(vpa_eq)["msy",  "harvest"]),c(refpts(vpa_eq)["crash","harvest"])*1.2,length.out=51)[-1]),each=dim(F)[2])
   # F[]=rep(c(seq(0,                               c(refpts(eq)["crash","harvest"])*1.2,length.out=101)),each=dim(F)[2])
   
-  control=as(FLQuants("f"=F),"fwdControl")
-  vpa    =fwd(vpa,control=control,sr=vpa_eq)
+  vpa_control = as(FLQuants("f"=F),"fwdControl")
+  vpa         = fwd(vpa,
+                    control=vpa_control,
+                    sr=vpa_eq)
   
   df_om  =bind_rows(
     df_om,
@@ -806,14 +807,14 @@ mystk     <- "mac";
   as.data.frame(vpaM_par) %>% dplyr::select(-iter) %>% pander::pandoc.table(style="simple") %>% capture.output() %>% writeLines(., con=fileConn)
   close(fileConn)
   
-  vpaM   = ices
-  m(vpaM)=1.0*(vpaM_par["m1"]%*%(stock.wt(vpaM)%^%vpaM_par["m2"]))
-  vpaM=vpaM+FLAssess:::VPA(vpaM)
+  vpaM        = ices
+  m(vpaM)     = vpaM_par["m1"]%*%(stock.wt(vpaM)%^%vpaM_par["m2"])
+  vpaM        = vpaM+FLAssess:::VPA(vpaM)
   stock(vpaM) = computeStock(vpaM)
+  name(vpaM)  = paste(mystkname, "VPA-M")
   
-  vpaM_hist = vpaM
-  # plot(biomass(vpaM_hist))
-  
+  vpaM_hist   = vpaM
+
   # add to assess df
   assess_df <-
     bind_rows(
@@ -825,47 +826,41 @@ mystk     <- "mac";
                                  "Rec"=function(x) rec(x)),drop=T) %>% mutate(scen="vpaM") )
 
   # stock recruitment estimation  
-  vpaM_sr=fmle(as.FLSR(window(vpaM, start=1999, end=2020),model="bevholtSV"),
-              fixed=list(s=0.8, 
-                         spr0=mean(spr0(vpaM))), 
-              control=list(silent=TRUE))
+  vpaM_sr  = fmle(as.FLSR(window(vpaM, start=1999, end=2020),
+                         model="bevholtSV"),
+                fixed=list(s=0.8, spr0=mean(spr0(vpaM))), 
+                control=list(silent=TRUE))
   
+  vpaM_eq  = FLBRP(vpaM,sr=ab(vpaM_sr))
+  vpaM     = fwdWindow(vpaM,vpaM_eq,end=2050) 
+
+  F  =propagate(window(fbar(vpaM),start=2020),101)
+  F[]=rep(c(seq(0,                                    c(refpts(vpaM_eq)["msy",  "harvest"]),length.out=51),
+            seq(c(refpts(vpaM_eq)["msy",  "harvest"]),c(refpts(vpaM_eq)["crash","harvest"])*1.2,length.out=51)[-1]),each=dim(F)[2])
+
+  control_Frange = as(FLQuants("f"=F),"fwdControl")
+  vpaM           = fwd(vpaM,
+                     control=control_Frange,
+                     sr=vpaM_eq)
+
+  d1=model.frame(FLQuants(vpaM[,"2050"],
+                          "Biomass"=function(x) biomass(x),
+                          "SSB"=function(x) ssb(x),
+                          "F"=function(x) fbar(x),
+                          "Yield"=function(x) catch(x)),drop=T)
+  
+  
+  # plot of SRR
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_srr.jpg", sep="_")),
        width=10, height=12, units="in", res=300)
   print(plot(vpaM_sr)) 
   dev.off()
   
-  # BRP
-  vpaM_eq  =FLBRP(vpaM,sr=ab(vpaM_sr))
-  
+  # plot if BRP
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_brp.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
   print(plot(vpaM_eq)) 
   dev.off()
-  
-  # create projection object
-  vpaM=fwdWindow(vpaM,vpaM_eq,end=2050) 
-
-  F  =propagate(window(fbar(vpaM),start=2020),101)
-  F[]=rep(c(seq(0,                               c(refpts(vpaM_eq)["msy",  "harvest"]),length.out=51),
-            seq(c(refpts(eq)["msy",  "harvest"]),c(refpts(vpaM_eq)["crash","harvest"])*1.2,length.out=51)[-1]),each=dim(F)[2])
-  # F[]=rep(c(seq(0,                               c(refpts(vpaM_eq)["crash","harvest"])*1.5,length.out=101)),each=dim(F)[2])
-  
-  control=as(FLQuants("f"=F),"fwdControl")
-  vpaM  =fwd(vpaM,control=control,sr=vpaM_eq)
-
-  d1=model.frame(FLQuants(vpaM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
-                          "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
-  
-  df_om  =bind_rows(
-    df_om,
-    d1 %>% mutate(scen="vpa-M"))
-  
-  df_helper <-
-    df_om %>% 
-    group_by(scen) %>% 
-    summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
-    left_join(df_om)
   
   # Plot of yield vs biomass
   p1<-
@@ -937,7 +932,17 @@ mystk     <- "mac";
        width=10, height=10, units="in", res=300)
   print(p)
   dev.off()
-
+  
+  df_om  =bind_rows(
+    df_om,
+    d1 %>% mutate(scen="vpa-M"))
+  
+  df_helper <-
+    df_om %>% 
+    group_by(scen) %>% 
+    summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
+    left_join(df_om)
+  
 
   ##############################################################################
   # Setting Bref at BMSY!!
@@ -960,34 +965,39 @@ mystk     <- "mac";
   for (i in ac(2020:2050)) {
     vpaDDM =ddFn(i,vpaDDM,vpaM_par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    vpaDDM =fwd(vpaDDM,control=control,sr=vpaM_eq)
+    vpaDDM =fwd(vpaDDM,
+                control=control,
+                sr=vpaM_eq)
   }
   
-
+  # make data.frame
+  d2=model.frame(FLQuants(vpaDDM[,"2050"],
+                          "Biomass"=function(x) biomass(x),
+                          "SSB"=function(x) ssb(x),
+                          "F"=function(x) fbar(x),
+                          "Yield"=function(x) catch(x)),drop=T)
+  
+  # Four panel plot
   p1=ggplot(stock.wt(vpaDDM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
   p2=ggplot(mat(vpaDDM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(mat(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mat-at-age")
   p3=ggplot(m(vpaDDM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(m(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("M-at-age")
-  
-  d2=model.frame(FLQuants(vpaDDM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
-                          "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
-  
-  df_om  =bind_rows(
-    df_om,
-    d2 %>% mutate(scen="vpa-DDM"))
-  
   p4=ggplot(d2)+
     geom_line(aes(SSB,Yield),col="black")+
     geom_line(aes(SSB,Yield),col="red",data=d1)
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
-
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "VPADDM_4panels.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
   print(p) 
   dev.off()
+  
+  # add to OM data.frame
+  df_om  =bind_rows(
+    df_om,
+    d2 %>% mutate(scen="vpa-DDM"))
   
   # Stop the clock
   proc.time() - ptm
@@ -1002,36 +1012,39 @@ mystk     <- "mac";
   for (i in ac(2020:2050)) {
     vpaDDMM =ddFn(i,vpaDDMM,vpaM_par,massFlag=TRUE,matFlag=TRUE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    vpaDDMM =fwd(vpaDDMM,control=control,sr=vpaM_eq)
+    vpaDDMM =fwd(vpaDDMM,
+                 control=control,
+                 sr=vpaM_eq)
   }
   
-  # plot(mat(vpaDDMM))
-  # plot(vpaDDMM)
-  # plot(iter(vpaDDMM))
+  # make data.frame
+  d3=model.frame(FLQuants(vpaDDMM[,"2050"],
+                          "Biomass"=function(x) biomass(x),
+                          "SSB"=function(x) ssb(x),
+                          "F"=function(x) fbar(x),
+                          "Yield"=function(x) catch(x)),drop=T)
   
+  # Four panel plot
   p1=ggplot(stock.wt(vpaDDMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
   p2=ggplot(mat(vpaDDMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(mat(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mat-at-age")
   p3=ggplot(m(vpaDDMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(m(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("M-at-age")
-  
-  d3=model.frame(FLQuants(vpaDDMM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
-                          "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
-  df_om  =bind_rows(
-    df_om,
-    d3 %>% mutate(scen="vpa-DDMM"))
-  
   p4=ggplot(d3)+
     geom_line(aes(SSB,Yield),col="black")+
     geom_line(aes(SSB,Yield),col="red",data=d1)
   
   p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
-  
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "VPADDMM_4panels.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
   print(p) 
   dev.off()
+  
+  # add to OM data.frame
+  df_om  =bind_rows(
+    df_om,
+    d3 %>% mutate(scen="vpa-DDMM"))
   
   # Stop the clock
   proc.time() - ptm
@@ -1049,45 +1062,54 @@ mystk     <- "mac";
   for (i in ac(2020:2050)) {
     vpaDDMMM =ddFn(i,vpaDDMMM,vpaM_par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
-    vpaDDMMM =fwd(vpaDDMMM,control=control,sr=vpaM_eq)}
+    vpaDDMMM =fwd(vpaDDMMM,control=control,sr=vpaM_eq)
+  }
+
+  # Make data.frame
+  d4=model.frame(FLQuants(vpaDDMMM[,"2050"],
+                          "Biomass"=function(x) biomass(x),
+                          "SSB"=function(x) ssb(x),
+                          "F"=function(x) fbar(x),
+                          "Yield"=function(x) catch(x)),drop=T)
   
+  # Four panel plot
   p1=ggplot(stock.wt(vpaDDMMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(stock.wt(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mass-at-age")
   p2=ggplot(mat(vpaDDMMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(mat(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("Mat-at-age")
   p3=ggplot(m(vpaDDMMM[,"2030"]))+geom_line(aes(age,data,group=iter))+
     geom_line(aes(age,data),data=as.data.frame(m(vpaM[,"2031"])),col="red")+xlab("Age")+ylab("M-at-age")
+  p4=ggplot(d4)+
+    geom_line(aes(SSB,Yield),col="black")+
+    geom_line(aes(SSB,Yield),col="red",data=d1)
   
-  d4=model.frame(FLQuants(vpaDDMMM[,"2050"],"Biomass"=function(x) biomass(x),"SSB"=function(x) ssb(x),
-                          "F"=function(x) fbar(x),"Yield"=function(x) catch(x)),drop=T)
+  p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "VPADDMMM_4panels.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+  print(p) 
+  dev.off()
+  
+  # add to OM data.frame
   df_om  =bind_rows(
     df_om,
     d4 %>% mutate(scen="vpa-DDMMM"))
 
+  # approximate reference points
   df_helper <-
     df_om %>% 
     group_by(scen) %>% 
     summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
     left_join(df_om)
   
-  p4=ggplot(d4)+
-    geom_line(aes(SSB,Yield),col="black")+
-    geom_line(aes(SSB,Yield),col="red",data=d1)
-  
-  p <- ggarrange(p1,p2,p3,p4, ncol=2, nrow=2)
-  
-  jpeg(filename=file.path(figuresdir, paste(section,mystk, "VPADDMMM_4panels.jpg", sep="_")),
-       width=10, height=10, units="in", res=300)
-  print(p) 
-  dev.off()
   
   # Stop the clock
   proc.time() - ptm
   
-  # Plotting overview scenarios
+  # Plotting overview scenarios ========================================================
   
   # scenarios
   scenarios = c("vpa-M", "vpa-DDM","vpa-DDMM","vpa-DDMMM") 
+  
   # Plot of yield vs biomass
   p1<-
     df_om %>% 
@@ -1153,14 +1175,12 @@ mystk     <- "mac";
   print(p) 
   dev.off()
   
-  # combine OMs  
   oms <- FLStocks()
-  oms[["Base"]]            =vpaM
-  oms[["DD Mass"]]         =vpaDDM
-  oms[["DD Mass, Mat"]]    =vpaDDMM
-  oms[["DD Mass, Mat, M"]] =vpaDDMMM
+  oms[["Base"]] =vpaM
+  oms[["M"]]    =vpaDDM
+  oms[["MM"]]   =vpaDDMM
+  oms[["MMM"]]  =vpaDDMMM
   
-  # reference points data.frame (equilibrium)
   rfs=ldply(oms, function(x) { 
     model.frame(FLQuants(x[,"2050"],
                          biomass=function(x) stock(x),
@@ -1185,6 +1205,7 @@ mystk     <- "mac";
     pander::pandoc.table(style="simple", big.mark=",", justify="left", split.tables=400) %>% 
     capture.output() %>% writeLines(., con=fileConn)
   close(fileConn)
+  
 
   # clean up and save
   rm(dat, df, p, p1, p2, p3, p4, t, x, d1, d2, d3, d4, x)
@@ -1198,6 +1219,29 @@ mystk     <- "mac";
   section <- "05"
   
   load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section4.RData", sep="_")))
+  
+  om=fwdWindow(window(vpaM,end=2020),end=2050,vpaM_eq)
+  f =FLQuant(rep(seq(0,c(refpts(vpaM_eq)["crash","harvest"])*1.5,length.out=100),each=31),
+             dimnames=dimnames(fbar(om)[,ac(2020:2050)]))
+  om=fwd(om,fbar=f,sr=vpaM_eq)
+  
+  oms=FLStocks("Base"     =om)
+  oms[["DD Mass"]]        =om
+  oms[["DD Mass, Mat"]]   =om
+  oms[["DD Mass, Mat, M"]]=om
+  for (iYear in ac(2020:2050)){
+    oms[["DD Mass"]]=ddFn(iYear,oms[["DD Mass"]],par,TRUE,FALSE,FALSE)
+    oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=f[,iYear],sr=vpaM_eq)
+    
+    oms[["DD Mass, Mat"]]=ddFn(iYear,oms[["DD Mass, Mat"]],par,TRUE,TRUE,FALSE)
+    oms[["DD Mass, Mat"]]=fwd(oms[["DD Mass, Mat"]],fbar=f[,iYear],sr=vpaM_eq)
+    
+    oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],par,TRUE,TRUE,TRUE)
+    oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=f[,iYear],sr=vpaM_eq)
+  } 
+  
+  
+  # reference points data.frame (equilibrium)
   
   # projection with different Fs
   prj=FLStocks("Base" =fwdWindow(window(iter(oms[[1]],1:4),end=2020),end=2050,vpaM_eq),
@@ -1310,7 +1354,50 @@ mystk     <- "mac";
        width=10, height=10, units="in", res=300)
   print(p) 
   dev.off()
+
+  # check whether values are on the equilbrium curves (= prf_df)
   
+  eqCurves=ldply(oms, function(x) {
+    model.frame(FLQuants(x[,"2050"],
+                         biomass=function(x) stock(x),
+                         ssb    =function(x) ssb(  x),
+                         catch  =function(x) catch(x),
+                         f      =function(x) fbar( x)),drop=TRUE)[,-1]})
+  
+  ts=ldply(prj, function(x)
+    model.frame(FLQuants(x,
+                         ssb  =function(x) ssb(  x),
+                         f    =function(x) fbar(x),
+                         catch=function(x) catch(x)),drop=T))
+  ts=transform(ts,What=.id)
+  ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
+  
+
+  ggplot()+
+    geom_line(data=eqCurves,
+              aes(ssb,catch,col=.id))+
+    geom_point(data=subset(ts,year==2050),
+               aes(ssb,catch,col=.id))
+    # geom_line(data=rfs,
+    #           aes(ssb,catch,col=.id))+
+    # geom_point(data=subset(prj_df,year==2050),
+    #            aes(ssb,catch,col=.id))
+
+  ggplot()+
+    # geom_line(data=eqCurves,
+    #           aes(ssb,catch,col=.id))+
+    # geom_point(data=subset(ts,year==2050),
+    #            aes(ssb,catch,col=.id))
+    geom_line(data=subset(ts,year==2050),
+              aes(ssb,catch,col=.id))+
+    geom_point(data=subset(prj_df,year==2050),
+               aes(ssb,catch,col=.id))
+  
+  
+  
+  
+  # =====================================================================
+    
   # Next running the stochastic loop
   devRec=rlnorm(100,rec(prj[[1]])[,ac(2020:2050),,,,1]%=%0,0.3)
   base=fwdWindow(window(propagate(iter(prj[[1]],1),100),end=2020),end=2050,vpaM_eq)
@@ -1527,9 +1614,11 @@ mystk     <- "mac";
   print(p) 
   dev.off()
 
+  
   rm(p, p1, p2, p3, p4)
   save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
+  # load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   
 # } # end of stk loop
 
