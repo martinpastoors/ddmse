@@ -643,10 +643,7 @@ knitr::include_graphics(path=
 
 The quality lives up to that required by ICES and so can potentially be used when providing advice to fisheries managers. The software is also publicly available via Github.
 
-Since the early 1980s, natural mortality ($M$) for mackerel has been fixed within the assessment model at 0.15, for all ages and all assessment years. This value was calculated based on estimates of total mortality derived from tagging data combined with catch data [@@hamre1980biology]. M must vary both by age and over time due to changes in abundance of predators, feeding conditions, disease etc. \cite{siegfried2009review}.
-
-Changes in mackerel distribution and growth will also affect natural mortality. For example, the recent expansion in distribution area and change in
-mass-at-age could also result in changes in natural mortality. 
+Since the early 1980s, natural mortality ($M$) for mackerel has been fixed within the assessment model at 0.15, for all ages and all assessment years. This value was calculated based on estimates of total mortality derived from tagging data combined with catch data [@hamre1980biology]. M must, however, vary both by age and over time due to changes in abundance of predators, feeding conditions, disease etc. [@siegfried2009review]. Particularly any changes in mackerel distribution and growth will affect natural mortality.  
 
 
 <!-- =============================================================================================================== -->
