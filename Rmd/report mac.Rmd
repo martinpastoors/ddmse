@@ -437,7 +437,7 @@ section <- "04"
 
 fig_nums(
   name    = "om_assessments", level = 1, display = FALSE,
-  caption = "Comparison of different assessments. VPA-M is used going forward")
+  caption = "Comparison of different assessments. VPA-M is used as. the base case going forward")
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"comparing_assessments.jpg",sep="_")))
 
@@ -637,9 +637,50 @@ knitr::include_graphics(path=
 
 # Discussion and conclusions
 
-The quality lives up to that required by ICES and so can potentially be used when providing advice to fisheries managers. The software is also publicly available via Github.
+The current management of fish stocks is based on achieving the fishing mortality ($F_{MSY}$) that is expected to achieve the maximum sustainable yield (MSY). Estimation of MSY generally only includes the stock recruitment relationship when considering density dependent population regulation mechanisms. Density dependence, however, may also operate in processes such as growth, sexual maturity, and natural mortality. A main aim of this study was to condition Operating Models (OMs) on alternative hypotheses about density dependence for use in Management Strategy Evaluation (MSE). The objective is to evaluate the robustness of the assessments conducted to support the ICES advice framework. To do this, OMs were developed that include density dependence in growth, maturity, natural mortality, individually and combined. These OMs were then used to evaluate the consequences of including or not including density dependence in management advice.
 
-Since the early 1980s, natural mortality ($M$) for mackerel has been fixed within the assessment model at 0.15, for all ages and all assessment years. This value was calculated based on estimates of total mortality derived from tagging data combined with catch data [@hamre1980biology]. M must, however, vary both by age and over time due to changes in abundance of predators, feeding conditions, disease etc. [@siegfried2009review]. Particularly any changes in mackerel distribution and growth will affect natural mortality.  
+Initial explorations of density dependent effect were conducted based on life history theory, as used by the International Council for the Exploration of the Sea (ICES) to develop advice conducting MSE for data poor stocks [@fischer2020ga]. **Figure 10** shows the the equilibrium curves of catch v SSB assuming a) no density dependence, and density dependence in b) mass-at-age, c) mass & maturity-at-age, and d) mass, maturity and natural mortality-at-age. These allow the relationships between the MSY reference points and virgin biomass to be seen.
+
+Estimating density-dependence from observations was only possible for mass-at-age and maturity age. Density dependence in natural mortality can only be explored from theoretical considerations (because current assessment does not include age or time varying natural mortality).
+
+In the next step, we applied a natural mortality-at-age vector derived from the Lorenzen approach which would mimick the VPA assessment with fixed M-at-age. The figure below compares the SAM assessment with the VPA and the VPAM assessment. A main difference is in the recruitment estimates. Using age-varying M tends to flatten the recruitment pattern. The vpaM model was used as the base case to be compared against the density-dependent simulations.
+
+Next, the operating models were constructed. This was done in a number of steps. 
+
+1. The ICES (SAM) assessment was taken from the ICES WGWIDE files (2022). SAM is a statistical catch-at-age model that estimates error in the catch-at-age. In the case of `r mystkname`, the assessment gives a higher weight to the recruitment index than to the catch data for ages 0 and 1. This means that the estimates of recruitment in the assessment can be very different from the actual number of fish that are recruited to the fishery. 
+
+2. Next, a VPA model model was estimated. This was done to ensure the MSE projections and the historical estimates are comparable. The Virtual Population Analysis (VPA) was conducted on the whole catch matrix and the survivors in the most recent year and oldest age.
+
+3. The third step was to convert the VPA model with fixed natural mortality at age and by year into an age-varying natural mortality vector. We applied a natural mortality-at-age vector derived from the Lorenzen approach (@lorenzen2000allometry) which would mimick the VPA assessment with fixed M-at-age. This assessment was then treated as the base case against which the density dependent operating models were compared. 
+
+4. The density-dependent scenarios were constructed cumulative. First by adding density dependence in mass-at-age (M), then in mass and maturity-at-age (MM) and then in mass, maturity and M-at-age (MMM),
+
+Therefore, the four Operating Models were
+
+* VPA Base Case, with varying M-at-age
+* Density dependence in mass-at-age,
+* Density dependence in mass, maturity-at-age,
+* Density dependence in mass, maturity and M-at-age,
+
+The MSY reference points $B_{MSY}$ and $F_{MSY}$ were calculated based on equilibrium assumptions, either from combining yield per recruit and spawner per recruit relationship [@sissenwine1987alternative] or by conducting long-term projections under constant fishing moralities.
+
+Each of the four OMs were then projected for the values of $F_{MSY}$ based on the four assumptions about density dependence. This allows a comparison between the yield that could potentially be achieved and that forgone by making an incorrect assumption about density dependence. 
+
+The OMs were first projected, without process error in recruitment, from the end of the historical estimates for a range of fishing mortality (spanning 0 to $F_{crash}$) for 30 years into the future. The estimates in the final year of the projections were then be used to construct equilibrium curves (**Figure X2**). The points on the curve correspond to the projected outcomes for the values of $F_{MSY}$ from each OM. This was run as a check, as the equilibrium and projections should agree, I.e. the points at MSY should be the same colour as the curve.
+
+The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures X3a, X3b, X3c and X3d**
+
+**Figure X4** summarizes the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence and the associated reference points. 
+
+The impact of including density dependence was primarily on the biological reference points. Especially $F_{MSY}$ is much higher when including density dependence. However, the expected yields in equilibrium conditions are  very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
+
+Ignoring density dependent processes when they would be happening is expected to lead to ...
+
+The impact of assuming the wrong type of density-dependence processes, i.e. applying the reference points from the one density dependent operating model to a simulation with other density dependent processes, could lead to ....
+
+Since the early 1980s, natural mortality ($M$) for mackerel has been fixed within the assessment model at 0.15, for all ages and all assessment years. This value was calculated based on estimates of total mortality derived from tagging data combined with catch data [@hamre1980biology]. M must, however, vary both by age and over time due to changes in abundance of predators, feeding conditions, disease etc. [@siegfried2009review]. Particularly any changes in mackerel distribution and growth will affect natural mortality. The impact of including age-varying natural mortality is expected to .... 
+
+The quality of this analyses lives up to the quality standards that are required by ICES and so can potentially be used when providing advice to fisheries managers. The software is publicly available via Github (https://github.com/martinpastoors/ddmse). All data is derived from WGWIDE 2022 @ICES2022WGWIDE. 
 
 
 <!-- =============================================================================================================== -->
