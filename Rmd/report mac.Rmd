@@ -1,6 +1,6 @@
 ---
 output:
-  word_document:
+  html_document:
     reference_docx: ../report_template.dotx
 mathjax: TRUE
 bibliography: refs.bib
@@ -63,28 +63,28 @@ fig_nums <- captioner::captioner(prefix = "Figure", levels=1, type=c("n"), infix
 
 source("../R/dd.R")
 source("../R/pm.R")
-source("../R/get_dropbox.r")
+source("../R/get_dropbox.R")
 
 dropboxdir<-try(file.path(get_dropbox(), "DDMSE"))
 
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/DDMSE"
+```
 
-
+```{r}
 mystk     <- "mac"; mystkname <- "Northeast Atlantic mackerel"; mylatin <- "Scombrus scomber"
 # mystk     <- "whb"; mystkname <- "Blue whiting";                mylatin <- "Micromesistius poutassou" 
 maxyear <- 2050
 
-load(file=file.path(dropboxdir,paste0("data/om/",mystk,"matPar.RData")))
- 
+load(file=file.path(dropboxdir,paste0("data/om/",mystk,"/parMat.RData")))
+```
 
+```{r}
 # ------------------------------------------------------------------------------
 # Operating model
 # ------------------------------------------------------------------------------
 figuresdir <- file.path(dropboxdir, "results", mystk, "figures")
 tablesdir  <- file.path(dropboxdir, "results", mystk, "tables")
-
-
 ```
 
 <!-- =============================================================================================================== -->
@@ -103,34 +103,33 @@ Commissioned by: University of Copenhagen (Henrik Sparholt)
 
 **Executive summary**
 
-The current management of fish stocks is based on achieving the fishing mortality ( (FMSY) that achieves the maximum sustainable yield (MSY). Estimation of MSY generally only considers the stock recruitment relationship when considering density dependent population regulation mechanisms. Density dependence, however, may also operate in  other processes such as growth, sexual maturity, and natural mortality. A main aim of this study was to condition  alternatives Operating Models (OMs) for use in Management Strategy Evaluation (MSE), that allows comparison with the  assessments conducted to support the ICES advice framework. To do this the OM include density dependence in growth, maturity, natural mortality, individually and combined. We use these OMs to evaluate the consequences of not including density dependence management advice.
+The current management of fish stocks is based on achieving the fishing mortality ($F_{MSY}$) that achieves the maximum sustainable yield (MSY). Estimation of MSY generally only includes the stock recruitment relationship when considering density dependent population regulation mechanisms. Density dependence, however, may also operate in processes such as growth, sexual maturity, and natural mortality. A main aim of this study was to condition Operating Models (OMs) on alternative hypotheses about density dependence for use in Management Strategy Evaluation (MSE). The objective is to evaluate the robustness of the assessments conducted to support the ICES advice framework. To do this OMs were developed that include density dependence in growth, maturity, natural mortality, individually and combined. These OMs were then used to evaluate the consequences of not including density dependence management advice.
 
 The Operating Models were
 
-* Base Case, with varying M-at-age
-* Density dependence in mass-at-age,
-* Density dependence in mass, maturity-at-age,
-* Density dependence in mass, maturity and M-at-age,
+-   Base Case, with varying M-at-age
+-   Density dependence in mass-at-age,
+-   Density dependence in mass, maturity-at-age,
+-   Density dependence in mass, maturity and M-at-age,
 
-The MSY reference points BMSY and FMSY are generally based on equilibrium assumptions, either from combining yield per recruit and spawner per recruit relationship ([**Sissenwine and Shepherd, 1986**]) or by conducting long-term projections under constant fishing moralities.
+The MSY reference points $B_{MSY}$ and $F_{MSY}$ are generally based on equilibrium assumptions, either from combining yield per recruit and spawner per recruit relationship [@sissenwine1987alternative] or by conducting long-term projections under constant fishing moralities.
 
-Initial evaluations were conducted based on life history theory, as used by ICES to develop advice conducting MSE for data poor stocks (**Fischer et al., 2021**). **Figure 10** shows the  the equilibrium curves of catch v SSB assuming a) no density dependence, and density dependence in b) mass-at-age, c) mass & maturity-at-age, and d) mass, maturity and natural mortality-at-age. These allow the relationships between the MSY reference points and virgin biomass to be seen.
+Initial evaluations were conducted based on life history theory, as used by the International Council for the Exploration of the Sea (ICES) to develop advice conducting MSE for data poor stocks [@fischer2020ga]. **Figure 10** shows the the equilibrium curves of catch v SSB assuming a) no density dependence, and density dependence in b) mass-at-age, c) mass & maturity-at-age, and d) mass, maturity and natural mortality-at-age. These allow the relationships between the MSY reference points and virgin biomass to be seen.
 
-Each of the OMs were then projected for the values of FMSY based on the four assumptions about density dependence. This allows a comparison between the yield that could potentially be achieved and that forgone by making an incorrect assumption about density dependence. The OMs were first projected, without process error in recruitment, from the end of the historical estimates for a range of fishing mortality (spanning 0 to Fcrash) for 30 years into the future. The estimates in the final year of the projections were then be used to construct equilibrium curves (**Figure X2**). The points on the curve correspond to the projected outcomes for the values of FMSY from each OM. This was run as a check, as the equilibrium and projections should agree, I.e. the points at MSY should be the same colour as the curve.  
+Each of the OMs were then projected for the values of $F_{MSY}$ based on the four assumptions about density dependence. This allows a comparison between the yield that could potentially be achieved and that forgone by making an incorrect assumption about density dependence. The OMs were first projected, without process error in recruitment, from the end of the historical estimates for a range of fishing mortality (spanning 0 to $F_{crash}$) for 30 years into the future. The estimates in the final year of the projections were then be used to construct equilibrium curves (**Figure X2**). The points on the curve correspond to the projected outcomes for the values of $F_{MSY}$ from each OM. This was run as a check, as the equilibrium and projections should agree, I.e. the points at MSY should be the same colour as the curve.
 
-The OMs were also projected for the estimates of different estimates FMSY, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if FMSY is underestimated then yield will be less than MSY, while if FMSY is  overestimated  yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of FMSY are shown in **Figures X3a, X3b, X3c and X3d**
+The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures X3a, X3b, X3c and X3d**
 
 **Figure X4** summaries the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence.
 
 Conclusions
 
-Estimating density-dependence from observations only possible for weight at age and maturity age. Density dependence in natural mortality can only be explored from theoretical considerations (because current assessment does not include age or time varying natural mortality). 
+Estimating density-dependence from observations only possible for mass-at-age and maturity age. Density dependence in natural mortality can only be explored from theoretical considerations (because current assessment does not include age or time varying natural mortality).
 
-* The impact of including density dependence: major impact on reference points. Especially Fmsy is much higher when including DD. However, the expected yields in equilibrium conditions are expected to be very similar. The main difference is in the initial step from the current Fmsy to any new Fmsy that would include DD, as the higher Fmsy would be applied to a stock that is estimated without DD. 
-* The impact of ignoring density dependence
-* The impact of assuming density-dependence incorrectly
-* Robustness of the current ICES framework
-
+-   The impact of including density dependence: major impact on reference points. Especially $F_{MSY}$ is much higher when including DD. However, the expected yields in equilibrium conditions are expected to be very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
+-   The impact of ignoring density dependence
+-   The impact of assuming density-dependence incorrectly
+-   Robustness of the current ICES framework
 
 <!-- =============================================================================================================== -->
 
@@ -148,7 +147,7 @@ Estimating density-dependence from observations only possible for weight at age 
 
 # Introduction
 
-The purpose of this work is to support the project "Fmsy-project for six high profile fish stocks". The project focuses on the current management approach for fish stocks based on single-species Fmsy Values where the only density-dependent process that is included is recruitment. The project includes three other density-dependent population dynamics: growth (weight at age), sexual maturity and natural mortality.
+The purpose of this work is to support the project "$F_{MSY}$-project for six high profile fish stocks". The project focuses on the current management approach for fish stocks based on single-species $F_{MSY}$ Values where the only density-dependent process that is included is recruitment. The project includes three other density-dependent population dynamics: growth (mass-at-age), sexual maturity and natural mortality.
 
 This report deals with the evaluation of density dependent processes for `r mystkname` using Management Strategy Evaluation (MSE). Steps in the analysis:
 
@@ -186,15 +185,15 @@ section <- "02"
 
 ```
 
-**Weight at age**
+**Mass-at-age**
 
-Trends in (stock) weight at age are shown in figure 1. Weight-at-age in the stock is calculated as the average of the weight-at-age in the three spawning components, weighted by the relative size of each component (as estimated in the egg surveys). The decreasing trend in weight-at-age observed since 2005 for fish of age 3 and older seems to have stopped in 2013 and values in the last 8 years show an increasing trend.
+Trends in (stock) mass-at-age are shown in figure 1. Weight-at-age in the stock is calculated as the average of the weight-at-age in the three spawning components, weighted by the relative size of each component (as estimated in the egg surveys). The decreasing trend in weight-at-age observed since 2005 for fish of age 3 and older seems to have stopped in 2013 and values in the last 8 years show an increasing trend.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="left", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "cond_waa", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". Weight at age by year and cohort"))
+  caption = paste0(mystkname, ". mass-at-age by year and cohort"))
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section, mystk, "waa.jpg", sep="_")))
 
@@ -202,15 +201,15 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section, mystk, "waa.jp
 
 *`r fig_nums("cond_waa")`*
 
-**Maturity at age**
+**Maturity-at-age**
 
-The annual maturity ogive for mackerel is calculated as the average of the maturity ogives of the three spawning components weighted by the relative size of each component calculated as described above for the stock weights. The ogives for the North Sea and Southern components are fixed over time. For the Western component the maturity ogive is updated every year, using maturity data from commercial catch samples from Germany, Ireland, the Netherlands and the UK collected during the first and second quarters. Most of the variability in maturity at age is on ages 2 and 3. Nearly all fish of age 4 and older are estimated to be mature.
+The annual maturity ogive for mackerel is calculated as the average of the maturity ogives of the three spawning components weighted by the relative size of each component calculated as described above for the stock weights. The ogives for the North Sea and Southern components are fixed over time. For the Western component the maturity ogive is updated every year, using maturity data from commercial catch samples from Germany, Ireland, the Netherlands and the UK collected during the first and second quarters. Most of the variability in maturity-at-age is on ages 2 and 3. Nearly all fish of age 4 and older are estimated to be mature.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "cond_mat", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". Maturity at age by year and cohort"))
+  caption = paste0(mystkname, ". Maturity-at-age by year and cohort"))
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "mat.jpg", sep="_")))
 
@@ -218,9 +217,9 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "mat.jpg
 
 *`r fig_nums("cond_mat")`*
 
-**Natural mortality at age (fixed)**
+**Natural mortality-at-age**
 
-Natural mortality is assumed to be 0.15 for all age groups and constant over time.This value was calculated based on estimates of total mortality derived from tagging data combined with catch data (@hamre1980biology; @ices2022wgwide; @ices2022macstockannex).
+Natural mortality is assumed to be 0.15 for all age groups and constant over time.This value was calculated based on estimates of total mortality derived from tagging data combined with catch data (@hamre1980biology; @ICES2022WGWIDE; @ICES2022MAC).
 
 In order to assess the impacts of density dependent processes on natural mortality, additional assumptions need to be made about the distribution of natural mortality across ages. This will be done in section 3 of this report.
 
@@ -228,7 +227,7 @@ In order to assess the impacts of density dependent processes on natural mortali
 
 fig_nums(
   name    = "cond_natmor", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". Natural mortality at age by year and cohort (all ages and years the same M)"))
+  caption = paste0(mystkname, ". Natural mortality-at-age by year and cohort (all ages and years the same M)"))
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "m.jpg", sep="_")))
 
@@ -238,15 +237,15 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "m.jpg",
 
 \newpage
 
-**Density dependence in Weight at age vs. Total biomass**
+**Density dependence in mass-at-age vs. Total biomass**
 
-The distribution of weight at age is shown in the figure below (left) and the relationship between weight at age and total biomass of mackerel is shown to the right. Consistent negative slopes on the biomass-weight at age plots can be observed for ages 4 and beyond. The patterns for the younger ages are less clear. It should be remembered that the younger ages do not appear strongly in the catches.
+The distribution of mass-at-age is shown in the figure below (left) and the relationship between mass-at-age and total biomass of mackerel is shown to the right. Consistent negative slopes on the biomass-mass-at-age plots can be observed for ages 4 and beyond. The patterns for the younger ages are less clear. It should be remembered that the younger ages do not appear strongly in the catches.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "cond_ddwaa", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". Density dependence and weight at age."))
+  caption = paste0(mystkname, ". Density dependence and mass-at-age."))
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "dd_waa.jpg", sep="_")))
 
@@ -254,17 +253,17 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "dd_waa.
 
 *`r fig_nums("cond_ddwaa")`*
 
-**GAMM at age**
+**GAMM-at-age**
 
-A Generalized Additive Mixed Model (GAMM) was estimated to assess the relationship between weight at age and total biomass.
+A Generalized Additive Mixed Model (GAMM) was estimated to assess the relationship between mass-at-age and total biomass.
 
-weights are predicted from two variables: a smoother of total biomass/mean(total biomass) and age. The resulting factor is shown below, indicating a nearly linear decline in weight at age as total biomass increases.
+weights are predicted from two variables: a smoother of total biomass/mean(total biomass) and age. The resulting factor is shown below, indicating a nearly linear decline in mass-at-age as total biomass increases.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "cond_gammwaa", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". GAMM analysis of density dependence and weight at age."))
+  caption = paste0(mystkname, ". GAMM analysis of density dependence and mass-at-age."))
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "gamm.jpg", sep="_")))
 
@@ -278,7 +277,7 @@ A summary of the GAMM model is shown in the table below.
 
 tab_nums(
   name    = "cond_gammsummary", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". GAMM summary of density dependence and weight at age."))
+  caption = paste0(mystkname, ". GAMM summary of density dependence and mass-at-age."))
 
 cat(readLines(file.path(tablesdir, paste(section,mystk, "gamm summary.txt", sep="_"))), sep = '\n')
 
@@ -286,20 +285,17 @@ cat(readLines(file.path(tablesdir, paste(section,mystk, "gamm summary.txt", sep=
 
 *`r tab_nums("cond_gammsummary")`*
 
-**Linear model of density dependence in weight at age**
+**Linear model of density dependence in mass-at-age**
 
-The change in relative mass-at-age (i.e. observed - mean values) is plotted against total biomass, this allows the relationship between growth and total biomass to be compared across all ages. It is seen that there is a common negative relationship for all ages. A summary of the linear model is in the table below. The trend of growth with biomass is -0.18, this was then used to model mass-at-age as: 
+The change in relative mass-at-age (i.e. observed - mean values) is plotted against total biomass, this allows the relationship between growth and total biomass to be compared across all ages. It is seen that there is a common negative relationship for all ages. A summary of the linear model is in the table below. The trend of growth with biomass is -0.18, this was then used to model mass-at-age as:
 
-[ CHECK THE FORMULA ]
-W^'=¯W^-0.18
-$W_a = {\overline{W_a}} B^{{\beta}_a}$
-
+[ CHECK THE FORMULA ] W^'=¯W^-0.18 $W_a = {\overline{W_a}} B^{{\beta}_a}$
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "cond_lmwaa", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". LM analysis of density dependence and weight at age."))
+  caption = paste0(mystkname, ". LM analysis of density dependence and mass-at-age."))
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "lm_waa.jpg", sep="_")))
 
@@ -311,7 +307,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "lm_waa.
 
 tab_nums(
   name    = "cond_lmsummary", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". LM summary of density dependence and weight at age."))
+  caption = paste0(mystkname, ". LM summary of density dependence and mass-at-age."))
 
 cat(readLines(file.path(tablesdir, paste(section,mystk, "lm summary.txt", sep="_"))), sep = '\n')
 
@@ -321,15 +317,15 @@ cat(readLines(file.path(tablesdir, paste(section,mystk, "lm summary.txt", sep="_
 
 \newpage
 
-**Density-dependence analysis of maturity at age**
+**Density-dependence analysis of maturity-at-age**
 
-The distribution of maturity at age is shown in the figure below (left) and the relationship between maturity at age and total biomass of mackerel is shown to the right. Negative slopes on the biomass-maturity at age plots can be observed for ages 2 and 3, which are the most relevant ages for maturity as all fish of age 4 and above are mature.
+The distribution of maturity-at-age is shown in the figure below (left) and the relationship between maturity-at-age and total biomass of mackerel is shown to the right. Negative slopes on the biomass-maturity-at-age plots can be observed for ages 2 and 3, which are the most relevant ages for maturity as all fish of age 4 and above are mature.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "cond_ddmat", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". Analysis of density dependence and maturity at age."))
+  caption = paste0(mystkname, ". Analysis of density dependence and maturity-at-age."))
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "dd_mat.jpg", sep="_")))
 
@@ -343,7 +339,11 @@ A maturity at weight ogive was generated from this formula:
 
 $f(x) = \frac{1}{1+e^{-k(x-x_0)}}$
 
-This resulted in the parameters k=`r format(matPar$par[1], digits=4)` and $W_{50}$=`r format(matPar$par[2], digits=4)` which have been used in subsequent simulations.
+```{r}
+load("~/Dropbox/DDMSE/data/om/mac/parMat.RData") 
+```
+
+This resulted in the parameters k=`r  format(matPar$par[1], digits=4)` and $W_{50}$=`r  format(matPar$par[2], digits=4)` which have been used in subsequent simulations.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -365,7 +365,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "mat_ogi
 
 # Estimating Density Dependent effects based on life-history parameters
 
-Life history parameters are used to develop an example of modelling density dependence for mass, maturity and natural mortality-at-age. The parameters are first used to construct an *`**FLBRP** object representing the equilibrium, and are then coerced into an **FLStock** to model the time series dynamics.
+Life history parameters are used to develop an example of modelling density dependence for mass, maturity and natural mortality-at-age. The parameters are first used to construct an \*\`**FLBRP** object representing the equilibrium, and are then coerced into an **FLStock** to model the time series dynamics.
 
 ## Mass-at-age
 
@@ -383,17 +383,17 @@ $O(W_a) = 1/(1+e^{k(W_a-W_{50})})$
 
 ## Natural mortality
 
-Natural mortality is assumed to vary at unit length ($L_1$). 
+Natural mortality is assumed to vary at unit length ($L_1$).
 
-Empirical and theoretical studies (@lorenzen2000allometry) have shown that natural mortality (M) decrease with fish length, but increase with the von Bertalanffy parameters of curvature k and asymptotic length L_∞. Therefore, M can be derived from life history parameters, e.g. M=1.5k(L_∞/L) (@POPE2021105952) or M=1.5k @jensen1985comparison. @lorenzen2008fish @lorenzen2022natural   showed that natural mortality rates vary with body size and age, often by orders of magnitude over the life cycle and support the existence of an allometric relationship between M and body mass (W) at-age of the form:
+Empirical and theoretical studies (@lorenzen2000allometry) have shown that natural mortality (M) decrease with fish length, but increase with the von Bertalanffy parameters of curvature $k$ and asymptotic length $L_{\infty}$. Therefore, M can be derived from life history parameters, e.g. $M=1.5kL{\infty}/L$) (@POPE2021105952) or M=1.5k @jensen1985comparison. @lorenzen2008fish @lorenzen2022natural showed that natural mortality rates vary with body size and age, often by orders of magnitude over the life cycle and support the existence of an allometric relationship between M and body mass (W) at-age of the form:
 
-[Formula here]
+$M=M_uW^d$
 
-Where M_u is M at unit weight, and d is the allometric exponent from empirical relationships shown to range from –0.3 to –0.37. d is approximately equal to –1/3, which implies that M is inversely proportional to body length, since mass is approximately proportional to the third power of length. This is consistent with [**Gislason et al., (2008)**], who proposed a relationship for natural mortality based on length
+Where $M_u$ is $M$ at unit weight, and $d$ is the allometric exponent from empirical relationships shown to range from -0.3 to -0.37. $d$ is approximately equal to -1/3, which implies that $M$ is inversely proportional to body length, since mass is approximately proportional to the third power of length. This is consistent with [@gislason2008coexistence], who proposed a relationship for natural mortality based on length
 
-$M=\alphak(L_{\infty}χ)L\beta$
+$M={\alpha}k(L_{\infty}χ)L\beta$
 
-The plot below shows the equilibrium values by age for simulations initiated with different levels of biomass relative to B_MSY. The red line indicates the values from the current assessment (for natural mortality with an assumed distribution over ages). [ CHECK !]
+The plot below shows the equilibrium values by age for simulations initiated with different levels of biomass relative to $B_{MSY}$. The red line indicates the values from the current assessment (for natural mortality that varies by mass and hence age). 
 
 ```{r, echo=FALSE, fig.width=0.6, fig.asp=0.6, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -401,7 +401,7 @@ section <- "03"
 
 fig_nums(
   name    = "sim_dd3", level = 1, display = FALSE,
-  caption = "Simulation of density dependence in mass-at-age, maturity at age and Natural mortality at age for different levels of biomass relative to Bmsy. Red line is without density dependence.")
+  caption = "Simulation of density dependence in mass-at-age, maturity-at-age and Natural mortality-at-age for different levels of biomass relative to $B_{MSY}$. Red line is without density dependence.")
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"sim_dd3.jpg", sep="_")))
 
@@ -409,13 +409,13 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"sim_dd3.
 
 *`r fig_nums("sim_dd3")`*
 
-From the theoretical life-history parameters and simulations, we can compare the equilibrium total biomass and yield from an assessment without density dependence, and then adding, step-by-step, the density dependent processes for weight at age, maturity at age and natural mortality at age. Comparison of equilibrium yield plots for simulation with and without density-dependent processes indicates that the expected values for Bmsy tend to become lower when density dependence is included and that MSY becomes somewhat higher.
+From the theoretical life-history parameters and simulations, we can compare the equilibrium total biomass and yield from an assessment without density dependence, and then adding, step-by-step, the density dependent processes for mass-at-age, maturity-at-age and natural mortality-at-age. Comparison of equilibrium yield plots for simulation with and without density-dependent processes indicates that the expected values for $B_{MSY}$ tend to become lower when density dependence is included and that MSY becomes somewhat higher.
 
 ```{r, echo=FALSE, out.width = "500px",  fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "sim_yield", level = 1, display = FALSE,
-  caption = "Simulation of density dependence in M-at-age for different levels of biomass relative to Bmsy")
+  caption = "Simulation of density dependence in M-at-age for different levels of biomass relative to $B_{MSY}$")
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"eq_yield.jpg",sep="_")))
 
@@ -433,7 +433,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"eq_yield
 
 **Stock assessments**
 
-The operating models for this study are derived from the 2022 stock assessment. SAM is a statistical catch-at-age model that estimates error in the catch-at-age. In the case of mackerel, the assessment gives a higher weight to the recruitment index than to the catch data for ages 0 and 1. This means that the estimates of recruitment in the assessment can be very different from the actual number of fish that are recruited to the fishery. To ensure the MSE projections and the historical estimates are comparable, a Virtual Population Analysis (VPA) was conducted on the whole catch matrix and the survivors in the most recent year and oldest age. In the next step, we applied a natural mortality at age vector derived from the Lorenzen approach which would mimick the VPA assessment with fixed M at age. The figure below compares the SAM assessment with the VPA and the VPAM assessment. A main difference is in the recruitment estimates. Using age-varying M tends to flatten the recruitment pattern. The vpaM model was used as the base case to be compared against the density-dependent simulations.
+The operating models for this study are derived from the 2022 stock assessment. SAM is a statistical catch-at-age model that estimates error in the catch-at-age. In the case of mackerel, the assessment gives a higher weight to the recruitment index than to the catch data for ages 0 and 1. This means that the estimates of recruitment in the assessment can be very different from the actual number of fish that are recruited to the fishery. To ensure the MSE projections and the historical estimates are comparable, a Virtual Population Analysis (VPA) was conducted on the whole catch matrix and the survivors in the most recent year and oldest age. In the next step, we applied a natural mortality-at-age vector derived from the Lorenzen approach which would mimick the VPA assessment with fixed M-at-age. The figure below compares the SAM assessment with the VPA and the VPAM assessment. A main difference is in the recruitment estimates. Using age-varying M tends to flatten the recruitment pattern. The vpaM model was used as the base case to be compared against the density-dependent simulations.
 
 ```{r, echo=FALSE, out.width = "600px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -453,7 +453,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"comparin
 
 **Density dependence in mass-at-age**
 
-When applying density dependent processes to weight at age (i.e. lower weight at age for higher biomass), Bmsy is expected to be somewhat lower. The expected increase in MSY is small.
+When applying density dependent processes to mass-at-age (i.e. lower mass-at-age for higher biomass), $B_{MSY}$ is expected to be somewhat lower. The expected increase in MSY is small.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -470,15 +470,15 @@ knitr::include_graphics(path=file.path(figuresdir,
 
 \newpage
 
-**Density dependence in mass-at-age and maturity at age**
+**Density dependence in mass-at-age and maturity-at-age**
 
-When applying density dependent processes to both weight at age and maturity at age, Bmsy is expected to be lower again and MSY is expected to increase.
+When applying density dependent processes to both mass-at-age and maturity-at-age, $B_{MSY}$ is expected to be lower again and MSY is expected to increase.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "om_VPADDMM", level = 1, display = FALSE,
-  caption = "Simulation of density dependence in Mass-at-age and Maturity at age. Red lines are the non-density dependent values.")
+  caption = "Simulation of density dependence in Mass-at-age and Maturity-at-age. Red lines are the non-density dependent values.")
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"VPADDMM_4panels.jpg",sep="_")))
 
@@ -488,15 +488,15 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"VPADDMM_
 
 \newpage
 
-**Density dependence in mass-at-age, maturity at age and M at age**
+**Density dependence in mass-at-age, maturity-at-age and M-at-age**
 
-When applying density dependent processes to all three variables, Bmsy is expected to be lower again and MSY is expected to increase a bit more.
+When applying density dependent processes to all three variables, $B_{MSY}$ is expected to be lower again and MSY is expected to increase a bit more.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "om_VPADDMMM", level = 1, display = FALSE,
-  caption = "Simulation of density dependence in Mass-at-age, maturity at age and M at age. Red lines are the non-density dependent values.")
+  caption = "Simulation of density dependence in Mass-at-age, maturity-at-age and M-at-age. Red lines are the non-density dependent values.")
 
 knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"VPADDMMM_4panels.jpg",sep="_")))
 
@@ -508,7 +508,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"VPADDMMM
 
 **Comparison of equilibrium curves for density dependence analyses: biomass against yield and F**
 
-The comparison of the equilibrium curves, indicate that B_MSY is expected to decrease by 30%, Fmsy is expected to increase by 113% and catch (MSY) is expected to increase by 5%. So while, inclusion of density-dependent processes, has a substantial impact on biological reference points, the resulting change in equilibrium catch is expected to be small.
+The comparison of the equilibrium curves, indicate that B_MSY is expected to decrease by 30%, $F_{MSY}$ is expected to increase by 113% and catch (MSY) is expected to increase by 5%. So while, inclusion of density-dependent processes, has a substantial impact on biological reference points, the resulting change in equilibrium catch is expected to be small.
 
 ```{r, echo=FALSE, out.width = "500px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -539,10 +539,9 @@ knitr::include_graphics(
 
 # Forward projections without feedback
 
-Forward projections were run in two modes. Firstly in deterministic mode and secondly in probabilistic mode. We used the Fmsy to project forward from 2020 until 2050. We used both the Fmsy that is applicable to the density dependent scenario, but also evaluated what would happen if the 'wrong Fmsy' would be used with a particular scenario.
+Forward projections were run in two modes. Firstly in deterministic mode and secondly in probabilistic mode. We used the $F_{MSY}$ to project forward from 2020 until 2050. We used both the $F_{MSY}$ that is applicable to the density dependent scenario, but also evaluated what would happen if the 'wrong $F_{MSY}$' would be used with a particular scenario.
 
-The plot below shows the deterministic runs with the appropriate Fmsy value being used to project forward. Fmsy is highest when density dependence is taken into account for all three processes. Nevertheless, expected catches are somewhat lower when density dependence is taken into account.
-
+The plot below shows the deterministic runs with the appropriate $F_{MSY}$ value being used to project forward. $F_{MSY}$ is highest when density dependence is taken into account for all three processes. Nevertheless, expected catches are somewhat lower when density dependence is taken into account.
 
 ```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -550,7 +549,7 @@ section <- "05"
 
 fig_nums(
   name    = "mse_determ1", level = 1, display = FALSE,
-  caption = "Deterministic projections at Fmsy for different scenarios")
+  caption = "Deterministic projections at $F_{MSY}$ for different scenarios")
 
 knitr::include_graphics(path=
                     file.path(figuresdir,paste(section,mystk,"deterministic_projections_at_Fmsy.jpg",sep="_")))
@@ -560,15 +559,15 @@ knitr::include_graphics(path=
 
 \newpage
 
-**Deterministic projections at Fmsy for different scenarios: trends in weight, maturity and M at age**
+**Deterministic projections at $F_{MSY}$ for different scenarios: trends in weight, maturity and M-at-age**
 
-How can we understand the results of the deterministic runs? Below is a plot of the trends in stock weight at age, maturity at age and natural mortality at age, for the most relevant ages (1-6) and for the four different scenarios (Base, DDM, DDMM and DDMMM). The density dependent effect of maturity is strongest when both stock weight and maturity are density dependent. When natural mortality is also density dependent, this affects the stock size and hence also the density dependence for stock weight and maturity, leading to a smaller density dependent effects for those variables.
+How can we understand the results of the deterministic runs? Below is a plot of the trends in stock mass-at-age, maturity-at-age and natural mortality-at-age, for the most relevant ages (1-6) and for the four different scenarios (Base, DDM, DDMM and DDMMM). The density dependent effect of maturity is strongest when both stock weight and maturity are density dependent. When natural mortality is also density dependent, this affects the stock size and hence also the density dependence for stock weight and maturity, leading to a smaller density dependent effects for those variables.
 
 ```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "mse_determ2", level = 1, display = FALSE,
-  caption = "Deterministic projections at Fmsy for different scenarios: trends in weight, maturity and M at age")
+  caption = "Deterministic projections at $F_{MSY}$ for different scenarios: trends in weight, maturity and M-at-age")
 
 knitr::include_graphics(path=
                     file.path(figuresdir,paste(section,mystk,"deterministic_projections_of_MMM.jpg",sep="_")))
@@ -579,15 +578,15 @@ knitr::include_graphics(path=
 
 \newpage
 
-**Stochastic projections at Fmsy for different scenarios**
+**Stochastic projections at $F_{MSY}$ for different scenarios**
 
-Using stochastic projections by including random processes for recruitment deviations and the Fmsy values that are consistent with the different scenarios, leads to the overview below. SSB and total biomass are highest in the case of no density dependence. Catches are different in the first years of 'switching' to the new reference points, but afterwards, the catches for the different scenarios are highly comparable.
+Using stochastic projections by including random processes for recruitment deviations and the $F_{MSY}$ values that are consistent with the different scenarios, leads to the overview below. SSB and total biomass are highest in the case of no density dependence. Catches are different in the first years of 'switching' to the new reference points, but afterwards, the catches for the different scenarios are highly comparable.
 
 ```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "mse_sim1", level = 1, display = FALSE,
-  caption = "Stochastic projections at Fmsy for different scenarios")
+  caption = "Stochastic projections at $F_{MSY}$ for different scenarios")
 
 knitr::include_graphics(path=
                     file.path(figuresdir,paste(section,mystk,"stochastic_projections_at_Fmsy.jpg",sep="_")))
@@ -617,7 +616,7 @@ knitr::include_graphics(path=
 
 \newpage
 
-**Stochastic projections at all Fmsy's from all scenarios**
+**Stochastic projections at all $F_{MSY}$'s from all scenarios**
 
 [ NEED TO CHECK THIS FIGURE; IS THIS A PLAUSIBLE RESULT? ]
 
@@ -625,7 +624,7 @@ knitr::include_graphics(path=
 
 fig_nums(
   name    = "mse_sim2", level = 1, display = FALSE,
-  caption = "Stochastic projections at all Fmsy's from all scenarios")
+  caption = "Stochastic projections at all $F_{MSY}$'s from all scenarios")
 
 knitr::include_graphics(path=
                     file.path(figuresdir,paste(section,mystk,"stochastic_projections_at_different_Fmsys.jpg",sep="_")))
@@ -642,7 +641,13 @@ knitr::include_graphics(path=
 
 # Discussion and conclusions
 
-The quality shall live up to that demanded by the International Council for the Exploration of the Sea (ICES) and potentially be used in ICES advice to fisheries managers. The Consultant shall be interacting with the leadership of the project Henrik Sparholt, or his representative, in the process of developing the software. The software shall be made publicly available via Github or on alternative platform if so directed by Henrik Sparholt or his representative.
+The quality lives up to that required by ICES and so can potentially be used when providing advice to fisheries managers. The software is also publicly available via Github.
+
+Since the early 1980s, natural mortality ($M$) for mackerel has been fixed within the assessment model at 0.15, for all ages and all assessment years. This value was calculated based on estimates of total mortality derived from tagging data combined with catch data [@@hamre1980biology]. M must vary both by age and over time due to changes in abundance of predators, feeding conditions, disease etc. \cite{siegfried2009review}.
+
+Changes in mackerel distribution and growth will also affect natural mortality. For example, the recent expansion in distribution area and change in
+mass-at-age could also result in changes in natural mortality. 
+
 
 <!-- =============================================================================================================== -->
 

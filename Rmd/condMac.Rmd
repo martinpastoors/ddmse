@@ -236,6 +236,10 @@ ggplot(dat,aes(wt,mat))+
 
 **Figure A.`r iFig=iFig+1; iFig`** Maturity-at-age v mass-at-age  (k=`r matPar$par[1]` $W_{50}$=`r matPar$par[2]`)
 
+```{r}
+save(matPar,file=file.path("/home/laurie/Dropbox/DDMSE/data/om/mac/parMat.RData"))
+```
+
 \newpage
 
 ```{r}
