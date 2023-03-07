@@ -1495,37 +1495,47 @@ mystk     <- "mac";
   }) ## F loop
 
   # generating stochastic projection data frame
-  prjs_df <- tibble()
-  for (i in 1:length(prjs)) {
-    prjs_df <-
-      bind_rows(
-        prjs_df,
-        ldply(prjs[[i]], function(x) {
-          model.frame(FLQuants(x,
-                               rec    =function(x) rec(x),
-                               biomass=function(x) stock(x),
-                               ssb    =function(x) ssb(  x),
-                               catch  =function(x) catch(x),
-                               f      =function(x) fbar( x)),drop=TRUE)})    
-      )
-  }
+  prjs_df=ldply(prjs, function(x) ldply(x, function(x) { 
+    model.frame(FLQuants(x,
+                         rec    =function(x) rec(x),
+                         biomass=function(x) stock(x),
+                         ssb    =function(x) ssb(  x),
+                         catch  =function(x) catch(x),
+                         f      =function(x) fbar( x)),drop=TRUE)})) %>% 
+    mutate(Fmsy=factor(F, levels=rfpts$Fmsy,labels=c("Base","M","MM","MMM"))) %>% 
+    as_tibble()
 
-  nyears = length(unique(prjs_df$year))
-  niters = length(unique(prjs_df$iter))
-  nscen  = length(unique(prjs_df$.id))
-  
-  prjs_df <- prjs_df %>% 
-    bind_cols(Fmsy    = rep(rfpts$Fmsy, each=(nyears*niters*nscen))) %>% 
-    bind_cols(Fmsy_id = rep(unique(prjs_df$.id), each=(nyears*niters*nscen)))
+  # prjs_df <- tibble()
+  # for (i in 1:length(prjs)) {
+  #   prjs_df <-
+  #     bind_rows(
+  #       prjs_df,
+  #       ldply(prjs[[i]], function(x) {
+  #         model.frame(FLQuants(x,
+  #                              rec    =function(x) rec(x),
+  #                              biomass=function(x) stock(x),
+  #                              ssb    =function(x) ssb(  x),
+  #                              catch  =function(x) catch(x),
+  #                              f      =function(x) fbar( x)),drop=TRUE)})    
+  #     )
+  # }
+  # 
+  # nyears = length(unique(prjs_df$year))
+  # niters = length(unique(prjs_df$iter))
+  # nscen  = length(unique(prjs_df$.id))
+  # 
+  # prjs_df <- prjs_df %>% 
+  #   bind_cols(Fmsy    = rep(rfpts$Fmsy, each=(nyears*niters*nscen))) %>% 
+  #   bind_cols(Fmsy_id = rep(unique(prjs_df$.id), each=(nyears*niters*nscen)))
   
 
   prjs_df2 <-
     prjs_df %>% 
     filter(year >= 2020) %>% 
-    group_by(.id, iter, Fmsy, Fmsy_id) %>% 
+    group_by(.id, iter, F, Fmsy) %>% 
     mutate(cumcatch = cumsum(catch)) %>% 
     ungroup() %>% 
-    dplyr::select(.id, iter, Fmsy, Fmsy_id, year, cumcatch)
+    dplyr::select(.id, iter, F, Fmsy, year, cumcatch)
 
 
   probs <- c(0.025, 0.5, 0.975)
@@ -1537,16 +1547,16 @@ mystk     <- "mac";
   prjs_df_summ <-
     prjs_df %>% 
     pivot_longer(names_to = "variable", values_to = "data", rec:f) %>% 
-    group_by(.id, Fmsy, Fmsy_id, variable, year) %>% 
+    group_by(.id, F, Fmsy, variable, year) %>% 
     summarize_at(vars(data), tibble::lst(!!!probs_funs)) %>% 
-    mutate(Fmsy = format(Fmsy, digits=2)) 
+    mutate(F = format(F, digits=2)) 
     
   prjs_df2_summ <-
     prjs_df2 %>% 
     pivot_longer(names_to = "variable", values_to = "data", cumcatch) %>% 
-    group_by(.id, Fmsy, Fmsy_id, variable, year) %>% 
+    group_by(.id, F, Fmsy, variable, year) %>% 
     summarize_at(vars(data), tibble::lst(!!!probs_funs)) %>% 
-    mutate(Fmsy = format(Fmsy, digits=2)) 
+    mutate(F = format(F, digits=2)) 
   
   # basecase <-
   #   prjs_df_summ %>% 
@@ -1558,7 +1568,7 @@ mystk     <- "mac";
   # only with the right Fmsy
   p <-
     prjs_df_summ %>% 
-    filter(.id == Fmsy_id) %>% 
+    filter(.id == Fmsy) %>% 
     mutate(variable = factor(variable, levels=c("rec","f","catch","ssb","biomass"))) %>% 
     ggplot(aes(x=year, y=median)) +
     theme_bw() +
@@ -1576,7 +1586,7 @@ mystk     <- "mac";
   # stochastic projections at 'right' Fmsy  
   p <-
     prjs_df_summ %>% 
-    filter(.id == Fmsy_id) %>% 
+    filter(.id == Fmsy) %>% 
     mutate(variable = factor(variable, levels=c("rec","f","catch","ssb","biomass"))) %>% 
     ggplot(aes(x=year, y=median)) +
     theme_bw() +
@@ -1596,8 +1606,8 @@ mystk     <- "mac";
     mutate(variable = factor(variable, levels=c("rec","f","catch","ssb","biomass"))) %>% 
     ggplot(aes(x=year, y=median)) +
     theme_bw() +
-    geom_ribbon(aes(ymin=lower, ymax=upper, fill=Fmsy), alpha=0.3) +
-    geom_line(aes(colour=Fmsy)) +
+    geom_ribbon(aes(ymin=lower, ymax=upper, fill=F), alpha=0.3) +
+    geom_line(aes(colour=F)) +
     labs(y="", x="", colour="Fmsy", fill="Fmsy") +
     expand_limits(y=0) +
     facet_grid(variable ~ .id, scales="free_y")
@@ -1610,7 +1620,7 @@ mystk     <- "mac";
   prjs_df2050 <-
     prjs_df %>% 
     filter(year == 2050) %>% 
-    filter(.id == Fmsy_id) %>% 
+    filter(.id == Fmsy) %>% 
     pivot_longer(names_to = "variable", values_to = "data", rec:f) %>% 
     mutate(variable = factor(variable, levels=c("rec","f","catch","ssb","biomass")))
   
@@ -1646,7 +1656,7 @@ mystk     <- "mac";
                    aes(x=data, fill=.id), 
                    position=position_dodge(), binwidth = filter(r, variable=="biomass")$binwidth, alpha=0.5) +
     # geom_freqpoly(aes(x=cumcatch, colour=.id), stat="identity") +
-    geom_vline(data=m, aes(xintercept=median, colour=.id)) +
+    geom_vline(data=m, aes(xintercept=median, colour=.id), show.legend = FALSE) +
     labs(y="", x="", colour="Fmsy", fill="scen") +
     facet_grid(.id ~ variable, scales="free")
   
@@ -1676,7 +1686,7 @@ mystk     <- "mac";
   p <-
     ggplot()+
     geom_line( aes(ssb,catch,col=.id),data=eqCurves)+
-    geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2040))+
+    geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2050))+
     theme_bw()+theme(legend.position="bottom")+
     xlab("SSB")+ylab("Yield")
   
@@ -1687,21 +1697,13 @@ mystk     <- "mac";
   
 #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
+  rm(p, p1, p2, p3, p4)
   save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   # load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   
-  {r, echo=FALSE, out.width = "500px" fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
-  
-  fig_nums(
-    name    = "eq_check", level = 1, display = FALSE,
-    caption = "Check of equilibrium curves against end points of simulated time series at $F_{MSY}$'s from all scenarios")
-  
-  knitr::include_graphics(path=
-                            file.path(figuresdir,paste(section,mystk,"equilibrium_check.jpg",sep="_")))
   
   
-  rm(p, p1, p2, p3, p4)
   
 # } # end of stk loop
 

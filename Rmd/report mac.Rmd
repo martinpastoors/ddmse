@@ -157,11 +157,9 @@ The MSY reference points $B_{MSY}$ and $F_{MSY}$ are generally based on equilibr
 
 Initial evaluations were conducted based on life history theory, as used by the International Council for the Exploration of the Sea (ICES) to develop advice conducting MSE for data poor stocks [@fischer2020ga]. **Figure 10** shows the the equilibrium curves of catch v SSB assuming a) no density dependence, and density dependence in b) mass-at-age, c) mass & maturity-at-age, and d) mass, maturity and natural mortality-at-age. These allow the relationships between the MSY reference points and virgin biomass to be seen.
 
-Each of the OMs were then projected for the values of $F_{MSY}$ based on the four assumptions about density dependence. This allows a comparison between the yield that could potentially be achieved and that forgone by making an incorrect assumption about density dependence. The OMs were first projected, without process error in recruitment, from the end of the historical estimates for a range of fishing mortality (spanning 0 to $F_{crash}$) for 30 years into the future. The estimates in the final year of the projections were then be used to construct equilibrium curves (**Figure X2**). The points on the curve correspond to the projected outcomes for the values of $F_{MSY}$ from each OM. This was run as a check, as the equilibrium and projections should agree, I.e. the points at MSY should be the same colour as the curve.
+Each of the OMs were then projected for the values of $F_{MSY}$ based on the four assumptions about density dependence. This allows a comparison between the yield that could potentially be achieved and that forgone by making an incorrect assumption about density dependence. The OMs were first projected, without process error in recruitment, from the end of the historical estimates for a range of fishing mortality (spanning 0 to $F_{crash}$) for 30 years into the future. The estimates in the final year of the projections were then be used to construct equilibrium curves (**Figure 15**). The points on the curve correspond to the projected outcomes for the values of $F_{MSY}$ from each OM. This was run as a check, as the equilibrium and projections should agree, I.e. the points at MSY should be the same colour as the curve.
 
-The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures X3a, X3b, X3c and X3d**
-
-**Figure X4** summarizes the yields and SSBs obtained for each Operating Model under the correct and mis-specified form of density dependence.
+The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures 16-19**. **Figure 20** summarizes the yields and SSBs obtained for each Operating Model under the correct and mis-specified form of density dependence.
 
 Conclusions
 
@@ -169,10 +167,6 @@ Estimating density-dependence from observations only possible for mass-at-age an
 
 The impact of including density dependence: major impact on reference points. Especially $F_{MSY}$ is much higher when including DD. However, the expected yields in equilibrium conditions are expected to be very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
 
-REMOVE 
-[ -   The impact of ignoring density dependence ]
-[ -   The impact of assuming density-dependence incorrectly ]
-[ -   Robustness of the current ICES framework ]
 
 <!-- =============================================================================================================== -->
 
@@ -334,7 +328,7 @@ cat(readLines(file.path(tablesdir, paste(section,mystk, "gamm summary.txt", sep=
 
 The change in relative mass-at-age (i.e. observed - mean values) is plotted against total biomass, this allows the relationship between growth and total biomass to be compared across all ages. It is seen that there is a common negative relationship for all ages. A summary of the linear model is in the table below. The trend of growth with biomass is -0.18, this was then used to model mass-at-age as:
 
-[ CHECK THE FORMULA ] W^'=¯W^-0.18 $W_a = {\overline{W_a}} B^{{\beta}_a}$
+$W_a = {\overline{W_a}} (B/B_{MSY})^{{\beta}_a}$
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -659,8 +653,6 @@ knitr::include_graphics(path=
 
 **Stochastic projections at all** $F_{MSY}$'s from all scenarios
 
-[ NEED TO CHECK THIS FIGURE; IS THIS A PLAUSIBLE RESULT? ]
-
 ```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
@@ -672,7 +664,22 @@ knitr::include_graphics(path=
 
 ```
 
-*`r fig_nums("mse_eq2050")`*
+*`r fig_nums("mse_sim2")`*
+
+```{r, echo=FALSE, out.width = "500px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "eq_check", level = 1, display = FALSE,
+  caption = "Check of equilibrium curves against end points of simulated time series at $F_{MSY}$'s from all scenarios")
+  
+  knitr::include_graphics(path=
+                            file.path(figuresdir,paste(section,mystk,"equilibrium_check.jpg",sep="_")))
+
+```
+
+*`r fig_nums("eq_check")`*
+
+
 
 <!-- =============================================================================================================== -->
 
@@ -711,19 +718,13 @@ The MSY reference points $B_{MSY}$ and $F_{MSY}$ were calculated based on equili
 
 Each of the four OMs were then projected for the values of $F_{MSY}$ based on the four assumptions about density dependence. This allows a comparison between the yield that could potentially be achieved and that forgone by making an incorrect assumption about density dependence.
 
-The OMs were first projected, without process error in recruitment, from the end of the historical estimates for a range of fishing mortality (spanning 0 to $F_{crash}$) for 30 years into the future. The estimates in the final year of the projections were then be used to construct equilibrium curves (**Figure X2**). The points on the curve correspond to the projected outcomes for the values of $F_{MSY}$ from each OM. This was run as a check, as the equilibrium and projections should agree, I.e. the points at MSY should be the same colour as the curve.
+The OMs were first projected, without process error in recruitment, from the end of the historical estimates for a range of fishing mortality (spanning 0 to $F_{crash}$) for 30 years into the future. The estimates in the final year of the projections were then be used to construct equilibrium curves (**Figure 15**). The points on the curve correspond to the projected outcomes for the values of $F_{MSY}$ from each OM. This was run as a check, as the equilibrium and projections should agree, I.e. the points at MSY should be the same colour as the curve.
 
-The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures X3a, X3b, X3c and X3d**
+The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures 16-19**
 
-**Figure X4** summarizes the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence and the associated reference points.
+**Figure 20** summarizes the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence and the associated reference points.
 
 The impact of including density dependence was primarily on the biological reference points. Especially $F_{MSY}$ is much higher when including density dependence. However, the expected yields in equilibrium conditions are very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
-
-REMOVE 
-
-[ Ignoring density dependent processes when they would be happening is expected to lead to ... ]
-
-[ The impact of assuming the wrong type of density-dependence processes, i.e. applying the reference points from the one density dependent operating model to a simulation with other density dependent processes, could lead to .... ]
 
 Since the early 1980s, natural mortality ($M$) for mackerel has been fixed within the assessment model at 0.15, for all ages and all assessment years. This value was calculated based on estimates of total mortality derived from tagging data combined with catch data [@hamre1980biology]. M must, however, vary both by age and over time due to changes in abundance of predators, feeding conditions, disease etc. [@siegfried2009review]. Particularly any changes in mackerel distribution and growth will affect natural mortality. The impact of including age-varying natural mortality is expected to ....
 
