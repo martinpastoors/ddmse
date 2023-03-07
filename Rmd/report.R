@@ -1259,7 +1259,27 @@ mystk     <- "mac";
   } 
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   # reference points data.frame (equilibrium)
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+  rfs=ldply(oms, function(x) { 
+    model.frame(FLQuants(x[,"2050"],
+                         biomass=function(x) stock(x),
+                         ssb    =function(x) ssb(  x),
+                         catch  =function(x) catch(x),
+                         f      =function(x) fbar( x)),drop=TRUE)[,-1]})
+  
+  # reference points (at maximum catch)
+  rfpts=ddply(rfs,.(.id), with, {  
+    flag=catch==max(catch)
+    data.frame(Bmsy  =biomass[flag],
+               SSBmsy=ssb[flag],
+               MSY   =catch[flag],
+               Fmsy  =f[flag],
+               Virgin=max(ssb),
+               B0    =max(biomass))}) %>% 
+    dplyr::rename(scen=.id)
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   #@# projection with different Fs                                           @#@
@@ -1649,8 +1669,8 @@ mystk     <- "mac";
                          f      =function(x) fbar( x)),drop=TRUE)[,-1]})
   
   ts=ldply(prj, function(x) model.frame(FLQuants(x, ssb  =function(x) ssb(  x), 
-                                                 f    =function(x) fbar(x), 
-                                                 catch=function(x) catch(x)),drop=T))
+                                                    f    =function(x) fbar(x), 
+                                                    catch=function(x) catch(x)),drop=T))
   ts=transform(ts,What=.id)
   ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
   
