@@ -1669,8 +1669,8 @@ mystk     <- "mac";
                          f      =function(x) fbar( x)),drop=TRUE)[,-1]})
   
   ts=ldply(prj, function(x) model.frame(FLQuants(x, ssb  =function(x) ssb(  x), 
-                                                    f    =function(x) fbar(x), 
-                                                    catch=function(x) catch(x)),drop=T))
+                                                 f    =function(x) fbar(x), 
+                                                 catch=function(x) catch(x)),drop=T))
   ts=transform(ts,What=.id)
   ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
   
@@ -1681,10 +1681,21 @@ mystk     <- "mac";
     xlab("SSB")+ylab("Yield")
 #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
-  rm(p, p1, p2, p3, p4)
   save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   # load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
+  
+  {r, echo=FALSE, out.width = "500px" fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+  
+  fig_nums(
+    name    = "eq_check", level = 1, display = FALSE,
+    caption = "Check of equilibrium curves against end points of simulated time series at $F_{MSY}$'s from all scenarios")
+  
+  knitr::include_graphics(path=
+                            file.path(figuresdir,paste(section,mystk,"equilibrium_check.jpg",sep="_")))
+  
+  
+  rm(p, p1, p2, p3, p4)
   
 # } # end of stk loop
 

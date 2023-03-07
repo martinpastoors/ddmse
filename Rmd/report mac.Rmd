@@ -367,7 +367,7 @@ Life history parameters are used to develop an example of modelling density depe
 
 Mass-at-age ($W_a$) is modelled as
 
-$W_a = {\overline{W_a}} B^{{\beta}_a}$
+$W_a = {\overline{W_a}} {(B/B_{MSY})^{{\beta}_a}$
 
 Where $\overline{W_a}$ and $\beta$ are estimated from a regression of mass-at-age ($W_a$) on total biomass ($B_a$), based on empirical data. $W_a$ is constrained so that sizes do not become unfeasible large or small.
 
