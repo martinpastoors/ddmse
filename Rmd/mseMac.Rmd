@@ -176,9 +176,10 @@ for (i in dimnames(vpaM)$year)
 
 ```{r, omCheck}
 om=fwdWindow(window(om,end=2020),end=2080,eqM)
-f =FLQuant(rep(seq(0,c(refpts(eq)["crash","harvest"])*1.5,length.out=100),each=61),
-           dimnames=dimnames(fbar(om)[,ac(2020:2080)]))
-om=fwd(om,fbar=f,sr=eqM)
+F    =rep(c(seq(0,                                  c(refpts(eqM)["msy",  "harvest"]),  length.out=51),
+            seq(c(refpts(eqM)["msy",  "harvest"]),c(refpts(eqM)["crash","harvest"])*1.5,length.out=51)[-1]))
+F    =FLQuant(rep(F,each=61),dimnames=list(year=2020:2080,iter=seq(101)))
+om=fwd(om,fbar=F,sr=eqM)
 
 oms=FLStocks("Base"     =om)
 oms[["DD Mass"]]        =om
@@ -186,13 +187,13 @@ oms[["DD Mass, Mat"]]   =om
 oms[["DD Mass, Mat, M"]]=om
 for (iYear in ac(2020:2080)){
   oms[["DD Mass"]]=ddFn(iYear,oms[["DD Mass"]],params,TRUE,FALSE,FALSE)
-  oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=f[,iYear],sr=eqM)
+  oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=F[,iYear],sr=eqM)
 
   oms[["DD Mass, Mat"]]=ddFn(iYear,oms[["DD Mass, Mat"]],params,TRUE,TRUE,FALSE)
-  oms[["DD Mass, Mat"]]=fwd(oms[["DD Mass, Mat"]],fbar=f[,iYear],sr=eqM)
+  oms[["DD Mass, Mat"]]=fwd(oms[["DD Mass, Mat"]],fbar=F[,iYear],sr=eqM)
 
   oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],params,TRUE,TRUE,TRUE)
-  oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=f[,iYear],sr=eqM)
+  oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=F[,iYear],sr=eqM)
   } 
 ```
 
@@ -312,17 +313,17 @@ rfpts
 ```{r, projections-1}
 source("/home/laurie/Desktop/projects/ddmse/R/dd.R")
 
-om=fwdWindow(window(iter(om,51),end=2020),end=2080,eqM)
-F =propagate(fbar(om[,ac(2020:2080)]),4)
+omFmsy=fwdWindow(window(iter(om,51),end=2020),end=2080,eqM)
+F =propagate(fbar(omFmsy[,ac(2020:2080)]),4)
 F[]=rep(rfpts$Fmsy,each=61)
 control=as(FLQuants("f"=F),"fwdControl")
 
-om =fwd(om,control=control,sr=eqM)
+omFmsy =fwd(omFmsy,control=control,sr=eqM)
 
-prj=FLStocks("Base"     =om)
-prj[["DD Mass"]]        =om
-prj[["DD Mass, Mat"]]   =om
-prj[["DD Mass, Mat, M"]]=om
+prj=FLStocks("Base"     =omFmsy)
+prj[["DD Mass"]]        =omFmsy
+prj[["DD Mass, Mat"]]   =omFmsy
+prj[["DD Mass, Mat, M"]]=omFmsy
 for (i in ac(2020:2080)) {
     prj[[2]] =ddFn(i,prj[[2]],params,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
@@ -439,6 +440,19 @@ cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=media
 
 
 ```{r}
+om.  =om
+oms. =oms
+prj. =prj
+prjs.=prjs   
+save(eqM,    file="~/Desktop/tmp/eqM.RData")
+save(om.,    file="~/Desktop/tmp/om..RData")
+save(omFmsy, file="~/Desktop/tmp/omFmsy.RData")
+save(oms.,   file="~/Desktop/tmp/oms..RData")
+save(prj.,   file="~/Desktop/tmp/prj..RData")
+save(prjs.,  file="~/Desktop/tmp/prjs..RData") 
+```
+
+```{r}
 ggarrange(plot(prjs[[1]])+ 
                theme(axis.ticks.y = element_blank(),
                      plot.margin = margin(r = 1),
@@ -465,10 +479,6 @@ ggarrange(plot(prjs[[1]])+
 
 **Figure `r iFig=iFig+1; iFig`** Projections for Operating Models,  with  $F_{MSY}$ 
 
-
-```{r, projectons-save}
-save(prjs,file=paste(dirRuns,"/",stock,"Prjs.RData",sep=""))
-```
 
 ```{r, projections-3}
 base=iter(fwdWindow(window(prj[[1]],end=2020),end=2080,eqM),1)
@@ -513,6 +523,7 @@ smry=mdply(names(prjs), function(x) mdply(names(prjs[[x]]),
 cast(ddply(smry,.(A,B), with, data.frame(F=median(F),SSB=median(SSB),Catch=median(Catch),F=median(F))),A~B,value="Catch")
 ```
 
+
 ```{r}
 ggarrange(plot(prjs[[1]]) +
                theme(axis.ticks.y = element_blank(),
@@ -548,4 +559,22 @@ mse=hcrICES(fmsy,eql,rec(fmsy),
                       bndTac=c(0,Inf))
 ```
 
+
+```{r, eval=FALSE}
+load("~/Desktop/tmp/eqM.RData")
+load("~/Desktop/tmp/om..RData")
+load("~/Desktop/tmp/oms..RData")
+load("~/Desktop/tmp/prj..RData")
+load("~/Desktop/tmp/prjs..RData")
+
+plot(FLStocks("mse"=om.,"report"=om))
+
+refpts(vpaM_eq)
+refpts(eqM)
+
+plot(eqM)
+plot(vpaM_eq)
+
+plot(vpaM_eq)
+```
 

@@ -723,7 +723,8 @@ mystk     <- "mac";
                                "Rec"=function(x) rec(x)),drop=T) %>% mutate(scen="sam")
   
   # Start with the SAM assessment in forward projection
-  sam_sr  = fmle(as.FLSR(window(ices, start=1999, end=2020),model="bevholtSV"),
+  #@# years changed and single iter to get rid of noise in 2020 @#@#@#@#@#@#@#@# 
+  sam_sr  = fmle(as.FLSR(window(iter(ices,1), start=2000, end=2019),model="bevholtSV"),
                  fixed=list(s=0.8, spr0=mean(spr0(ices))), 
                  control=list(silent=TRUE))
   sam_eq  = FLBRP(ices,ab(sam_sr))
@@ -740,6 +741,7 @@ mystk     <- "mac";
   sam        =fwd(sam,
                   control=sam_control,
                   sr=sam_eq)
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
   df_om  =model.frame(FLQuants(sam[,"2050"], "Biomass"=function(x) biomass(x),
                                     "SSB"=function(x) ssb(x),
@@ -763,8 +765,9 @@ mystk     <- "mac";
                                 "F"=function(x) fbar(x),
                                 "Yield"=function(x) catch(x),
                                 "Rec"=function(x) rec(x)),drop=T) %>% mutate(scen="vpa") )
-    
-  vpa_sr  =fmle(as.FLSR(window(vpa, start=1999, end=2020),
+  
+  #@# years changed and single iter to get rid of noise in 2020 @#@#@#@#@#@#@#@# 
+  vpa_sr  =fmle(as.FLSR(window(iter(vpa,1),start=2000, end=2019),
                         model="bevholtSV"),
             fixed=list(s   =0.8, spr0=mean(spr0(vpa))), 
             control=list(silent=TRUE))
@@ -782,6 +785,7 @@ mystk     <- "mac";
   vpa         = fwd(vpa,
                     control=vpa_control,
                     sr=vpa_eq)
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
   df_om  =bind_rows(
     df_om,
@@ -825,24 +829,26 @@ mystk     <- "mac";
                                  "Yield"=function(x) catch(x),
                                  "Rec"=function(x) rec(x)),drop=T) %>% mutate(scen="vpaM") )
 
+  #@# years changed and single iter to get rid of noise in 2020 @#@#@#@#@#@#@#@# 
   # stock recruitment estimation  
-  vpaM_sr  = fmle(as.FLSR(window(vpaM, start=1999, end=2020),
+  vpaM_sr  = fmle(as.FLSR(window(iter(vpaM,1), start=2000, end=2019),
                          model="bevholtSV"),
-                fixed=list(s=0.8, spr0=mean(spr0(vpaM))), 
+                fixed=list(s=0.8, spr0=mean(spr0(window(iter(vpaM,1),start=2000,end=2019)))), 
                 control=list(silent=TRUE))
   
-  vpaM_eq  = FLBRP(vpaM,sr=ab(vpaM_sr))
-  vpaM     = fwdWindow(vpaM,vpaM_eq,end=2050) 
+  vpaM_eq  = FLBRP(window(iter(vpaM,1),start=2000,end=2019),sr=ab(vpaM_sr))
+  vpaM     = fwdWindow(window(vpaM,end=2020),vpaM_eq,end=2050) 
 
   F  =propagate(window(fbar(vpaM),start=2020),101)
   F[]=rep(c(seq(0,                                    c(refpts(vpaM_eq)["msy",  "harvest"]),length.out=51),
-            seq(c(refpts(vpaM_eq)["msy",  "harvest"]),c(refpts(vpaM_eq)["crash","harvest"])*1.2,length.out=51)[-1]),each=dim(F)[2])
+            seq(c(refpts(vpaM_eq)["msy",  "harvest"]),c(refpts(vpaM_eq)["crash","harvest"])*1.5,length.out=51)[-1]),each=dim(F)[2])
 
   control_Frange = as(FLQuants("f"=F),"fwdControl")
   vpaM           = fwd(vpaM,
                      control=control_Frange,
                      sr=vpaM_eq)
-
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+  
   d1=model.frame(FLQuants(vpaM[,"2050"],
                           "Biomass"=function(x) biomass(x),
                           "SSB"=function(x) ssb(x),
@@ -861,6 +867,13 @@ mystk     <- "mac";
        width=10, height=10, units="in", res=300)
   print(plot(vpaM_eq)) 
   dev.off()
+  
+  
+  df_helper <-
+    df_om %>% 
+    group_by(scen) %>% 
+    summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
+    left_join(df_om)
   
   # Plot of yield vs biomass
   p1<-
@@ -1225,6 +1238,9 @@ mystk     <- "mac";
              dimnames=dimnames(fbar(om)[,ac(2020:2050)]))
   om=fwd(om,fbar=f,sr=vpaM_eq)
   
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+  #@# Projection for range of F                                              @#@
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   oms=FLStocks("Base"     =om)
   oms[["DD Mass"]]        =om
   oms[["DD Mass, Mat"]]   =om
@@ -1239,11 +1255,13 @@ mystk     <- "mac";
     oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],par,TRUE,TRUE,TRUE)
     oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=f[,iYear],sr=vpaM_eq)
   } 
-  
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
   # reference points data.frame (equilibrium)
   
-  # projection with different Fs
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+  #@# projection with different Fs                                           @#@
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   prj=FLStocks("Base" =fwdWindow(window(iter(oms[[1]],1:4),end=2020),end=2050,vpaM_eq),
                "M"    =fwdWindow(window(iter(oms[[2]],1:4),end=2020),end=2050,vpaM_eq),
                "MM"   =fwdWindow(window(iter(oms[[3]],1:4),end=2020),end=2050,vpaM_eq),
@@ -1258,7 +1276,6 @@ mystk     <- "mac";
   
   for (i in ac(2020:2050)) {
     
-    print(i)
     control=as(FLQuants("f"=F[,i]),"fwdControl")
     
     prj[[2]] =ddFn(i,prj[[2]],vpaM_par,massFlag=TRUE,matFlag=FALSE,mFlag=FALSE)
@@ -1274,9 +1291,13 @@ mystk     <- "mac";
     prj[[4]] =ddFn(i,prj[[4]],vpaM_par,massFlag=TRUE,matFlag=TRUE,mFlag=TRUE)
     prj[[4]] =fwd(prj[[4]],
                   control=control,
-                  sr=vpaM_eq)
-  }
-
+                  sr=vpaM_eq)}
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+  
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+  #@# Compare                                                                @#@
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+  
   # summary data.frame projections at different Fmsy  
   prj_df <-
     ldply(prj, function(x) {
@@ -1420,9 +1441,10 @@ mystk     <- "mac";
     x2=x1
     x3=x1
     x4=x1
+    print("DD")
     for (iYr in ac(2020:2050)) {
       
-      print(iYr)
+      cat(paste(iYr))
       
       control=as(FLQuants("f"=F[,iYr]),"fwdControl")
       
