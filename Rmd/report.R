@@ -1210,6 +1210,19 @@ mystk     <- "mac";
   save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section4.RData", sep="_")))
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   # ------------------------------------------------------------------------------
   # 5. MSE
   # ------------------------------------------------------------------------------
@@ -1644,8 +1657,9 @@ mystk     <- "mac";
   dev.off()
 
 #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
-#@#  Check                                                                   @#@
+#@#  Equilibrium Check                                                       @#@
 #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+  
   eqCurves=ldply(oms, function(x) { 
     model.frame(FLQuants(x[,dim(oms[[1]])[2]],
                          biomass=function(x) stock(x),
@@ -1659,11 +1673,18 @@ mystk     <- "mac";
   ts=transform(ts,What=.id)
   ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
   
-  ggplot()+
+  p <-
+    ggplot()+
     geom_line( aes(ssb,catch,col=.id),data=eqCurves)+
     geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2040))+
     theme_bw()+theme(legend.position="bottom")+
     xlab("SSB")+ylab("Yield")
+  
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "equilibrium_check.jpg", sep="_")),
+       width=10, height=6, units="in", res=300)
+  print(p) 
+  dev.off()
+  
 #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
   rm(p, p1, p2, p3, p4)
