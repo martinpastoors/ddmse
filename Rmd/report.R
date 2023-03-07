@@ -806,7 +806,7 @@ mystk     <- "mac";
   # save(par, file=file.path(dropboxdir, paste0("data/om/par",mystk,".RData")))
   # =======================================================================================
   
-   
+
   fileConn <-file(file.path(tablesdir, paste(section,mystk, "par_om.txt", sep="_")))
   as.data.frame(vpaM_par) %>% dplyr::select(-iter) %>% pander::pandoc.table(style="simple") %>% capture.output() %>% writeLines(., con=fileConn)
   close(fileConn)
@@ -1234,26 +1234,28 @@ mystk     <- "mac";
   load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section4.RData", sep="_")))
   
   om=fwdWindow(window(vpaM,end=2020),end=2050,vpaM_eq)
-  f =FLQuant(rep(seq(0,c(refpts(vpaM_eq)["crash","harvest"])*1.5,length.out=100),each=31),
-             dimnames=dimnames(fbar(om)[,ac(2020:2050)]))
-  om=fwd(om,fbar=f,sr=vpaM_eq)
+  F    =rep(c(seq(0,                                    c(refpts(vpaM_eq)["msy",  "harvest"]),  length.out=51),
+              seq(c(refpts(vpaM_eq)["msy",  "harvest"]),c(refpts(vpaM_eq)["crash","harvest"])*1.5,length.out=51)[-1]))
+  F    =FLQuant(rep(F,each=31),dimnames=list(year=2020:2050,iter=seq(101)))
+  om=fwd(om,fbar=F,sr=vpaM_eq)
+  
   
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   #@# Projection for range of F                                              @#@
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
-  oms=FLStocks("Base"     =om)
-  oms[["DD Mass"]]        =om
-  oms[["DD Mass, Mat"]]   =om
-  oms[["DD Mass, Mat, M"]]=om
+  oms=FLStocks("Base"     =fwd(propagate(fwdWindow(window(iter(om,1),end=2020),end=2050,vpaM_eq),101),fbar=F,sr=vpaM_eq))
+  oms[["DD Mass"]]        =    propagate(fwdWindow(window(iter(om,1),end=2020),end=2050,vpaM_eq),101)
+  oms[["DD Mass, Mat"]]   =    propagate(fwdWindow(window(iter(om,1),end=2020),end=2050,vpaM_eq),101)
+  oms[["DD Mass, Mat, M"]]=    propagate(fwdWindow(window(iter(om,1),end=2020),end=2050,vpaM_eq),101)
   for (iYear in ac(2020:2050)){
-    oms[["DD Mass"]]=ddFn(iYear,oms[["DD Mass"]],par,TRUE,FALSE,FALSE)
-    oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=f[,iYear],sr=vpaM_eq)
+    oms[["DD Mass"]]=ddFn(iYear,oms[["DD Mass"]],vpaM_par,TRUE,FALSE,FALSE)
+    oms[["DD Mass"]]=fwd(oms[["DD Mass"]],fbar=F[,iYear],sr=vpaM_eq)
     
-    oms[["DD Mass, Mat"]]=ddFn(iYear,oms[["DD Mass, Mat"]],par,TRUE,TRUE,FALSE)
-    oms[["DD Mass, Mat"]]=fwd(oms[["DD Mass, Mat"]],fbar=f[,iYear],sr=vpaM_eq)
+    oms[["DD Mass, Mat"]]=ddFn(iYear,oms[["DD Mass, Mat"]],vpaM_par,TRUE,TRUE,FALSE)
+    oms[["DD Mass, Mat"]]=fwd(oms[["DD Mass, Mat"]],fbar=F[,iYear],sr=vpaM_eq)
     
-    oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],par,TRUE,TRUE,TRUE)
-    oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=f[,iYear],sr=vpaM_eq)
+    oms[["DD Mass, Mat, M"]]=ddFn(iYear,oms[["DD Mass, Mat, M"]],vpaM_par,TRUE,TRUE,TRUE)
+    oms[["DD Mass, Mat, M"]]=fwd(oms[["DD Mass, Mat, M"]],fbar=F[,iYear],sr=vpaM_eq)
   } 
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
@@ -1441,10 +1443,10 @@ mystk     <- "mac";
     x2=x1
     x3=x1
     x4=x1
-    print("DD")
+    print("")
     for (iYr in ac(2020:2050)) {
       
-      cat(paste(iYr))
+      cat(paste(iYr," "))
       
       control=as(FLQuants("f"=F[,iYr]),"fwdControl")
       
@@ -1473,7 +1475,7 @@ mystk     <- "mac";
     FLStocks(list("Base"=x1,"M"=x2,"MM"=x3,"MMM"=x4))        
     
   }) ## F loop
-  
+
   # generating stochastic projection data frame
   prjs_df <- tibble()
   for (i in 1:length(prjs)) {
@@ -1636,6 +1638,28 @@ mystk     <- "mac";
   print(p) 
   dev.off()
 
+#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+#@#  Check                                                                   @#@
+#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+  eqCurves=ldply(oms, function(x) { 
+    model.frame(FLQuants(x[,dim(oms[[1]])[2]],
+                         biomass=function(x) stock(x),
+                         ssb    =function(x) ssb(  x),
+                         catch  =function(x) catch(x),
+                         f      =function(x) fbar( x)),drop=TRUE)[,-1]})
+  
+  ts=ldply(prj, function(x) model.frame(FLQuants(x, ssb  =function(x) ssb(  x), 
+                                                 f    =function(x) fbar(x), 
+                                                 catch=function(x) catch(x)),drop=T))
+  ts=transform(ts,What=.id)
+  ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
+  
+  ggplot()+
+    geom_line( aes(ssb,catch,col=.id),data=eqCurves)+
+    geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2040))+
+    theme_bw()+theme(legend.position="bottom")+
+    xlab("SSB")+ylab("Yield")
+#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
   rm(p, p1, p2, p3, p4)
   save(list=ls(),
