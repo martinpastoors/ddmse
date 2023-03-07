@@ -95,11 +95,52 @@ tablesdir  <- file.path(dropboxdir, "results", mystk, "tables")
 
 **Evaluating impacts of Density Dependent processes on `r mystkname` via MSE simulations**
 
-**L. Kell, M.A. Pastoors**
+**`r ifelse(mystk=="mac", "M.A. Pastoors & L.T. Kell", "L.T. Kell & M.A. Pastoors")`**
 
 `r format(Sys.time(), '%d/%m/%Y')`
 
-Commissioned by: University of Copenhagen (Henrik Sparholt)
+Version: 1.0 (draft)
+
+&nbsp;
+
+**Commissioned by:** 
+
+Henrik Sparholt
+
+University of Copenhagen
+
+Globe Institute
+
+Center for Macroecology Evolution and Climate
+
+Universitetsparken 15, 3rd floor, room 339
+
+2100 Copenhagen Ø
+ 
+Denmark
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+```{r, echo=FALSE, out.width = "300px", fig.align="left", message=FALSE, warning=FALSE, cache=FALSE}
+
+if(mystk=="mac") {
+  knitr::include_graphics("../MPFF Seaplusplus.png")
+} else {
+  knitr::include_graphics("../Seaplusplus MPFF.png")
+}
+
+```
+
+
+\newpage
 
 **Executive summary**
 
@@ -120,16 +161,18 @@ Each of the OMs were then projected for the values of $F_{MSY}$ based on the fou
 
 The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures X3a, X3b, X3c and X3d**
 
-**Figure X4** summaries the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence.
+**Figure X4** summarizes the yields and SSBs obtained for each Operating Model under the correct and mis-specified form of density dependence.
 
 Conclusions
 
 Estimating density-dependence from observations only possible for mass-at-age and maturity age. Density dependence in natural mortality can only be explored from theoretical considerations (because current assessment does not include age or time varying natural mortality).
 
--   The impact of including density dependence: major impact on reference points. Especially $F_{MSY}$ is much higher when including DD. However, the expected yields in equilibrium conditions are expected to be very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
--   The impact of ignoring density dependence
--   The impact of assuming density-dependence incorrectly
--   Robustness of the current ICES framework
+The impact of including density dependence: major impact on reference points. Especially $F_{MSY}$ is much higher when including DD. However, the expected yields in equilibrium conditions are expected to be very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
+
+REMOVE 
+[ -   The impact of ignoring density dependence ]
+[ -   The impact of assuming density-dependence incorrectly ]
+[ -   Robustness of the current ICES framework ]
 
 <!-- =============================================================================================================== -->
 
@@ -144,6 +187,8 @@ Estimating density-dependence from observations only possible for mass-at-age an
 # tab_nums(name    = "section1_tab", caption = "section1_tab", level = 1, display = FALSE)
 
 ```
+
+\newpage
 
 # Introduction
 
@@ -165,7 +210,7 @@ Four alternatives OMs have been included in the analyses:
 
 All MSE's have been developed within the FLR framework (<https://flr-project.org/>) and all the code is stored on github (<https://github.com/martinpastoors/ddmse>).
 
-All data and results are available on DropBox (<https://www.dropbox.com/sh/k87x074xqw7sgae/AAAmF980iR2n24wTkqhOhnpfa?dl=0>)
+All data and results are available on a dedicated DropBox folder.
 
 <!-- =============================================================================================================== -->
 
@@ -674,9 +719,11 @@ The OMs were also projected for the estimates of different estimates $F_{MSY}$, 
 
 The impact of including density dependence was primarily on the biological reference points. Especially $F_{MSY}$ is much higher when including density dependence. However, the expected yields in equilibrium conditions are very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
 
-Ignoring density dependent processes when they would be happening is expected to lead to ...
+REMOVE 
 
-The impact of assuming the wrong type of density-dependence processes, i.e. applying the reference points from the one density dependent operating model to a simulation with other density dependent processes, could lead to ....
+[ Ignoring density dependent processes when they would be happening is expected to lead to ... ]
+
+[ The impact of assuming the wrong type of density-dependence processes, i.e. applying the reference points from the one density dependent operating model to a simulation with other density dependent processes, could lead to .... ]
 
 Since the early 1980s, natural mortality ($M$) for mackerel has been fixed within the assessment model at 0.15, for all ages and all assessment years. This value was calculated based on estimates of total mortality derived from tagging data combined with catch data [@hamre1980biology]. M must, however, vary both by age and over time due to changes in abundance of predators, feeding conditions, disease etc. [@siegfried2009review]. Particularly any changes in mackerel distribution and growth will affect natural mortality. The impact of including age-varying natural mortality is expected to ....
 
@@ -690,6 +737,8 @@ The quality of this analyses lives up to the quality standards that are required
 
 # Funding
 
+This work was funded under a consultancy agreement between the University of Copenhagen and `r ifelse(mystk=="mac", "Martin Pastoors F&F", "Sea++")` as part of the project “117957 Fmsy-project for six high profile fish stocks”. The current work focused on `r mystkname` and was carried out in the months of January-March 2023. A similar project was carried out for `r ifelse(mystk=="mac", "Blue whiting", mystkname)` by `r ifelse(mystk=="mac", "Sea++", "Martin Pastoors F&F")`. Both projects were carried in close coordination between Sea++ and Martin Pastoors F&F. 
+
 <!-- =============================================================================================================== -->
 
 <!-- References                                                                                                      -->
@@ -698,18 +747,3 @@ The quality of this analyses lives up to the quality standards that are required
 
 # References
 
-<!-- =============================================================================================================== -->
-
-<!-- Annex 1: OM conditioning                                                                           -->
-
-<!-- =============================================================================================================== -->
-
-# Annex 1: OM conditioning
-
-<!-- =============================================================================================================== -->
-
-<!-- Annex 2: Density dependent processes                                                                           -->
-
-<!-- =============================================================================================================== -->
-
-# Annex 2: Density dependent processes

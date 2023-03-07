@@ -67,10 +67,12 @@ myparams <- data.frame(
   wt1     = c(0.01                         , NA               ), # for resetting weight at age 1
   minage  = c(0                            , 1                ),
   maxage  = c(12                           , 10               ),
+  minyear = c(1991                         , 2000             ),
   maxyear = c(2050                         , 2050             ),
   m1scaler= c(8                            , 10               ),
   w50     = c(0.166                        , 0.08             ),
-  matk2   = c(28                           , 63               ) )
+  matk2   = c(28                           , 63               ),
+  steepness=c(0.8                          , 0.5               ))
 
 # save(myparams, file=file.path(dropboxdir, "data", "inputs", "myparams.RData"))
 
@@ -605,24 +607,6 @@ mystk     <- "mac";
   print(p) 
   dev.off()
   
-  p <-
-    df %>% 
-    mutate(scen = factor(scen, levels=c("no-DD", "DD mass", "DD mass+mat", "DD mass+mat+M"))) %>% 
-    ggplot(aes(biomass, catch))+
-    theme_bw() +
-    geom_line(aes(colour=scen)) +
-    labs(x="Total biomass", y="Catch", colour="") +
-    scale_colour_manual(values =c("no-DD"         = "black",
-                                  "DD mass"       = "red", 
-                                  "DD mass+mat"   = "blue",
-                                  "DD mass+mat+M" = "darkgreen")) 
-  
-  
-  jpeg(filename=file.path(figuresdir, paste(section,mystk, "eq_yield.jpg", sep="_")),
-       width=10, height=10, units="in", res=300)
-  print(p) 
-  dev.off()
-  
   # Check 1 --------------------------------------------------------------------
 
   # ptm <- proc.time()
@@ -711,7 +695,7 @@ mystk     <- "mac";
   
   section <- "04"
   
-  ices=window(stk,start=1991)
+  ices=window(stk,start=myparams[myparams$stock==mystk,"minyear"])
   stock(ices) =computeStock(ices)
   name(ices) <- mystkname
 
@@ -725,7 +709,8 @@ mystk     <- "mac";
   # Start with the SAM assessment in forward projection
   #@# years changed and single iter to get rid of noise in 2020 @#@#@#@#@#@#@#@# 
   sam_sr  = fmle(as.FLSR(window(iter(ices,1), start=2000, end=2019),model="bevholtSV"),
-                 fixed=list(s=0.8, spr0=mean(spr0(ices))), 
+                 fixed=list(s=myparams[myparams$stock==mystk,"steepness"], 
+                            spr0=mean(spr0(ices))), 
                  control=list(silent=TRUE))
   sam_eq  = FLBRP(ices,ab(sam_sr))
   sam     = fwdWindow(ices,sam_eq,end=2050) 
@@ -769,7 +754,7 @@ mystk     <- "mac";
   #@# years changed and single iter to get rid of noise in 2020 @#@#@#@#@#@#@#@# 
   vpa_sr  =fmle(as.FLSR(window(iter(vpa,1),start=2000, end=2019),
                         model="bevholtSV"),
-            fixed=list(s   =0.8, spr0=mean(spr0(vpa))), 
+            fixed=list(s   =myparams[myparams$stock==mystk,"steepness"], spr0=mean(spr0(vpa))), 
             control=list(silent=TRUE))
   vpa_eq  = FLBRP(vpa,ab(vpa_sr))
   vpa     = fwdWindow(vpa,vpa_eq,end=2050) 
@@ -833,7 +818,7 @@ mystk     <- "mac";
   # stock recruitment estimation  
   vpaM_sr  = fmle(as.FLSR(window(iter(vpaM,1), start=2000, end=2019),
                          model="bevholtSV"),
-                fixed=list(s=0.8, spr0=mean(spr0(window(iter(vpaM,1),start=2000,end=2019)))), 
+                fixed=list(s=myparams[myparams$stock==mystk,"steepness"], spr0=mean(spr0(window(iter(vpaM,1),start=2000,end=2019)))), 
                 control=list(silent=TRUE))
   
   vpaM_eq  = FLBRP(window(iter(vpaM,1),start=2000,end=2019),sr=ab(vpaM_sr))
@@ -1224,6 +1209,19 @@ mystk     <- "mac";
   rm(dat, df, p, p1, p2, p3, p4, t, x, d1, d2, d3, d4, x)
   save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section4.RData", sep="_")))
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   # ------------------------------------------------------------------------------
   # 5. MSE
@@ -1659,8 +1657,9 @@ mystk     <- "mac";
   dev.off()
 
 #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
-#@#  Check                                                                   @#@
+#@#  Equilibrium Check                                                       @#@
 #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
+  
   eqCurves=ldply(oms, function(x) { 
     model.frame(FLQuants(x[,dim(oms[[1]])[2]],
                          biomass=function(x) stock(x),
@@ -1674,11 +1673,18 @@ mystk     <- "mac";
   ts=transform(ts,What=.id)
   ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
   
-  ggplot()+
+  p <-
+    ggplot()+
     geom_line( aes(ssb,catch,col=.id),data=eqCurves)+
     geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2040))+
     theme_bw()+theme(legend.position="bottom")+
     xlab("SSB")+ylab("Yield")
+  
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "equilibrium_check.jpg", sep="_")),
+       width=10, height=6, units="in", res=300)
+  print(p) 
+  dev.off()
+  
 #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
   save(list=ls(),
