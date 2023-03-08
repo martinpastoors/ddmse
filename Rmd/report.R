@@ -1611,6 +1611,21 @@ mystk     <- "mac";
     labs(y="", x="", colour="Fmsy", fill="Fmsy") +
     expand_limits(y=0) +
     facet_grid(variable ~ .id, scales="free_y")
+
+  # prjs_df_summ %>% filter(year==2050) %>% 
+  #   mutate(specified=ifelse(.id==Fmsy, "correct","misspecified")) %>% 
+  #   ggplot(aes(x=.id, y=median)) +
+  #   theme_bw() + theme(legend.position="bottom") +
+  #   geom_point(aes(colour=specified),
+  #              position=position_dodge(.4)) +
+  #   geom_errorbar(aes(ymin=lower, ymax=upper, colour=specified), 
+  #                 width=0.2, position=position_dodge(.4)) +
+  #   geom_text(aes(label=paste(Fmsy, F), colour=specified), 
+  #             hjust=0, position=position_dodge(.4)) +
+  #   expand_limits(y=0) +
+  #   facet_wrap(~variable, scales="free_y")
+  
+    
   
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "stochastic_projections_at_different_Fmsys.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
@@ -1700,7 +1715,7 @@ mystk     <- "mac";
   rm(p, p1, p2, p3, p4)
   save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
-  # load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
+  load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   
   
   
