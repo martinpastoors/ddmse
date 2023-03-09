@@ -1,7 +1,7 @@
 ---
 output:
   word_document:
-    reference_docx: ../report_template.dotx
+    reference_docx: ../report_template_v1.1.dotx
 mathjax: TRUE
 bibliography: refs.bib
 ---
@@ -574,6 +574,22 @@ knitr::include_graphics(
 *`r fig_nums("om_eqyield")`*
 
 \newpage
+
+**Reference points**
+
+Reference points estimated for the different scenarios are in the table below. 
+
+```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+tab_nums(
+  name    = "refpoints", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". Reference points for the different scenarios"))
+
+cat(readLines(file.path(tablesdir, paste(section,mystk, "refpoints.txt", sep="_"))), sep = '\n')
+
+```
+
+*`r tab_nums("refpoints")`*
 
 <!-- =============================================================================================================== -->
 
