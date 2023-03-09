@@ -69,17 +69,13 @@ dropboxdir<-try(file.path(get_dropbox(), "DDMSE"))
 
 if ("try-error"%in%is(dropboxdir))
   dropboxdir="~/Dropbox/DDMSE"
-```
 
-```{r}
 mystk     <- "mac"; mystkname <- "Northeast Atlantic mackerel"; mylatin <- "Scombrus scomber"
 # mystk     <- "whb"; mystkname <- "Blue whiting";                mylatin <- "Micromesistius poutassou" 
 maxyear <- 2050
 
 load(file=file.path(dropboxdir,paste0("data/om/",mystk,"matPar.RData")))
-```
 
-```{r}
 # ------------------------------------------------------------------------------
 # Operating model
 # ------------------------------------------------------------------------------
@@ -172,7 +168,7 @@ Initial evaluations were conducted based on life history theory, as used by the 
 
 Each of the OMs were then projected for the values of $F_{MSY}$ based on the four assumptions about density dependence. This allows a comparison between the yield that could potentially be achieved and that forgone by making an incorrect assumption about density dependence. The OMs were first projected, without process error in recruitment, from the end of the historical estimates for a range of fishing mortality (spanning 0 to $F_{crash}$) for 30 years into the future. The estimates in the final year of the projections were then be used to construct equilibrium curves (**Figure 15**). The points on the curve correspond to the projected outcomes for the values of $F_{MSY}$ from each OM. This was run as a check, as the equilibrium and projections should agree, I.e. the points at MSY should be the same colour as the curve.
 
-The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures 16-19**. **Figure 20** summarizes the yields and SSBs obtained for each Operating Model under the correct and mis-specified form of density dependence.
+The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures 16-19**. **Figures 20 and 21** summarizes the yields and SSBs obtained for each Operating Model under the correct and mis-specified form of density dependence.
 
 Conclusions
 
@@ -419,7 +415,7 @@ Life history parameters are used to develop an example of modelling density depe
 
 Mass-at-age ($W_a$) is modelled as
 
-$W_a = {\overline{W_a}} {(B/B_{MSY})^{{\beta}_a}$
+$W_a = {\overline{W_a}} (B/B_{MSY})^{{\beta}_a}$
 
 Where $\overline{W_a}$ and $\beta$ are estimated from a regression of mass-at-age ($W_a$) on total biomass ($B_a$), based on empirical data. $W_a$ is constrained so that sizes do not become unfeasible large or small.
 
@@ -666,7 +662,7 @@ knitr::include_graphics(path=
 
 **Stochastic projections at all $F_{MSY}$'s from all scenarios**
 
-Misspecification of Fmsy, i.e. using an Fmsy from one scenario and applying it to a different scenario has only limited impacts on the overall outcomes in terms of recruitment, biomass or yield. In the plot below, the scenarios for density dependence are shown in the columns and the Fmsy's are shown as the colours. For example a valid combination is the Base case with the red curves (Fmsy=0.33) or the M scenario with the green curve. Overall the misspecification does not results in noticeable differences. 
+Misspecification of Fmsy, i.e. using an Fmsy from one scenario and applying it to a different scenario has only limited impacts on the overall outcomes in terms of recruitment, biomass or yield. In the plot below, the scenarios for density dependence are shown in the columns and the Fmsy's are shown as the colours. For example a valid combination is the Base case with the red curves (Fmsy=0.33) or the M scenario with the green curve. Overall the misspecification does not results in noticeable differences in catch although they do have difference for biomass. 
 
 ```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -681,7 +677,29 @@ knitr::include_graphics(path=
 
 *`r fig_nums("mse_sim2")`*
 
-As a chech, we assessed the outcomes of the equilibrium curves from simulating over a wide F range, with the equilibrium values (points) in 2050 from the forward projections at different values of Fmsy (colours). The points fall on the equilibrium curve, thereby confirming the consistency between the two approaches. 
+\newpage
+
+For the four scenarios, we plotted the Kobe phase plot for 2050 with the associated density functions for B/Bmsy and Catch/MSY. The results confirm the results that equilibrium catch is not really affected by the DD assumptions of the Fmsy applied, but that biomass is sensitive to the assumptions. 
+
+```{r, echo=FALSE, out.width = "300px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "kobe", level = 1, display = FALSE,
+  caption = "Kobe plot for 2050 for base case (no DD) for all $F_{MSY}$'s (red is from the right scenario). Topleft: base, topright: M, bottomleft: MM, bottomright: MMM")
+
+knitr::include_graphics(path=
+                    c(file.path(figuresdir,paste("05",mystk,"kobe base.jpg",sep="_")),
+                      file.path(figuresdir,paste("05",mystk,"kobe M.jpg",sep="_")),
+                      file.path(figuresdir,paste("05",mystk,"kobe MM.jpg",sep="_")),
+                      file.path(figuresdir,paste("05",mystk,"kobe MMM.jpg",sep="_"))
+                      )
+                    )
+
+```
+
+*`r fig_nums("kobe")`*
+
+Finally, as a check, we assessed the outcomes of the equilibrium curves from simulating over a wide F range, with the equilibrium values (points) in 2050 from the forward projections at different values of Fmsy (colours). The points fall on the equilibrium curve, thereby confirming the consistency between the two approaches. 
 
 ```{r, echo=FALSE, out.width = "500px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -739,7 +757,7 @@ The OMs were first projected, without process error in recruitment, from the end
 
 The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures 16-19**
 
-**Figure 20** summarizes the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence and the associated reference points.
+**Figure 20** summarizes the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence and the associated reference points, and **Figure 21** shows the Kobe plots of the final 2050 distributions of biomass and yield.
 
 Estimating density-dependence from observations was only possible for mass-at-age and maturity age. Therefore, density dependence in natural mortality can only be explored from theoretical considerations, because current assessment does not include age or time varying natural mortality. M is likely to vary by age and time in relation to processes such as density dependence. While the recent expansion in distribution area and change in weight-at-age could be associated with changes in natural mortality. Therefore in the OMs we modelled M as a function of mass-at-age.
 
