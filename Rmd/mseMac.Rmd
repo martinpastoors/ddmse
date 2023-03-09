@@ -99,7 +99,7 @@ discards.wt(stk)[1]=0.01
 
 ```{r, pars}
 params=FLPar(c(m1=0.15/(0.2^-0.288),m2=-0.288,   bref=3.69e+06,delta=-0.3,     matk=30,      w50=0.17))
-params=FLPar(c(m1=9.69e-02         ,m2=-2.88e-01,bref=4.11e+06,delta=-2.00e-01,matk=2.80e+01,w50=1.66e-01)) 
+#params=FLPar(c(m1=9.69e-02         ,m2=-2.88e-01,bref=4.11e+06,delta=-2.00e-01,matk=2.80e+01,w50=1.66e-01)) 
 ```
 
 ```{r, m}
@@ -542,6 +542,7 @@ load("~/Desktop/tmp/om..RData")
 load("~/Desktop/tmp/oms..RData")
 load("~/Desktop/tmp/prj..RData")
 load("~/Desktop/tmp/prjs..RData")
+load("/home/laurie/Dropbox/DDMSE/results/mac/mac_section5.RData")
 
 plot(FLStocks("mse"=om.,"report"=om))
 
@@ -554,17 +555,32 @@ plot(vpaM_eq)
 plot(FLStocks("MSE"=oms.[[2]],"Report"=oms[[2]]))
 
 eqCurves=ldply(oms., function(x) { 
-    model.frame(FLQuants(x[,dim(oms[[1]])[2]],
+    model.frame(FLQuants(x[,dim(oms.[[1]])[2]],
                          biomass=function(x) stock(x),
                          ssb    =function(x) ssb(  x),
                          catch  =function(x) catch(x),
                          f      =function(x) fbar( x)),drop=TRUE)[,-1]})
-ts=ldply(prj., function(x) model.frame(FLQuants(x, ssb  =function(x) ssb(  x), 
+ts=ldply(prj., function(x) model.frame(FLQuants(x,ssb  =function(x) ssb(  x), 
                                                   f    =function(x) fbar(x), 
                                                   catch=function(x) catch(x)),drop=T))
 ts=transform(ts,What=.id)
 ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
-  
+
+fmsy=transform(ddply(eqCurves,.(.id), with, 
+                     data.frame(Fmsy=f[catch==max(catch)])),lower=Fmsy*0.8,upper=Fmsy*1.2)
+msy=ddply(merge(eqCurves,fmsy,by=".id"),.(.id), with, 
+      data.frame(lcatch=catch[min((lower-f)^2)==(lower-f)^2],
+                 msy   =catch[catch==max(catch)],
+                 ucatch=catch[min((upper-f)^2)==(upper-f)^2]))
+bmsy=ddply(merge(eqCurves,fmsy,by=".id"),.(.id), with, 
+      data.frame(lssb   =ssb[min((lower-f)^2)==(lower-f)^2],
+                 bmsy   =ssb[catch==max(catch)],
+                 ussb   =ssb[min((upper-f)^2)==(upper-f)^2]))
+
+ggplot(eqCurves)+
+  geom_line(aes(f,catch,col=.id))+scale_x_continuous(limits=c(0,2))+
+  theme(legend.position="bottom")
+
 ggplot()+
     geom_line( aes(ssb,catch,col=.id),data=eqCurves)+
     geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2040))+
@@ -589,4 +605,78 @@ ggplot()+
     geom_point(aes(ssb,catch,col=.id),data=subset(ts,year==2040))+
     theme_bw()+theme(legend.position="bottom")+
     xlab("SSB")+ylab("Yield")
+```
+
+```{r}
+load("~/Desktop/tmp/prjs..RData")
+load("~/Desktop/tmp/oms..RData")
+load("/home/laurie/Dropbox/DDMSE/results/mac/mac_section5.RData")
+
+eqCurves=ldply(oms, function(x) { 
+    model.frame(FLQuants(x[,dim(oms[[1]])[2]],
+                         biomass=function(x) stock(x),
+                         ssb    =function(x) ssb(  x),
+                         catch  =function(x) catch(x),
+                         f      =function(x) fbar( x)),drop=TRUE)[,-1]})
+
+fmsy=transform(ddply(eqCurves,.(.id), with, 
+                     data.frame(Fmsy=f[catch==max(catch)])),lower=Fmsy*0.8,upper=Fmsy*1.2)
+msy=ddply(merge(eqCurves,fmsy,by=".id"),.(.id), with, 
+      data.frame(lcatch=catch[min((lower-f)^2)==(lower-f)^2],
+                 msy   =catch[catch==max(catch)],
+                 ucatch=catch[min((upper-f)^2)==(upper-f)^2]))
+bmsy=ddply(merge(eqCurves,fmsy,by=".id"),.(.id), with, 
+      data.frame(lssb   =ssb[min((lower-f)^2)==(lower-f)^2],
+                 bmsy   =ssb[catch==max(catch)],
+                 ussb   =ssb[min((upper-f)^2)==(upper-f)^2]))
+
+sch=ldply(prjs, function(x) ldply(x, function(x) { 
+    model.frame(FLQuants(x,
+                         biomass=function(x) stock(x),
+                         ssb    =function(x) ssb(  x),
+                         catch  =function(x) catch(x),
+                         f      =function(x) fbar( x)),drop=TRUE)}))
+sch=transform(sch,.id=factor(.id,labels=c("Base","DD Mass","DD Mass, Mat","DD Mass, Mat, M")))
+
+sch=subset(sch,year==2050)
+sch=merge(sch,bmsy,by=".id")
+sch=merge(sch,msy,by=".id") 
+```
+
+
+```{r, kobe-base, fig.height=8,fig.width=8}
+p1=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="Base"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+                     xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("red","grey","grey","grey")) 
+```
+
+
+```{r,kb-m, fig.height=8,fig.width=8}
+p2=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+                     xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","red","grey","grey")) 
+```
+
+
+```{r,kobe-mm, fig.height=8,fig.width=8}
+p3=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+                     xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey")) 
+```
+
+
+```{r,kobe-mmm, fig.height=8,fig.width=8}
+p4=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+                     xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red")) 
+```
+
+
+```{r, den-ssb}
+ggdensity(transmute(sch,stock=ssb/bmsy,harvest=catch/msy,run=ac(signif(f,3)),.id=.id),x="stock",fill=".id")+
+  geom_vline(aes(xintercept=1),col="red")+
+  facet_grid(run~.) 
+```
+
+
+```{r, den-yield}
+ggdensity(transmute(sch,stock=ssb/bmsy,catch=catch/msy,run=ac(signif(f,3)),.id=.id),x="catch",fill=".id")+
+  geom_vline(aes(xintercept=1),col="red")+
+  facet_grid(run~.) 
 ```

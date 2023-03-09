@@ -1714,11 +1714,66 @@ mystk     <- "mac";
   
   rm(p, p1, p2, p3, p4)
   save(list=ls(),
-       file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
+         file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   
   
+  eqCurves=ldply(oms, function(x) { 
+    model.frame(FLQuants(x[,dim(oms[[1]])[2]],
+                         biomass=function(x) stock(x),
+                         ssb    =function(x) ssb(  x),
+                         catch  =function(x) catch(x),
+                         f      =function(x) fbar( x)),drop=TRUE)[,-1]})
   
+  fmsy=transform(ddply(eqCurves,.(.id), with, 
+                       data.frame(Fmsy=f[catch==max(catch)])),lower=Fmsy*0.8,upper=Fmsy*1.2)
+  msy=ddply(merge(eqCurves,fmsy,by=".id"),.(.id), with, 
+            data.frame(lcatch=catch[min((lower-f)^2)==(lower-f)^2],
+                       msy   =catch[catch==max(catch)],
+                       ucatch=catch[min((upper-f)^2)==(upper-f)^2]))
+  bmsy=ddply(merge(eqCurves,fmsy,by=".id"),.(.id), with, 
+             data.frame(lssb   =ssb[min((lower-f)^2)==(lower-f)^2],
+                        bmsy   =ssb[catch==max(catch)],
+                        ussb   =ssb[min((upper-f)^2)==(upper-f)^2]))
+  
+  sch=ldply(prjs, function(x) ldply(x, function(x) { 
+    model.frame(FLQuants(x,
+                         biomass=function(x) stock(x),
+                         ssb    =function(x) ssb(  x),
+                         catch  =function(x) catch(x),
+                         f      =function(x) fbar( x)),drop=TRUE)}))
+  sch=transform(sch,.id=factor(.id,labels=c("Base","DD Mass","DD Mass, Mat","DD Mass, Mat, M")))
+  
+  sch=subset(sch,year==2050)
+  sch=merge(sch,bmsy,by=".id")
+  sch=merge(sch,msy,by=".id") 
+
+  
+  p1=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="Base"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+                          xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("red","grey","grey","grey")) 
+
+  
+  p2=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+                          xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","red","grey","grey")) 
+
+  
+  p3=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+                          xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey")) 
+
+  
+  p4=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+                          xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red")) 
+
+  
+  ggdensity(transmute(sch,stock=ssb/bmsy,harvest=catch/msy,run=ac(signif(f,3)),.id=.id),x="stock",fill=".id")+
+    geom_vline(aes(xintercept=1),col="red")+
+    facet_grid(run~.) 
+
+  
+  ggdensity(transmute(sch,stock=ssb/bmsy,catch=catch/msy,run=ac(signif(f,3)),.id=.id),x="catch",fill=".id")+
+    geom_vline(aes(xintercept=1),col="red")+
+    facet_grid(run~.) 
+
   
 # } # end of stk loop
 
