@@ -76,8 +76,8 @@ myparams <- data.frame(
 
 # save(myparams, file=file.path(dropboxdir, "data", "inputs", "myparams.RData"))
 
-mystk     <- "mac";  
-# mystk     <- "whb";  
+# mystk     <- "mac";  
+mystk     <- "whb";  
 # for (mystk in c("mac","whb")) {
   
   mystkname  <- myparams[myparams$stock==mystk,"mystkname"]
@@ -1419,16 +1419,8 @@ mystk     <- "mac";
               aes(ssb,catch,col=.id))+
     geom_point(data=subset(ts,year==2050),
                aes(ssb,catch,col=.id))
-    # geom_line(data=rfs,
-    #           aes(ssb,catch,col=.id))+
-    # geom_point(data=subset(prj_df,year==2050),
-    #            aes(ssb,catch,col=.id))
 
   ggplot()+
-    # geom_line(data=eqCurves,
-    #           aes(ssb,catch,col=.id))+
-    # geom_point(data=subset(ts,year==2050),
-    #            aes(ssb,catch,col=.id))
     geom_line(data=subset(ts,year==2050),
               aes(ssb,catch,col=.id))+
     geom_point(data=subset(prj_df,year==2050),
@@ -1505,30 +1497,6 @@ mystk     <- "mac";
     mutate(Fmsy=factor(F, levels=rfpts$Fmsy,labels=c("Base","M","MM","MMM"))) %>% 
     as_tibble()
 
-  # prjs_df <- tibble()
-  # for (i in 1:length(prjs)) {
-  #   prjs_df <-
-  #     bind_rows(
-  #       prjs_df,
-  #       ldply(prjs[[i]], function(x) {
-  #         model.frame(FLQuants(x,
-  #                              rec    =function(x) rec(x),
-  #                              biomass=function(x) stock(x),
-  #                              ssb    =function(x) ssb(  x),
-  #                              catch  =function(x) catch(x),
-  #                              f      =function(x) fbar( x)),drop=TRUE)})    
-  #     )
-  # }
-  # 
-  # nyears = length(unique(prjs_df$year))
-  # niters = length(unique(prjs_df$iter))
-  # nscen  = length(unique(prjs_df$.id))
-  # 
-  # prjs_df <- prjs_df %>% 
-  #   bind_cols(Fmsy    = rep(rfpts$Fmsy, each=(nyears*niters*nscen))) %>% 
-  #   bind_cols(Fmsy_id = rep(unique(prjs_df$.id), each=(nyears*niters*nscen)))
-  
-
   prjs_df2 <-
     prjs_df %>% 
     filter(year >= 2020) %>% 
@@ -1558,11 +1526,6 @@ mystk     <- "mac";
     summarize_at(vars(data), tibble::lst(!!!probs_funs)) %>% 
     mutate(F = format(F, digits=2)) 
   
-  # basecase <-
-  #   prjs_df_summ %>% 
-  #   filter(.id == "Base") %>% 
-  #   ungroup() %>% 
-  #   dplyr::select(-.id)
 
   
   # only with the right Fmsy
@@ -1712,10 +1675,6 @@ mystk     <- "mac";
   
 #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
-  rm(p, p1, p2, p3, p4)
-  save(list=ls(),
-         file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
-  load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
@@ -1751,17 +1710,19 @@ mystk     <- "mac";
 
   # Base
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe base.jpg", sep="_")),
-       width=10, height=6, units="in", res=300)
+       width=10, height=10, units="in", res=300)
   kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="Base"),
                                         stock=ssb/bmsy,
                                         harvest=catch/msy,
                                         run=ac(f))),
-                        xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("red","grey","grey","grey")) 
+                       xlab=expression(B/B[MSY]),
+                       ylab=expression(Catch/MSY),
+                       col=c("red","grey","grey","grey")) 
   dev.off()
 
   # M
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe M.jpg", sep="_")),
-       width=10, height=6, units="in", res=300)
+       width=10, height=10, units="in", res=300)
   kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass"),
                                         stock=ssb/bmsy,
                                         harvest=catch/msy,
@@ -1771,27 +1732,31 @@ mystk     <- "mac";
 
   # MM
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe MM.jpg", sep="_")),
-       width=10, height=6, units="in", res=300)
+       width=10, height=10, units="in", res=300)
   kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
                        xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey")) 
   dev.off()
 
   # MMM
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe MMM.jpg", sep="_")),
-       width=10, height=6, units="in", res=300)
+       width=10, height=10, units="in", res=300)
   kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
                        xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red")) 
   dev.off()
   
-  ggdensity(transmute(sch,stock=ssb/bmsy,harvest=catch/msy,run=ac(signif(f,3)),.id=.id),x="stock",fill=".id")+
-    geom_vline(aes(xintercept=1),col="red")+
-    facet_grid(run~.) 
+  # ggdensity(transmute(sch,stock=ssb/bmsy,harvest=catch/msy,run=ac(signif(f,3)),.id=.id),x="stock",fill=".id")+
+  #   geom_vline(aes(xintercept=1),col="red")+
+  #   facet_grid(run~.) 
 
   
-  ggdensity(transmute(sch,stock=ssb/bmsy,catch=catch/msy,run=ac(signif(f,3)),.id=.id),x="catch",fill=".id")+
-    geom_vline(aes(xintercept=1),col="red")+
-    facet_grid(run~.) 
+  # ggdensity(transmute(sch,stock=ssb/bmsy,catch=catch/msy,run=ac(signif(f,3)),.id=.id),x="catch",fill=".id")+
+  #   geom_vline(aes(xintercept=1),col="red")+
+  #   facet_grid(run~.) 
 
   
-# } # end of stk loop
-
+  rm(p, p1, p2, p3, p4)
+  save(list=ls(),
+       file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
+  load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
+  section <- "05"
+  
