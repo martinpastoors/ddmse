@@ -230,7 +230,7 @@ section <- "02"
 
 **Mass-at-age**
 
-Trends in (stock) mass-at-age are shown in figure 1. Weight-at-age in the stock is calculated as the average of the weight-at-age in the three spawning components, weighted by the relative size of each component (as estimated in the egg surveys). The decreasing trend in weight-at-age observed since 2005 for fish of age 3 and older seems to have stopped in 2013 and values in the last 8 years show an increasing trend.
+Trends in (catch and stock) mass-at-age are shown in figure 1. Mean weight at ages 3-9 has generally decreased in the period 2010-2018, followed by an increase in the most recent years, for the most abundant ages in the catches. In 2022, a decrease in mean weight in almost all ages was observed.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -246,7 +246,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section, mystk, "waa.jp
 
 **Maturity-at-age**
 
-The fixed maturity ogive for blue whiting was taken from the ICES assessment, this did not vary by year.
+The fixed maturity ogive for blue whiting was taken from the ICES assessment, this did not vary by year. Maturity-at-age was obtained by combining maturity ogives from the southern and northern areas, weighted by catch in numbers-at-age [@ICES1995BWWG, @ICES2022WHB].
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -262,7 +262,9 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "mat.jpg
 
 **Natural mortality-at-age**
 
-Natural mortality is assumed to be 0.15 for all age groups and constant over time.This value was calculated based on estimates of total mortality derived from tagging data combined with catch data (@hamre1980biology; @ICES2022WGWIDE; @ICES2022MAC).
+Natural mortality is assumed to be 0.2 for all age groups and constant over time. The current M of 0.2 was derived from investigations undertaken in the 1980s that examined the age distribution of the stock before the industrial fishery started [@ICES1995BWWG].
+
+During the WKPELA benchmark [@ICES2012WKPELA] various methods were explored to estimate how M may vary over ages. The relationship between natural mortality and body weight was applied to the blue whiting data to determine a variable M by age. The values ranged from around 1.1 at age 0 to 0.7 at age 10, which was considerably higher than the values used so far. During the benchmark, it was considered that there was no new information to support a revision of the used estimate of M (=0.2).
 
 In order to assess the impacts of density dependent processes on natural mortality, additional assumptions need to be made about the distribution of natural mortality across ages. This will be done in section 3 of this report.
 
@@ -282,7 +284,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "m.jpg",
 
 **Density dependence in mass-at-age vs. Total biomass**
 
-The variation in mass-at-age is shown in the figure below (left) and the relationship between mass-at-age and total biomass  to the right. Consistent negative slopes on the biomass-mass-at-age plots are seen for ages 4 and beyond. The patterns for the younger ages, however, are less clear. The younger ages do not appear strongly in the catches, and so the catches may not be representative of the population.
+The variation in mass-at-age is shown in the figure below (left) and the relationship between mass-at-age and total biomass  to the right. Consistent negative slopes on the biomass-mass-at-age plots are seen for ages 2-9. 
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -300,7 +302,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "dd_waa.
 
 A Generalized Additive Mixed Model (GAMM) was estimated to assess the relationship between mass-at-age and total biomass.
 
-weights are predicted from two variables: a smoother of total biomass/mean(total biomass) and age. The resulting factor is shown below, indicating a nearly linear decline in mass-at-age as total biomass increases.
+weights are predicted from two variables: a smoother of total biomass/mean(total biomass) and age. The resulting factor is shown below. There is no clear relationship between biomass and weight-at-age. 
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -330,7 +332,9 @@ cat(readLines(file.path(tablesdir, paste(section,mystk, "gamm summary.txt", sep=
 
 **Linear model of density dependence in mass-at-age**
 
-The change in relative mass-at-age (i.e. observed - mean values) is plotted against total biomass, this allows the relationship between growth and total biomass to be compared across all ages. It is seen that there is a common negative relationship for all ages. A summary of the linear model is in the table below. The trend of growth with biomass is -0.18, this was then used to model mass-at-age as:
+The change in relative mass-at-age (i.e. observed - mean values) is plotted against total biomass, this allows the relationship between growth and total biomass to be compared across all ages. It is seen that there is no clear relationship between biomass and weight at age. A summary of the linear model is in the table below. 
+
+**???The trend of growth with biomass is -0.18, this was then used to model mass-at-age as:** 
 
 $W_a = {\overline{W_a}} (B/B_{MSY})^{{\beta}_a}$
 
@@ -362,9 +366,7 @@ cat(readLines(file.path(tablesdir, paste(section,mystk, "lm summary.txt", sep="_
 
 **Density-dependence analysis of maturity-at-age**
 
-The distribution of maturity-at-age is shown in the figure below (left) and the relationship between maturity-at-age and total biomass is shown to the right.
-
-[\@ @Negative slopes on the biomass-maturity-at-age plots can be observed for ages 2 and 3, which are the most relevant ages for maturity as all fish of age 4 and above are mature.]
+The distribution of maturity-at-age is shown in the figure below (left) and the relationship between maturity-at-age and total biomass is shown to the right. Obviously, as there is no time-dependent estimate of maturity, there is also no relationship with biomass. 
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
