@@ -1227,10 +1227,10 @@ mystk     <- "whb";
   # 5. MSE
   # ------------------------------------------------------------------------------
   
+  load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section4.RData", sep="_")))
   section <- "05"
   
-  load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section4.RData", sep="_")))
-  
+
   om=fwdWindow(window(vpaM,end=2020),end=2050,vpaM_eq)
   F    =rep(c(seq(0,                                    c(refpts(vpaM_eq)["msy",  "harvest"]),  length.out=51),
               seq(c(refpts(vpaM_eq)["msy",  "harvest"]),c(refpts(vpaM_eq)["crash","harvest"])*1.5,length.out=51)[-1]))
@@ -1758,5 +1758,3 @@ mystk     <- "whb";
   save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
-  section <- "05"
-  
