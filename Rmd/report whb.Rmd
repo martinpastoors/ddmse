@@ -93,12 +93,11 @@ tablesdir  <- file.path(dropboxdir, "results", mystk, "tables")
 
 **`r ifelse(mystk=="mac", "M.A. Pastoors & L.T. Kell", "L.T. Kell & M.A. Pastoors")`**
 
-
 Version: 1.0 (`r format(Sys.time(), '%d %B %Y')`)
 
-&nbsp;
+ 
 
-**Commissioned by:** 
+**Commissioned by:**
 
 Henrik Sparholt
 
@@ -111,30 +110,30 @@ Center for Macroecology Evolution and Climate
 Universitetsparken 15, 3rd floor, room 339
 
 2100 Copenhagen Ø
- 
+
 Denmark
 
-&nbsp;
+ 
 
-&nbsp;
+ 
 
-&nbsp;
+ 
 
-&nbsp;
+ 
 
-&nbsp;
+ 
 
-&nbsp;
+ 
 
-&nbsp;
+ 
 
-&nbsp;
+ 
 
-&nbsp;
+ 
 
-&nbsp;
+ 
 
-&nbsp;
+ 
 
 ```{r, echo=FALSE, out.width = "300px", fig.align="left", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -145,7 +144,6 @@ if(mystk=="mac") {
 }
 
 ```
-
 
 \newpage
 
@@ -173,7 +171,6 @@ Conclusions
 Estimating density-dependence from observations only possible for mass-at-age and maturity age. Density dependence in natural mortality can only be explored from theoretical considerations (because current assessment does not include age or time varying natural mortality).
 
 The impact of including density dependence: major impact on reference points. Especially $F_{MSY}$ is much higher when including DD. However, the expected yields in equilibrium conditions are expected to be very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
-
 
 <!-- =============================================================================================================== -->
 
@@ -249,7 +246,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section, mystk, "waa.jp
 
 **Maturity-at-age**
 
-[@@ The fixed maturity ogive for blue whiting is derived from ...] 
+The fixed maturity ogive for blue whiting was taken from the ICES assessment, this did not vary by year.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -285,9 +282,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "m.jpg",
 
 **Density dependence in mass-at-age vs. Total biomass**
 
-The distribution of mass-at-age is shown in the figure below (left) and the relationship between mass-at-age and total biomass is shown to the right. 
-
-[@@ Consistent negative slopes on the biomass-mass-at-age plots can be observed for ages 4 and beyond. The patterns for the younger ages are less clear. It should be remembered that the younger ages do not appear strongly in the catches.]
+The variation in mass-at-age is shown in the figure below (left) and the relationship between mass-at-age and total biomass  to the right. Consistent negative slopes on the biomass-mass-at-age plots are seen for ages 4 and beyond. The patterns for the younger ages, however, are less clear. The younger ages do not appear strongly in the catches, and so the catches may not be representative of the population.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -367,9 +362,9 @@ cat(readLines(file.path(tablesdir, paste(section,mystk, "lm summary.txt", sep="_
 
 **Density-dependence analysis of maturity-at-age**
 
-The distribution of maturity-at-age is shown in the figure below (left) and the relationship between maturity-at-age and total biomass is shown to the right. 
+The distribution of maturity-at-age is shown in the figure below (left) and the relationship between maturity-at-age and total biomass is shown to the right.
 
-[@@Negative slopes on the biomass-maturity-at-age plots can be observed for ages 2 and 3, which are the most relevant ages for maturity as all fish of age 4 and above are mature.]
+[\@ @Negative slopes on the biomass-maturity-at-age plots can be observed for ages 2 and 3, which are the most relevant ages for maturity as all fish of age 4 and above are mature.]
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -479,7 +474,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk,"eq_yield
 
 **Stock assessments**
 
-The operating models for this study are derived from the 2022 stock assessment. SAM is a statistical catch-at-age model that estimates error in the catch-at-age. In the case of  `r mystkname`, the assessment gives a higher weight to the recruitment index than to the catch data for ages 0 and 1. This means that the estimates of recruitment in the assessment can be very different from the actual number of fish that are recruited to the fishery. To ensure the MSE projections and the historical estimates are comparable, a Virtual Population Analysis (VPA) was conducted on the whole catch matrix and the survivors in the most recent year and oldest age. In the next step, we applied a natural mortality-at-age vector derived from the Lorenzen approach which would mimic the VPA assessment with fixed M-at-age. The figure below compares the SAM assessment with the VPA and the VPAM assessment. A main difference is in the recruitment estimates. Using age-varying M tends to flatten the recruitment pattern. The vpaM model was used as the base case to be compared against the density-dependent simulations.
+The operating models for this study are derived from the 2022 stock assessment. SAM is a statistical catch-at-age model that estimates error in the catch-at-age. In the case of `r mystkname`, the assessment gives a higher weight to the recruitment index than to the catch data for ages 0 and 1. This means that the estimates of recruitment in the assessment can be very different from the actual number of fish that are recruited to the fishery. To ensure the MSE projections and the historical estimates are comparable, a Virtual Population Analysis (VPA) was conducted on the whole catch matrix and the survivors in the most recent year and oldest age. In the next step, we applied a natural mortality-at-age vector derived from the Lorenzen approach which would mimic the VPA assessment with fixed M-at-age. The figure below compares the SAM assessment with the VPA and the VPAM assessment. A main difference is in the recruitment estimates. Using age-varying M tends to flatten the recruitment pattern. The vpaM model was used as the base case to be compared against the density-dependent simulations.
 
 ```{r, echo=FALSE, out.width = "600px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -579,7 +574,7 @@ knitr::include_graphics(
 
 **Reference points**
 
-Reference points estimated for the different scenarios are in the table below. 
+Reference points estimated for the different scenarios are in the table below.
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -678,9 +673,9 @@ knitr::include_graphics(path=
 
 \newpage
 
-**Stochastic projections at all $F_{MSY}$'s from all scenarios**
+**Stochastic projections at all** $F_{MSY}$'s from all scenarios
 
-Misspecification of Fmsy, i.e. using an Fmsy from one scenario and applying it to a different scenario has only limited impacts on the overall outcomes in terms of recruitment, biomass or yield. In the plot below, the scenarios for density dependence are shown in the columns and the Fmsy's are shown as the colors. For example a valid combination is the Base case with the red curves (Fmsy=0.33) or the M scenario with the green curve. Overall the misspecification does not results in noticeable differences in catch although they do have difference for biomass. 
+Misspecification of Fmsy, i.e. using an Fmsy from one scenario and applying it to a different scenario has only limited impacts on the overall outcomes in terms of recruitment, biomass or yield. In the plot below, the scenarios for density dependence are shown in the columns and the Fmsy's are shown as the colors. For example a valid combination is the Base case with the red curves (Fmsy=0.33) or the M scenario with the green curve. Overall the misspecification does not results in noticeable differences in catch although they do have difference for biomass.
 
 ```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -697,7 +692,7 @@ knitr::include_graphics(path=
 
 \newpage
 
-For the four scenarios, we plotted the Kobe phase plot for 2050 with the associated density functions for B/Bmsy and Catch/MSY. The results confirm the results that equilibrium catch is not really affected by the DD assumptions of the Fmsy applied, but that biomass is sensitive to the assumptions. 
+For the four scenarios, we plotted the Kobe phase plot for 2050 with the associated density functions for B/Bmsy and Catch/MSY. The results confirm the results that equilibrium catch is not really affected by the DD assumptions of the Fmsy applied, but that biomass is sensitive to the assumptions.
 
 ```{r, echo=FALSE, out.width = "300px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -717,7 +712,7 @@ knitr::include_graphics(path=
 
 *`r fig_nums("kobe")`*
 
-Finally, as a check, we assessed the outcomes of the equilibrium curves from simulating over a wide F range, with the equilibrium values (points) in 2050 from the forward projections at different values of Fmsy (colors). The points fall on the equilibrium curve, thereby confirming the consistency between the two approaches. 
+Finally, as a check, we assessed the outcomes of the equilibrium curves from simulating over a wide F range, with the equilibrium values (points) in 2050 from the forward projections at different values of Fmsy (colors). The points fall on the equilibrium curve, thereby confirming the consistency between the two approaches.
 
 ```{r, echo=FALSE, out.width = "500px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -731,8 +726,6 @@ fig_nums(
 ```
 
 *`r fig_nums("eq_check")`*
-
-
 
 <!-- =============================================================================================================== -->
 
@@ -781,15 +774,15 @@ Estimating density-dependence from observations was only possible for mass-at-ag
 
 The impact of including density dependence was primarily on the biological reference points. Especially $F_{MSY}$ is much higher when including density dependence. However, the expected yields in equilibrium conditions are very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
 
-Since the early 1980s, natural mortality ($M$) for `r mystkname` has been fixed within the assessment model at 0.2, for all ages and all assessment years. 
+Since the early 1980s, natural mortality ($M$) for `r mystkname` has been fixed within the assessment model at 0.2, for all ages and all assessment years.
 
-[@@This value was calculated based on estimates of total mortality derived from tagging data combined with catch data.]
+[\@ @This value was calculated based on estimates of total mortality derived from tagging data combined with catch data.]
 
-M must, however, vary both by age and over time due to changes in abundance of predators, feeding conditions, disease etc. [@siegfried2009review]. Particularly any changes in `r mystkname` distribution and growth will affect natural mortality. 
+M must, however, vary both by age and over time due to changes in abundance of predators, feeding conditions, disease etc. [@siegfried2009review]. Particularly any changes in `r mystkname` distribution and growth will affect natural mortality.
 
-Given the uncertainty in the assessment and the estimation of density dependence, it is likely that the Pretty Good Yield approach would ensure sustainable exploitation. Also, because we did not yet consider stochastic variability in future developments in mass, maturity and natural mortality which are likely to obscure the impacts of density dependence. Variations in these processes due to changes in climate and range expansion are also likely to occur. 
+Given the uncertainty in the assessment and the estimation of density dependence, it is likely that the Pretty Good Yield approach would ensure sustainable exploitation. Also, because we did not yet consider stochastic variability in future developments in mass, maturity and natural mortality which are likely to obscure the impacts of density dependence. Variations in these processes due to changes in climate and range expansion are also likely to occur.
 
-It is suggested that empirical harvest control rules that respond to changes in productivity could be evaluated in contrast to the highly complex harvest rules based on SAM stock assessment models. 
+It is suggested that empirical harvest control rules that respond to changes in productivity could be evaluated in contrast to the highly complex harvest rules based on SAM stock assessment models.
 
 The quality of this analyses lives up to the quality standards that are required by ICES and so can potentially be used when providing advice to fisheries managers. The software is publicly available via Github (<https://github.com/martinpastoors/ddmse>). All data is derived from WGWIDE 2022 @ICES2022WGWIDE.
 
@@ -801,7 +794,7 @@ The quality of this analyses lives up to the quality standards that are required
 
 # Funding
 
-This work was funded under a consultancy agreement between the University of Copenhagen and `r ifelse(mystk=="mac", "Martin Pastoors F&F", "Sea++")` as part of the project “117957 Fmsy-project for six high profile fish stocks”. The current work focused on `r mystkname` and was carried out in the months of January-March 2023. A similar project was carried out for `r ifelse(mystk=="mac", "Blue whiting", mystkname)` by `r ifelse(mystk=="mac", "Sea++", "Martin Pastoors F&F")`. Both projects were carried in close coordination between Sea++ and Martin Pastoors F&F. 
+This work was funded under a consultancy agreement between the University of Copenhagen and `r ifelse(mystk=="mac", "Martin Pastoors F&F", "Sea++")` as part of the project "117957 Fmsy-project for six high profile fish stocks". The current work focused on `r mystkname` and was carried out in the months of January-March 2023. A similar project was carried out for `r ifelse(mystk=="mac", "Blue whiting", mystkname)` by `r ifelse(mystk=="mac", "Sea++", "Martin Pastoors F&F")`. Both projects were carried in close coordination between Sea++ and Martin Pastoors F&F.
 
 <!-- =============================================================================================================== -->
 
@@ -810,4 +803,3 @@ This work was funded under a consultancy agreement between the University of Cop
 <!-- =============================================================================================================== -->
 
 # References
-
