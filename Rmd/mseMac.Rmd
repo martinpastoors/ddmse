@@ -641,30 +641,68 @@ sch=transform(sch,.id=factor(.id,labels=c("Base","DD Mass","DD Mass, Mat","DD Ma
 sch=subset(sch,year==2050)
 sch=merge(sch,bmsy,by=".id")
 sch=merge(sch,msy,by=".id") 
+sch=merge(sch,fmsy,by=".id") 
 ```
 
 
 ```{r, kobe-base, fig.height=8,fig.width=8}
-p1=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="Base"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="Base"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
                      xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("red","grey","grey","grey")) 
 ```
 
 
 ```{r,kb-m, fig.height=8,fig.width=8}
-p2=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
                      xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","red","grey","grey")) 
 ```
 
 
 ```{r,kobe-mm, fig.height=8,fig.width=8}
-p3=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
                      xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey")) 
 ```
 
 
 ```{r,kobe-mmm, fig.height=8,fig.width=8}
-p4=kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
+kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
                      xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red")) 
+```
+
+
+```{r}
+source("R/kobePhaseMar4.R", echo=TRUE)
+
+```
+
+```{r, kobe-base-fy, fig.height=8,fig.width=8}
+kobePhaseMar4(subset(transmute(subset(sch,.id=="Base"),stock=f/Fmsy,harvest=catch/msy,run=ac(f))),
+                     quadcol=c("yellow","yellow","green","red"),
+                     xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("red","grey","grey","grey"),
+                     xlim=3) 
+```
+
+
+```{r,kb-m-fy, fig.height=8,fig.width=8}
+kobePhaseMar4(subset(transmute(subset(sch,.id=="DD Mass"),stock=f/Fmsy,harvest=catch/msy,run=ac(f))),
+                     quadcol=c("yellow","yellow","green","red"),
+                     xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","red","grey","grey"),
+                     xlim=3) 
+```
+
+
+```{r,kobe-mm-fy, fig.height=8,fig.width=8}
+kobePhaseMar4(subset(transmute(subset(sch,.id=="DD Mass, Mat"),stock=f/Fmsy,harvest=catch/msy,run=ac(f))),
+                     quadcol=c("yellow","yellow","green","red"),
+                     xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
+                     xlim=3) 
+```
+
+
+```{r,kobe-mmm-fy, fig.height=8,fig.width=8}
+kobePhaseMar4(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),stock=f/Fmsy,harvest=catch/msy,run=ac(f))),
+                     quadcol=c("yellow","yellow","green","red"),
+                     xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red"),
+                     xlim=3) 
 ```
 
 
