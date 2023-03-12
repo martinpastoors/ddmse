@@ -43,6 +43,7 @@ theme_set(theme_bw(16))
 source("R/dd.R")
 source("R/get_dropbox.r")
 source("R/pm.R")
+source("R/kobePhaseMar4.R")
 
 dropboxdir<-try(file.path(get_dropbox(), "DDMSE"))
 
@@ -1707,7 +1708,8 @@ mystk     <- "whb";
   sch=subset(sch,year==2050)
   sch=merge(sch,bmsy,by=".id")
   sch=merge(sch,msy,by=".id") 
-
+  sch=merge(sch,fmsy,by=".id") 
+  
   # Base
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe base.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
@@ -1742,6 +1744,50 @@ mystk     <- "whb";
        width=10, height=10, units="in", res=300)
   kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
                        xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red")) 
+  dev.off()
+  
+  ## Yield & F #################################################################
+  kobePhase=kobe:::kobePhase
+
+  # Base
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY base.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+       kobePhaseMar4(subset(transmute(subset(sch,.id=="Base"),
+                                      stock  =f/Fmsy,
+                                      harvest=catch/msy,
+                                      run    =ac(f))),
+                quadcol=c("yellow","yellow","green","red"),
+                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("red","grey","grey","grey"),
+                xlim=3) 
+  dev.off()
+  
+  # M
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY M.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+       kobePhaseMar4(subset(transmute(subset(sch,.id=="DD Mass, Mat"),
+                                      stock  =f/Fmsy,
+                                      harvest=catch/msy,
+                                      run    =ac(f))),
+                quadcol=c("yellow","yellow","green","red"),
+                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
+                xlim=3) 
+  dev.off()
+  
+  # MM
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY MM.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
+       kobePhaseMar4(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),
+                                 stock  =f/Fmsy,
+                                 harvest=catch/msy,
+                                 run    =ac(f))),
+                quadcol=c("yellow","yellow","green","red"),
+                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red"),
+                xlim=3) 
+  dev.off()
+  
+  # MMM
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY MMM.jpg", sep="_")),
+       width=10, height=10, units="in", res=300)
   dev.off()
   
   # ggdensity(transmute(sch,stock=ssb/bmsy,harvest=catch/msy,run=ac(signif(f,3)),.id=.id),x="stock",fill=".id")+
