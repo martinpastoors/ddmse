@@ -76,8 +76,8 @@ myparams <- data.frame(
 
 # save(myparams, file=file.path(dropboxdir, "data", "inputs", "myparams.RData"))
 
-# mystk     <- "mac";  
-mystk     <- "whb";  
+mystk     <- "mac";  
+# mystk     <- "whb";  
 # for (mystk in c("mac","whb")) {
   
   mystkname  <- myparams[myparams$stock==mystk,"mystkname"]
@@ -660,7 +660,8 @@ mystk     <- "whb";
   rm(dat, df, p, p1, p2, p3, t, x)
   save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section3.RData", sep="_")))
-
+  # load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section3.RData", sep="_")))
+  
 
 
   
@@ -1209,6 +1210,7 @@ mystk     <- "whb";
   rm(dat, df, p, p1, p2, p3, p4, t, x, d1, d2, d3, d4, x)
   save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section4.RData", sep="_")))
+#  load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section4.RData", sep="_")))
   
   
   
