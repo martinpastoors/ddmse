@@ -39,7 +39,6 @@ library(mgcv)
 library(mgcViz)
 
 library(tidyverse)
-library(grid)
 
 theme_set(theme_bw(16))
 
@@ -1764,7 +1763,7 @@ mystk     <- "mac";
                 xlab=expression(F/F[MSY]),
                 ylab=expression(Catch/MSY),
                 col=c("red","grey","grey","grey"),
-                xlim=3) 
+                xlim=3, ylim=2) 
   dev.off()
 
   # M
@@ -1776,7 +1775,7 @@ mystk     <- "mac";
                                  run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
                 xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
-                xlim=3) 
+                xlim=3, ylim=2) 
   dev.off()
   
   # MM
@@ -1788,7 +1787,7 @@ mystk     <- "mac";
                                       run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
                 xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
-                xlim=3) 
+                xlim=3, ylim=2) 
   dev.off()
   
   # MMM
@@ -1800,7 +1799,7 @@ mystk     <- "mac";
                                  run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
                 xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red"),
-                xlim=3) 
+                xlim=3, ylim=2) 
   dev.off()
   
   
@@ -1818,3 +1817,6 @@ mystk     <- "mac";
   save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
   load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
+  section <- "05"
+  
+  
