@@ -37,6 +37,7 @@ library(mgcv)
 library(mgcViz)
 
 library(tidyverse)
+library(grid)
 
 theme_set(theme_bw(16))
 
@@ -1749,23 +1750,36 @@ mystk     <- "mac";
   dev.off()
   
   ## Yield & F #################################################################
-  kobePhase=kobe:::kobePhase
-
+  
   # Base
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY base.jpg", sep="_")),
-       width=10, height=10, units="in", res=300)
-       kobePhaseMar4(subset(transmute(subset(sch,.id=="Base"),
-                                      stock  =f/Fmsy,
-                                      harvest=catch/msy,
-                                      run    =ac(f))),
+       width=10, height=8, units="in", res=300)
+  kobePhaseMar4(subset(transmute(subset(sch,.id=="Base"),
+                                 stock  =f/Fmsy,
+                                 harvest=catch/msy,
+                                 run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
-                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("red","grey","grey","grey"),
+                xlab=expression(F/F[MSY]),
+                ylab=expression(Catch/MSY),
+                col=c("red","grey","grey","grey"),
+                xlim=3) 
+  dev.off()
+
+  # M
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY M.jpg", sep="_")),
+       width=10, height=8, units="in", res=300)
+  kobePhaseMar4(subset(transmute(subset(sch,.id=="DD Mass"),
+                                 stock  =f/Fmsy,
+                                 harvest=catch/msy,
+                                 run    =ac(f))),
+                quadcol=c("yellow","yellow","green","red"),
+                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
                 xlim=3) 
   dev.off()
   
-  # M
-  jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY M.jpg", sep="_")),
-       width=10, height=10, units="in", res=300)
+  # MM
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY MM.jpg", sep="_")),
+       width=10, height=8, units="in", res=300)
        kobePhaseMar4(subset(transmute(subset(sch,.id=="DD Mass, Mat"),
                                       stock  =f/Fmsy,
                                       harvest=catch/msy,
@@ -1775,9 +1789,9 @@ mystk     <- "mac";
                 xlim=3) 
   dev.off()
   
-  # MM
-  jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY MM.jpg", sep="_")),
-       width=10, height=10, units="in", res=300)
+  # MMM
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY MMM.jpg", sep="_")),
+       width=10, height=8, units="in", res=300)
        kobePhaseMar4(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),
                                  stock  =f/Fmsy,
                                  harvest=catch/msy,
@@ -1787,10 +1801,6 @@ mystk     <- "mac";
                 xlim=3) 
   dev.off()
   
-  # MMM
-  jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY MMM.jpg", sep="_")),
-       width=10, height=10, units="in", res=300)
-  dev.off()
   
   # ggdensity(transmute(sch,stock=ssb/bmsy,harvest=catch/msy,run=ac(signif(f,3)),.id=.id),x="stock",fill=".id")+
   #   geom_vline(aes(xintercept=1),col="red")+

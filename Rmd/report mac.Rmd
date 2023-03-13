@@ -94,9 +94,13 @@ tablesdir  <- file.path(dropboxdir, "results", mystk, "tables")
 **`r ifelse(mystk=="mac", "M.A. Pastoors & L.T. Kell", "L.T. Kell & M.A. Pastoors")`**
 
 
-Version: 1.0 (07 March 2023)
+Version 1.0 (07 March 2023)
 
-Version: 1.1 (`r format(Sys.time(), '%d %B %Y')`)
+Version 1.1 (08 March 2023)
+
+Version 1.2 (10 March 2023)
+
+Version 1.3 (`r format(Sys.time(), '%d %B %Y')`)
 
 &nbsp;
 
@@ -715,6 +719,26 @@ knitr::include_graphics(path=
 
 *`r fig_nums("kobe")`*
 
+We then plotted the Kobe phase plot for 2050 with the associated density functions for F/Fmsy and Catch/MSY. Because there is no uncertainty included in the fishing mortality during the simulations, the marginal distributions of F do not exist in this plot. 
+
+```{r, echo=FALSE, out.width = "300px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
+
+fig_nums(
+  name    = "kobe2", level = 1, display = FALSE,
+  caption = "F Kobe plot for 2050 for base case (no DD) for all $F_{MSY}$'s (red is from the right scenario). Topleft: base, topright: M, bottomleft: MM, bottomright: MMM")
+
+knitr::include_graphics(path=
+                    c(file.path(figuresdir,paste("05",mystk,"kobe FY base.jpg",sep="_")),
+                      file.path(figuresdir,paste("05",mystk,"kobe FY M.jpg",sep="_")),
+                      file.path(figuresdir,paste("05",mystk,"kobe FY MM.jpg",sep="_")),
+                      file.path(figuresdir,paste("05",mystk,"kobe FY MMM.jpg",sep="_"))
+                      )
+                    )
+
+```
+
+*`r fig_nums("kobe2")`*
+
 Finally, as a check, we assessed the outcomes of the equilibrium curves from simulating over a wide F range, with the equilibrium values (points) in 2050 from the forward projections at different values of Fmsy (colors). The points fall on the equilibrium curve, thereby confirming the consistency between the two approaches. 
 
 ```{r, echo=FALSE, out.width = "500px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
@@ -773,7 +797,7 @@ The OMs were first projected, without process error in recruitment, from the end
 
 The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures 16-19**
 
-**Figure 20** summarizes the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence and the associated reference points, and **Figure 21** shows the Kobe plots of the final 2050 distributions of biomass and yield.
+**Figure 20** summarizes the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence and the associated reference points, **Figure 21** shows the Kobe plots of the final 2050 distributions of biomass and yield and **Figure 22** the Kobe pltos for F and yield. 
 
 Estimating density-dependence from observations was only possible for mass-at-age and maturity age. Therefore, density dependence in natural mortality can only be explored from theoretical considerations, because current assessment does not include age or time varying natural mortality. M is likely to vary by age and time in relation to processes such as density dependence. While the recent expansion in distribution area and change in weight-at-age could be associated with changes in natural mortality. Therefore in the OMs we modeled M as a function of mass-at-age.
 
