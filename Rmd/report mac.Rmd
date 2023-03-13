@@ -140,8 +140,6 @@ Denmark
 
 &nbsp;
 
-&nbsp;
-
 ```{r, echo=FALSE, out.width = "300px", fig.align="left", message=FALSE, warning=FALSE, cache=FALSE}
 
 if(mystk=="mac") {
@@ -172,13 +170,11 @@ Initial evaluations were conducted based on life history theory, as used by the 
 
 Each of the OMs were then projected for the values of $F_{MSY}$ based on the four assumptions about density dependence. This allows a comparison between the yield that could potentially be achieved and that forgone by making an incorrect assumption about density dependence. The OMs were first projected, without process error in recruitment, from the end of the historical estimates for a range of fishing mortality (spanning 0 to $F_{crash}$) for 30 years into the future. The estimates in the final year of the projections were then be used to construct equilibrium curves (**Figure 15**). The points on the curve correspond to the projected outcomes for the values of $F_{MSY}$ from each OM. This was run as a check, as the equilibrium and projections should agree, I.e. the points at MSY should be the same color as the curve.
 
-The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures 16-19**. **Figures 20 and 21** summarizes the yields and SSBs obtained for each Operating Model under the correct and mis-specified form of density dependence.
+The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures 16-19**. **Figures 20-22** summarizes the yields, SSBs and Fs obtained for each Operating Model under the correct and mis-specified form of density dependence.
 
-Conclusions
+Estimating density-dependence from observations was only possible for mass-at-age and maturity age. Density dependence in natural mortality can only be explored from theoretical considerations (because current assessment does not include age or time varying natural mortality).
 
-Estimating density-dependence from observations only possible for mass-at-age and maturity age. Density dependence in natural mortality can only be explored from theoretical considerations (because current assessment does not include age or time varying natural mortality).
-
-The impact of including density dependence: major impact on reference points. Especially $F_{MSY}$ is much higher when including DD. However, the expected yields in equilibrium conditions are expected to be very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
+Including density dependence has a major impact on reference points. Especially $F_{MSY}$ is much higher when including DD. However, the expected yields in equilibrium conditions are expected to be very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
 
 
 <!-- =============================================================================================================== -->
@@ -797,7 +793,7 @@ The OMs were first projected, without process error in recruitment, from the end
 
 The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures 16-19**
 
-**Figure 20** summarizes the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence and the associated reference points, **Figure 21** shows the Kobe plots of the final 2050 distributions of biomass and yield and **Figure 22** the Kobe pltos for F and yield. 
+**Figure 20** summarizes the yields and SSBs obtained for each Operating Model under the correct and misspecified form of density dependence and the associated reference points, **Figure 21** shows the Kobe plots of the final 2050 distributions of biomass and yield and **Figure 22** the Kobe plots for F and yield. 
 
 Estimating density-dependence from observations was only possible for mass-at-age and maturity age. Therefore, density dependence in natural mortality can only be explored from theoretical considerations, because current assessment does not include age or time varying natural mortality. M is likely to vary by age and time in relation to processes such as density dependence. While the recent expansion in distribution area and change in weight-at-age could be associated with changes in natural mortality. Therefore in the OMs we modeled M as a function of mass-at-age.
 

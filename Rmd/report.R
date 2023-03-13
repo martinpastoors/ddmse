@@ -79,8 +79,8 @@ myparams <- data.frame(
 
 # save(myparams, file=file.path(dropboxdir, "data", "inputs", "myparams.RData"))
 
-mystk     <- "mac";  
-# mystk     <- "whb";  
+# mystk     <- "mac";  
+mystk     <- "whb";  
 # for (mystk in c("mac","whb")) {
   
   mystkname  <- myparams[myparams$stock==mystk,"mystkname"]
@@ -264,7 +264,7 @@ mystk     <- "mac";
   # run gammV  
   gmr=mgcViz::gammV(log(data) ~ s(tb/mean(tb), bs="tp") + age, 
                     data=wt2)
-  
+
   # plot gammV
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "gamm.jpg", sep="_")),
        width=10, height=8, units="in", res=300)
@@ -284,7 +284,7 @@ mystk     <- "mac";
   # plot(exp(coefficients(gmr)[2:nn]))  # NOT NEEDED?
   
   # connect prediction to wt dataset  
-  wt2=cbind(wt2,hat=predict(gmr))
+  wt2=cbind(wt2,hat =predict(gmr))
   wt2=merge(wt2,data.frame(age=1:nn,
                            mean=exp(c(0,coefficients(gmr)[2:nn]))))
   
@@ -292,6 +292,7 @@ mystk     <- "mac";
   p <-
     ggplot(wt2)+
     geom_line(aes(tb,exp(hat)/mean,col=age))+
+    geom_smooth(aes(tb,exp(hat)/mean),method="lm", colour="blue", linewidth=0.5, se=FALSE)+
     geom_point(aes(tb,data/mean,col=age))+
     xlab("Total biomass")+ylab("Mass-Mean") 
   
@@ -1714,6 +1715,10 @@ mystk     <- "mac";
   sch=merge(sch,msy,by=".id") 
   sch=merge(sch,fmsy,by=".id") 
   
+  if (mystk == "mac") {
+    xlim = 2; ylim=2} else {
+    xlim = 3; ylim=2} 
+  
   # Base
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe base.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
@@ -1723,7 +1728,8 @@ mystk     <- "mac";
                                         run=ac(f))),
                        xlab=expression(B/B[MSY]),
                        ylab=expression(Catch/MSY),
-                       col=c("red","grey","grey","grey")) 
+                       col=c("red","grey","grey","grey"),
+                       xlim=xlim, ylim=ylim) 
   dev.off()
 
   # M
@@ -1733,24 +1739,37 @@ mystk     <- "mac";
                                         stock=ssb/bmsy,
                                         harvest=catch/msy,
                                         run=ac(f))),
-                       xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","red","grey","grey")) 
+                       xlab=expression(B/B[MSY]),
+                       ylab=expression(Catch/MSY),
+                       col=c("grey","red","grey","grey"),
+                       xlim=xlim, ylim=ylim) 
   dev.off()
 
   # MM
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe MM.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
   kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
-                       xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey")) 
+                       xlab=expression(B/B[MSY]),
+                       ylab=expression(Catch/MSY),
+                       col=c("grey","grey","red","grey"),
+                       xlim=xlim, ylim=ylim) 
   dev.off()
 
   # MMM
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe MMM.jpg", sep="_")),
        width=10, height=10, units="in", res=300)
   kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
-                       xlab=expression(B/B[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red")) 
+                       xlab=expression(B/B[MSY]),
+                       ylab=expression(Catch/MSY),
+                       col=c("grey","grey","grey","red"),
+                       xlim=xlim, ylim=ylim) 
   dev.off()
   
   ## Yield & F #################################################################
+  
+  if (mystk == "mac") {
+    xlim = 3; ylim=2} else {
+    xlim = 5; ylim=2} 
   
   # Base
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "kobe FY base.jpg", sep="_")),
@@ -1763,7 +1782,7 @@ mystk     <- "mac";
                 xlab=expression(F/F[MSY]),
                 ylab=expression(Catch/MSY),
                 col=c("red","grey","grey","grey"),
-                xlim=3, ylim=2) 
+                xlim=xlim, ylim=ylim) 
   dev.off()
 
   # M
@@ -1775,7 +1794,7 @@ mystk     <- "mac";
                                  run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
                 xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
-                xlim=3, ylim=2) 
+                xlim=xlim, ylim=ylim) 
   dev.off()
   
   # MM
@@ -1787,7 +1806,7 @@ mystk     <- "mac";
                                       run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
                 xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
-                xlim=3, ylim=2) 
+                xlim=xlim, ylim=ylim) 
   dev.off()
   
   # MMM
@@ -1799,7 +1818,7 @@ mystk     <- "mac";
                                  run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
                 xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red"),
-                xlim=3, ylim=2) 
+                xlim=xlim, ylim=ylim) 
   dev.off()
   
   
