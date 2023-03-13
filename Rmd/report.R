@@ -17,6 +17,8 @@ library(FLasher)   # install.packages("FLasher", repos="http://flr-project.org/R
 library(FLAssess)  # install.packages("FLAssess", repos="http://flr-project.org/R")
 library(FLife)     # install.packages("FLife", repos="http://flr-project.org/R")
 library(ggplotFL)
+library(kobe)
+library(grid)
 
 library(popbio)
 
