@@ -1753,7 +1753,8 @@ mystk     <- "whb";
                        xlab=expression(B/B[MSY]),
                        ylab=expression(Catch/MSY),
                        col=c("red","grey","grey","grey"),
-                       xlim=xlim, ylim=ylim) 
+                       xlim=xlim, ylim=ylim,
+                       layer=geom_line(aes(ssb/bmsy,catch/msy),data=subset(rfs,.id=="Base")))  
   dev.off()
 
   # M
@@ -1766,7 +1767,8 @@ mystk     <- "whb";
                        xlab=expression(B/B[MSY]),
                        ylab=expression(Catch/MSY),
                        col=c("grey","red","grey","grey"),
-                       xlim=xlim, ylim=ylim) 
+                       xlim=xlim, ylim=ylim,
+                       layer=geom_line(aes(ssb/bmsy,catch/msy),data=subset(rfs,.id=="DD Mass")))  
   dev.off()
 
   # MM
@@ -1776,7 +1778,8 @@ mystk     <- "whb";
                        xlab=expression(B/B[MSY]),
                        ylab=expression(Catch/MSY),
                        col=c("grey","grey","red","grey"),
-                       xlim=xlim, ylim=ylim) 
+                       xlim=xlim, ylim=ylim,
+                       layer=geom_line(aes(ssb/bmsy,catch/msy),data=subset(rfs,.id=="DD Mass, Mat")))  
   dev.off()
 
   # MMM
@@ -1786,7 +1789,8 @@ mystk     <- "whb";
                        xlab=expression(B/B[MSY]),
                        ylab=expression(Catch/MSY),
                        col=c("grey","grey","grey","red"),
-                       xlim=xlim, ylim=ylim) 
+                       xlim=xlim, ylim=ylim,
+                       layer=geom_line(aes(ssb/bmsy,catch/msy),data=subset(rfs,.id=="DD Mass, Mat, M")))  
   dev.off()
   
   ## Yield & F #################################################################
@@ -1806,7 +1810,8 @@ mystk     <- "whb";
                 xlab=expression(F/F[MSY]),
                 ylab=expression(Catch/MSY),
                 col=c("red","grey","grey","grey"),
-                xlim=xlim, ylim=ylim) 
+                xlim=xlim, ylim=ylim,
+                layer=geom_line(aes(f/Fmsy,catch/msy),data=subset(rfs,.id=="Base")))
   dev.off()
 
   # M
@@ -1818,7 +1823,8 @@ mystk     <- "whb";
                                  run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
                 xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
-                xlim=xlim, ylim=ylim) 
+                xlim=xlim, ylim=ylim,
+                layer=geom_line(aes(f/Fmsy,catch/msy),data=subset(rfs,.id=="DD Mass"))) 
   dev.off()
   
   # MM
@@ -1830,7 +1836,8 @@ mystk     <- "whb";
                                       run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
                 xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
-                xlim=xlim, ylim=ylim) 
+                xlim=xlim, ylim=ylim,
+                layer=geom_line(aes(f/Fmsy,catch/msy),data=subset(rfs,.id=="DD Mass, Mat"))) 
   dev.off()
   
   # MMM
@@ -1842,7 +1849,9 @@ mystk     <- "whb";
                                  run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
                 xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red"),
-                xlim=xlim, ylim=ylim) 
+                xlim=xlim, ylim=ylim,
+                layer=geom_line(aes(f/Fmsy,catch/msy),data=subset(rfs,.id=="DD Mass, Mat, M")))
+        
   dev.off()
   
   
