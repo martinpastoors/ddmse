@@ -1739,6 +1739,8 @@ mystk     <- "whb";
   sch=merge(sch,msy,by=".id") 
   sch=merge(sch,fmsy,by=".id") 
   
+  rfs=merge(merge(merge(eqCurves,fmsy),bmsy),msy)
+  
   if (mystk == "mac") {
     xlim = 2; ylim=2} else {
     xlim = 3; ylim=2} 
