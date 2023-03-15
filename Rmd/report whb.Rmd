@@ -123,7 +123,7 @@ Denmark
 
 &nbsp;
 
-&nbsp;
+**Laurie: why would DD in natural mortality have such a minimal impact? Did you see that the M levels overall are lower than the assumed M in the assessment (=0.2)**
 
 &nbsp;
 
@@ -170,8 +170,7 @@ Each of the OMs were then projected for the values of $F_{MSY}$ based on the fou
 
 The OMs were also projected for the estimates of different estimates $F_{MSY}$, with stochasticty in the recruitment deviates. This allows the impact of misspecification of density dependence to be evaluated, i.e. if $F_{MSY}$ is underestimated then yield will be less than MSY, while if $F_{MSY}$ is overestimated yield will be lost due to overfishing. Stochastic projections of the four Operating Models for the four estimates of $F_{MSY}$ are shown in **Figures 16-19**. **Figures 20-22** summarizes the yields, SSBs and Fs obtained for each Operating Model under the correct and mis-specified form of density dependence.
 
-
-Estimating density-dependence from observations was not really possible for `r mystkname`. Therefore, density dependence in mass at age, maturity at age and natural mortality has only be explored from theoretical considerations in this report.
+Estimating density-dependence from observations was not really possible for `r mystkname` because there was no clear relationship between mass-at-age and total biomass. When a second GAMM model was fitted with weight in relation to total biomass, year and age, we found that the mass-at-age is better described by a year effect than a biomass effect. In order to still explore the impacts of density dependence on the performance of the MSE, we used the density dependent factor for Atlantic mackerel (beta=-0.18) to parameterize the weight-biomass relationship. 
 
 Including density dependence has a major impact on reference points. Especially $F_{MSY}$ is much higher when including DD. However, the expected yields in equilibrium conditions are expected to be very similar. The main difference is in the initial step from the current $F_{MSY}$ to any new $F_{MSY}$ that would include DD, as the higher $F_{MSY}$ would be applied to a stock that is estimated without DD.
 
@@ -301,7 +300,7 @@ knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "dd_waa.
 
 *`r fig_nums("cond_ddwaa")`*
 
-**GAMM-at-age**
+**GAMM-at-age: biomass only**
 
 A Generalized Additive Mixed Model (GAMM) was estimated to assess the relationship between mass-at-age and total biomass. Weights are predicted from two variables: a smoother of total biomass/mean(total biomass) and age. The resulting factor is shown below. There is no clear relationship between biomass and weight-at-age.
 
@@ -331,35 +330,39 @@ cat(readLines(file.path(tablesdir, paste(section,mystk, "gamm summary.txt", sep=
 
 *`r tab_nums("cond_gammsummary")`*
 
-**Linear model of density dependence in mass-at-age**
+**GAMM-at-age: biomass and year smoothers**
 
-The change in relative mass-at-age (i.e. observed - mean values) is plotted against total biomass, this allows the relationship between growth and total biomass to be compared across all ages. Here, we plotted both the GAMM model and the Linear Model variants. It is seen that there is still some weak information on density dependence in the Linear Model (slope = beta = -0.11). A summary of the linear model is in the table below.
+Because no clear relationship between mass-at-age and total biomass was established, we fitted a second GAMM model with weight in relation to total biomass, year and age. This demonstrated that the mass-at-age is better described by the year effect than the biomass effect (lower p-value). 
+
+In order to still explore the impacts of density dependence on the performance of the MSE, we used the density dependent factor for Atlantic mackerel (beta=-0.18) to parameterize the following relationship: 
 
 $W_a = {\overline{W_a}} (B/B_{MSY})^{{\beta}_a}$
+
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
-  name    = "cond_lmwaa", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". LM analysis of density dependence and mass-at-age."))
+  name    = "cond_gammwaa2", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". GAMM analysis of mass-at-age against biomass, year and age"))
 
-knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "lm_waa.jpg", sep="_")))
+knitr::include_graphics(path=file.path(figuresdir, paste(section,mystk, "gamm2.jpg", sep="_")))
 
 ```
 
-*`r fig_nums("cond_lmwaa")`*
+*`r fig_nums("cond_gammwaa2")`*
 
 ```{r, echo=FALSE, out.width = "400px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 tab_nums(
-  name    = "cond_lmsummary", level = 1, display = FALSE,
-  caption = paste0(mystkname, ". LM summary of density dependence and mass-at-age."))
+  name    = "cond_gammsummary2", level = 1, display = FALSE,
+  caption = paste0(mystkname, ". GAMM summary of mass-at-age against biomass, year and age"))
 
-cat(readLines(file.path(tablesdir, paste(section,mystk, "lm summary.txt", sep="_"))), sep = '\n')
+cat(readLines(file.path(tablesdir, paste(section,mystk, "gamm2 summary.txt", sep="_"))), sep = '\n')
 
 ```
 
-*`r tab_nums("cond_lmsummary")`*
+*`r tab_nums("cond_gammsummary2")`*
+
 
 \newpage
 
@@ -621,7 +624,6 @@ knitr::include_graphics(path=
 
 How can we understand the results of the deterministic runs? Below is a plot of the trends in stock mass-at-age, maturity-at-age and natural mortality-at-age, for the most relevant ages (1-6) and for the four different scenarios (Base, DDM, DDMM and DDMMM). The density dependent effect of maturity is strongest when both stock weight and maturity are density dependent. When natural mortality is also density dependent, this has only minor impacts. 
 
-**@Laurie: why would DD in natural mortality have such a minimal impact? Did you see that the M levels overall are lower than the assumed M in the assessment (=0.2)**
 
 ```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -766,7 +768,7 @@ The current management of fish stocks is based on achieving a fishing mortality 
 
 Initial explorations of density dependent effect were conducted based on life history theory, as used by the International Council for the Exploration of the Sea (ICES) to develop advice conducting MSE for data poor stocks [@fischer2020ga]. **Figure 10** shows the the equilibrium curves of catch v SSB assuming a) no density dependence, and density dependence in b) mass-at-age, c) mass & maturity-at-age, and d) mass, maturity and natural mortality-at-age. These allow the relationships between the MSY reference points and virgin biomass to be seen.
 
-Estimating density-dependence from observations was only possible for mass-at-age but not maturity-at-age as the latter were assumed by ICES not to have varied over time. However, assuming that maturity is a function of mass-ata-ge allowed density deoendence to be modeeled. Natural mortality was assumed to be time and age invariant by ICES (i.e. 0.2), therefore density dependence in natural mortality can only be explored from theoretical considerations.
+Estimating density-dependence from observations was not really possible for `r mystkname` because there was no clear relationship between mass-at-age and total biomass. When a second GAMM model was fitted with weight in relation to total biomass, year and age, we found that the mass-at-age is better described by a year effect than a biomass effect. In order to still explore the impacts of density dependence on the performance of the MSE, we used the density dependent factor for Atlantic mackerel (beta=-0.18) to parameterize the weight-biomass relationship. 
 
 In the next step, we applied a natural mortality-at-age vector based on [@lorenzen2000allometry] which mimics the VPA assessment with fixed M-at-age. The figure below compares the SAM assessment with a Virtual Population Analysis (VPA) and a VPA with age varying M (VPAM). Trends and absolute levels swere similar across all runs. The vpaM model was used as the base case to be compared against the density-dependent simulations.
 

@@ -65,8 +65,8 @@ myparams <- data.frame(
   btrig   = c(2580000                      , 2250000          ),
   bmsy    = c(3500000                      , 4000000          ), # guesstimates
   alpha   = c(-0.2                         , -0.2             ),
-  delta   = c(-0.2                         , -0.2             ),
-  matk    = c(0.2                           , 0.1              ), # source: conditioning
+  delta   = c(-0.2                         , -0.1             ),  # delta = beta !!!! For DD weight
+  matk    = c(0.2                           , 0.2              ), # source: conditioning
   wt1     = c(0.01                         , NA               ), # for resetting weight at age 1
   minage  = c(0                            , 1                ),
   maxage  = c(12                           , 10               ),
@@ -258,17 +258,18 @@ mystk     <- "whb";
   # GAMM model and diagnostics of weight vs Total biomass -----------------------
   
   # drop age 0 if existing
-  wt2 = subset(wt,age!=0)
+  wt2 = subset(wt,age!=0) %>% mutate(age = stringr::str_pad(age, width=2, pad="0"))
   nn  = length(unique(wt2$age))
   
-  # run gammV  
+  # run gammV with weight against biomass and age
   gmr=mgcViz::gammV(log(data) ~ s(tb/mean(tb), bs="tp") + age, 
                     data=wt2)
 
-  # plot gammV
+  # plot gammV - only with age
   jpeg(filename=file.path(figuresdir, paste(section,mystk, "gamm.jpg", sep="_")),
-       width=10, height=8, units="in", res=300)
-  plot(gmr) + labs(x="Total biomass", y="Weight deviation")
+       width=10, height=6, units="in", res=300)
+  # plot(gmr, allTerms=TRUE) + labs(x="Total biomass", y="Weight deviation")
+  print(plot(gmr) + labs(title = NULL), pages = 1)
   dev.off()  
   
   # summary table
@@ -285,7 +286,7 @@ mystk     <- "whb";
   
   # connect prediction to wt dataset  
   wt2=cbind(wt2,hat =predict(gmr))
-  wt2=merge(wt2,data.frame(age=1:nn,
+  wt2=merge(wt2,data.frame(age=stringr::str_pad(1:nn, width=2, pad="0"),
                            mean=exp(c(0,coefficients(gmr)[2:nn]))))
   
   # Linear   
@@ -305,7 +306,30 @@ mystk     <- "whb";
   fileConn <-file(file.path(tablesdir, paste(section,mystk, "lm summary.txt", sep="_")))
   summary(lm(hat~tb,data=transform(wt2,tb=tb/mean(tb)))) %>% capture.output() %>% writeLines(., con=fileConn)
   close(fileConn)
+
+  # =================================================
   
+  # GAMM with biomass and year and age
+  
+  gmr2=mgcViz::gammV(log(data)~s(tb, bs="tp")+s(year, bs="tp")+age, 
+                     data=wt2)
+  
+  wt2=cbind(wt2,hat2=predict(gmr2))
+  wt2=merge(wt2,data.frame(age=stringr::str_pad(1:nn, width=2, pad="0"), 
+                           mean2=exp(c(0,coefficients(gmr2)[2:nn]))))
+  
+  # summary table
+  fileConn <-file(file.path(tablesdir, paste(section,mystk, "gamm2 summary.txt", sep="_")))
+  summary(gmr2) %>% capture.output() %>% writeLines(., con=fileConn)
+  close(fileConn)
+  
+  # plot results
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "gamm2.jpg", sep="_")),
+       width=10, height=6, units="in", res=300)
+  print(plot(gmr2) , pages = 1)
+  dev.off()  
+
+
   # Density dependence in maturity at age --------------------------------------
   
   p1=ggplot(mat)+
