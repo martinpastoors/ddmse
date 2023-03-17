@@ -65,14 +65,14 @@ myparams <- data.frame(
   btrig   = c(2580000                      , 2250000          ),
   bmsy    = c(3500000                      , 4000000          ), # guesstimates
   alpha   = c(-0.2                         , -0.2             ),
-  delta   = c(-0.2                         , -0.1             ),  # delta = beta !!!! For DD weight
+  delta   = c(-0.2                         , -0.2             ),  # delta = beta !!!! For DD weight
   matk    = c(0.2                           , 0.2              ), # source: conditioning
   wt1     = c(0.01                         , NA               ), # for resetting weight at age 1
   minage  = c(0                            , 1                ),
   maxage  = c(12                           , 10               ),
   minyear = c(1991                         , 2000             ),
   maxyear = c(2050                         , 2050             ),
-  m1scaler= c(8                            , 10               ),
+  m1scaler= c(8                            , 10                ), #10
   w50     = c(0.166                        , 0.08             ),
   matk2   = c(28                           , 63               ),
   steepness=c(0.8                          , 0.5               ))
@@ -92,7 +92,11 @@ mystk     <- "whb";
   
   figuresdir <- file.path(dropboxdir, "results", mystk, "figures")
   tablesdir  <- file.path(dropboxdir, "results", mystk, "tables")
-
+  
+  # empty directories
+  file.remove(dir(figuresdir, full.names = TRUE))
+  file.remove(dir(tablesdir, full.names = TRUE))
+  
   # load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section0.RData", sep="_")))
   
   
@@ -635,53 +639,6 @@ mystk     <- "whb";
   print(p) 
   dev.off()
   
-  # Check 1 --------------------------------------------------------------------
-
-  # ptm <- proc.time()
-  # 
-  # # generate FLquants with different F values
-  # f = FLQuant(c(rep(seq(0, 1,length.out=51)    ,each=101),
-  #               rep(seq(1,25,length.out=61)[-1],each=101)),
-  #             dimnames=list(year=dimnames(om)$year,
-  #                           iter=seq(101)))  %*%
-  #   refpts(eq)["msy","harvest"]
-  # 
-  # # Add F's to eq object
-  # fbar(eq)=f
-  # eq=brp(eq)
-  # 
-  # om=as(eq,"FLStock")
-  # om=fwd(om,f=f[,-1],sr=eq)
-  # 
-  # # simulate with DD for 100 years into the future (THIS TAKES ABOUT 10 MINUTES)
-  # om2=om
-  # 
-  # 
-  # for (year in dimnames(om2)$year[-1]){
-  #   om2=ddFn(year,om2,par)
-  #   om2=fwd(om2,f=f[,year],sr=eq)
-  # }
-  # catch(om2)=computeCatch(om2,slot="all")
-  # 
-  # # Stop the clock
-  # proc.time() - ptm
-  # 
-  # # plot(window(FLStocks("OM"=om,DD=om2),start=40))  # DIFFICULT TO INTERPRET
-  # 
-  # t <-
-  #   bind_rows(
-  #     model.frame(FLQuants(om2[,dim(m(om2))[2]],"biomass"=biomass,"catch"=catch)) %>% mutate(scen="DD sim"),
-  #     model.frame(FLQuants(om[,dim(m(om))[2]],"biomass"=biomass,"catch"=catch)) %>% mutate(scen="no-DD sim"),
-  #     filter(df, scen=="DD mass+mat+M") %>% mutate(scen="DD equilibrium")
-  #   )
-  # 
-  # p <-
-  #   ggplot(data=t) +
-  #   geom_line(aes(biomass,catch, col=scen))+
-  #   labs(title="Check on equilibrium and simulation results") +
-  #   scale_colour_manual(values =c("no-DD sim"         = "black",
-  #                                 "DD sim"       = "red",
-  #                                 "DD equilibrium"   = "blue"))
 
 
   # clean up and save
@@ -757,10 +714,10 @@ mystk     <- "whb";
                   sr=sam_eq)
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
-  df_om  =model.frame(FLQuants(sam[,"2050"], "Biomass"=function(x) biomass(x),
-                                    "SSB"=function(x) ssb(x),
-                                    "F"=function(x) fbar(x),
-                                    "Yield"=function(x) catch(x)),drop=T) %>% mutate(scen="sam")
+  # df_om  =model.frame(FLQuants(sam[,"2050"], "Biomass"=function(x) biomass(x),
+  #                                   "SSB"=function(x) ssb(x),
+  #                                   "F"=function(x) fbar(x),
+  #                                   "Yield"=function(x) catch(x)),drop=T) %>% mutate(scen="sam")
                 
   
   # VPA assessment based on SAM assessment -------------------------------------
@@ -801,12 +758,12 @@ mystk     <- "whb";
                     sr=vpa_eq)
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
-  df_om  =bind_rows(
-    df_om,
-    model.frame(FLQuants(vpa[,"2050"], "Biomass"=function(x) biomass(x),
-                                       "SSB"=function(x) ssb(x),
-                                       "F"=function(x) fbar(x),
-                                       "Yield"=function(x) catch(x)),drop=T) %>% mutate(scen="vpa"))
+  # df_om  =bind_rows(
+  #   df_om,
+  #   model.frame(FLQuants(vpa[,"2050"], "Biomass"=function(x) biomass(x),
+  #                                      "SSB"=function(x) ssb(x),
+  #                                      "F"=function(x) fbar(x),
+  #                                      "Yield"=function(x) catch(x)),drop=T) %>% mutate(scen="vpa"))
 
   # VPA assessment with age varying M -----------------------------------------------------
 
@@ -883,66 +840,66 @@ mystk     <- "whb";
   dev.off()
   
   
-  df_helper <-
-    df_om %>% 
-    group_by(scen) %>% 
-    summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
-    left_join(df_om)
+  # df_helper <-
+  #   df_om %>% 
+  #   group_by(scen) %>% 
+  #   summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
+  #   left_join(df_om)
   
-  # Plot of yield vs biomass
-  p1<-
-    df_om %>% 
-    filter(scen %in% c("sam","vpa","vpa-M")) %>% 
-    
-    ggplot(aes(x=Biomass, y=Yield)) +
-    theme_bw() +
-    theme(legend.position="none") +
-    geom_line(aes(colour=scen)) +
-    geom_segment(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
-                 aes(x=Biomass, xend=Biomass, y=0, yend=Yield, colour=scen)) +
-    ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
-                             aes(y=0, x=Biomass, label=format(Biomass/1000000,digits=2,nsmall=1), colour=scen),
-                             min.segment.length = 0, show.legend=FALSE) +
-    
-    geom_segment(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
-                 aes(x=0, xend=Biomass, y=Yield, yend=Yield, colour=scen)) +
-    ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
-                             aes(x=0, y=Yield, label=format(Yield/1000000,digits=2,nsmall=1), colour=scen),
-                             min.segment.length = 0, show.legend=FALSE)
-
-  # jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_biomass_yield.jpg", sep="_")),
-  #      width=10, height=10, units="in", res=300)
+  # # Plot of yield vs biomass
+  # p1<-
+  #   df_om %>% 
+  #   filter(scen %in% c("sam","vpa","vpa-M")) %>% 
+  #   
+  #   ggplot(aes(x=Biomass, y=Yield)) +
+  #   theme_bw() +
+  #   theme(legend.position="none") +
+  #   geom_line(aes(colour=scen)) +
+  #   geom_segment(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
+  #                aes(x=Biomass, xend=Biomass, y=0, yend=Yield, colour=scen)) +
+  #   ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
+  #                            aes(y=0, x=Biomass, label=format(Biomass/1000000,digits=2,nsmall=1), colour=scen),
+  #                            min.segment.length = 0, show.legend=FALSE) +
+  #   
+  #   geom_segment(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
+  #                aes(x=0, xend=Biomass, y=Yield, yend=Yield, colour=scen)) +
+  #   ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
+  #                            aes(x=0, y=Yield, label=format(Yield/1000000,digits=2,nsmall=1), colour=scen),
+  #                            min.segment.length = 0, show.legend=FALSE)
+  # 
+  # # jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_biomass_yield.jpg", sep="_")),
+  # #      width=10, height=10, units="in", res=300)
+  # # print(p) 
+  # # dev.off()
+  # 
+  # # Plot of F vs biomass
+  # p2 <-
+  #   df_om %>% 
+  #   filter(F < 1.5) %>% 
+  #   filter(scen %in% c("sam","vpa","vpa-M")) %>% 
+  #   
+  #   ggplot(aes(x=Biomass, y=F)) +
+  #   theme_bw() +
+  #   theme(legend.position=c(0.8, 0.8)) +
+  #   geom_line(aes(colour=scen)) +
+  #   geom_segment(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
+  #                aes(x=Biomass, xend=Biomass, y=0, yend=F, colour=scen)) +
+  #   ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
+  #                            aes(y=0, x=Biomass, label=format(Biomass/1000000,digits=2,nsmall=1), colour=scen),
+  #                            min.segment.length = 0, show.legend=FALSE) +
+  #   
+  #   geom_segment(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
+  #                aes(x=0, xend=Biomass, y=F, yend=F, colour=scen)) +
+  #   ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
+  #                            aes(x=0, y=F, label=format(F,digits=2,nsmall=1), colour=scen),
+  #                            min.segment.length = 0, show.legend=FALSE)
+  # 
+  # p <- ggarrange(p1,p2, ncol=2, nrow=1)
+  # 
+  # jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_biomass_yield_F.jpg", sep="_")),
+  #      width=10, height=6, units="in", res=300)
   # print(p) 
   # dev.off()
-
-  # Plot of F vs biomass
-  p2 <-
-    df_om %>% 
-    filter(F < 1.5) %>% 
-    filter(scen %in% c("sam","vpa","vpa-M")) %>% 
-    
-    ggplot(aes(x=Biomass, y=F)) +
-    theme_bw() +
-    theme(legend.position=c(0.8, 0.8)) +
-    geom_line(aes(colour=scen)) +
-    geom_segment(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
-                 aes(x=Biomass, xend=Biomass, y=0, yend=F, colour=scen)) +
-    ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
-                             aes(y=0, x=Biomass, label=format(Biomass/1000000,digits=2,nsmall=1), colour=scen),
-                             min.segment.length = 0, show.legend=FALSE) +
-    
-    geom_segment(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
-                 aes(x=0, xend=Biomass, y=F, yend=F, colour=scen)) +
-    ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% c("sam","vpa","vpa-M")),
-                             aes(x=0, y=F, label=format(F,digits=2,nsmall=1), colour=scen),
-                             min.segment.length = 0, show.legend=FALSE)
-  
-  p <- ggarrange(p1,p2, ncol=2, nrow=1)
-  
-  jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_biomass_yield_F.jpg", sep="_")),
-       width=10, height=6, units="in", res=300)
-  print(p) 
-  dev.off()
   
   # Comparing assessments
   p <-
@@ -960,15 +917,15 @@ mystk     <- "whb";
   print(p)
   dev.off()
   
-  df_om  =bind_rows(
-    df_om,
-    d1 %>% mutate(scen="vpa-M"))
+  # df_om  =bind_rows(
+  #   df_om,
+  #   d1 %>% mutate(scen="vpa-M"))
   
-  df_helper <-
-    df_om %>% 
-    group_by(scen) %>% 
-    summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
-    left_join(df_om)
+  # df_helper <-
+  #   df_om %>% 
+  #   group_by(scen) %>% 
+  #   summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
+  #   left_join(df_om)
   
 
   ##############################################################################
@@ -1022,9 +979,9 @@ mystk     <- "whb";
   dev.off()
   
   # add to OM data.frame
-  df_om  =bind_rows(
-    df_om,
-    d2 %>% mutate(scen="vpa-DDM"))
+  # df_om  =bind_rows(
+  #   df_om,
+  #   d2 %>% mutate(scen="vpa-DDM"))
   
   # Stop the clock
   proc.time() - ptm
@@ -1069,9 +1026,9 @@ mystk     <- "whb";
   dev.off()
   
   # add to OM data.frame
-  df_om  =bind_rows(
-    df_om,
-    d3 %>% mutate(scen="vpa-DDMM"))
+  # df_om  =bind_rows(
+  #   df_om,
+  #   d3 %>% mutate(scen="vpa-DDMM"))
   
   # Stop the clock
   proc.time() - ptm
@@ -1117,16 +1074,16 @@ mystk     <- "whb";
   dev.off()
   
   # add to OM data.frame
-  df_om  =bind_rows(
-    df_om,
-    d4 %>% mutate(scen="vpa-DDMMM"))
+  # df_om  =bind_rows(
+  #   df_om,
+  #   d4 %>% mutate(scen="vpa-DDMMM"))
 
   # approximate reference points
-  df_helper <-
-    df_om %>% 
-    group_by(scen) %>% 
-    summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
-    left_join(df_om)
+  # df_helper <-
+  #   df_om %>% 
+  #   group_by(scen) %>% 
+  #   summarise(Yield = max(Yield, na.rm=TRUE)) %>% 
+  #   left_join(df_om)
   
   
   # Stop the clock
@@ -1135,104 +1092,99 @@ mystk     <- "whb";
   # Plotting overview scenarios ========================================================
   
   # scenarios
-  scenarios = c("vpa-M", "vpa-DDM","vpa-DDMM","vpa-DDMMM") 
-  
-  # Plot of yield vs biomass
-  p1<-
-    df_om %>% 
-    filter(scen %in% scenarios) %>% 
-    mutate(scen = factor(scen, levels=scenarios)) %>% 
-    
-    ggplot(aes(x=Biomass, y=Yield)) +
-    theme_bw() +
-    theme(legend.position="none") +
-    geom_line(aes(colour=scen)) +
-    geom_segment(data=df_helper %>% filter(scen %in% scenarios) %>% mutate(scen = factor(scen, levels=scenarios)),
-                 aes(x=Biomass, xend=Biomass, y=0, yend=Yield, colour=scen)) +
-    ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% scenarios),
-                             aes(y=0, x=Biomass, label=format(Biomass/1000000,digits=2,nsmall=1), colour=scen),
-                             min.segment.length = 0, show.legend=FALSE) +
-    
-    geom_segment(data=df_helper %>% filter(scen %in% scenarios) %>% mutate(scen = factor(scen, levels=scenarios)),
-                 aes(x=0, xend=Biomass, y=Yield, yend=Yield, colour=scen)) +
-    ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% scenarios),
-                             aes(x=0, y=Yield, label=format(Yield/1000000,digits=2,nsmall=1), colour=scen),
-                             min.segment.length = 0, show.legend=FALSE)
-  
-  # jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_biomass_yield.jpg", sep="_")),
-  #      width=10, height=10, units="in", res=300)
+  # scenarios = c("vpa-M", "vpa-DDM","vpa-DDMM","vpa-DDMMM") 
+  # 
+  # # Plot of yield vs biomass
+  # p1<-
+  #   df_om %>% 
+  #   filter(scen %in% scenarios) %>% 
+  #   mutate(scen = factor(scen, levels=scenarios)) %>% 
+  #   
+  #   ggplot(aes(x=Biomass, y=Yield)) +
+  #   theme_bw() +
+  #   theme(legend.position="none") +
+  #   geom_line(aes(colour=scen)) +
+  #   geom_segment(data=df_helper %>% filter(scen %in% scenarios) %>% mutate(scen = factor(scen, levels=scenarios)),
+  #                aes(x=Biomass, xend=Biomass, y=0, yend=Yield, colour=scen)) +
+  #   ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% scenarios),
+  #                            aes(y=0, x=Biomass, label=format(Biomass/1000000,digits=2,nsmall=1), colour=scen),
+  #                            min.segment.length = 0, show.legend=FALSE) +
+  #   
+  #   geom_segment(data=df_helper %>% filter(scen %in% scenarios) %>% mutate(scen = factor(scen, levels=scenarios)),
+  #                aes(x=0, xend=Biomass, y=Yield, yend=Yield, colour=scen)) +
+  #   ggrepel::geom_text_repel(data=df_helper %>% filter(scen %in% scenarios),
+  #                            aes(x=0, y=Yield, label=format(Yield/1000000,digits=2,nsmall=1), colour=scen),
+  #                            min.segment.length = 0, show.legend=FALSE)
+  # 
+  # # jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_biomass_yield.jpg", sep="_")),
+  # #      width=10, height=10, units="in", res=300)
+  # # print(p) 
+  # # dev.off()
+  # 
+  # # Plot of F vs biomass
+  # p2 <-
+  #   df_om %>% 
+  #   filter(F < 1.5) %>% 
+  #   filter(scen %in% scenarios) %>% 
+  #   mutate(scen = factor(scen, levels=scenarios)) %>% 
+  #   
+  #   ggplot(aes(x=Biomass, y=F)) +
+  #   theme_bw() +
+  #   theme(legend.position=c(0.8, 0.8)) +
+  #   geom_line(aes(colour=scen)) +
+  #   geom_segment(data=df_helper %>% 
+  #                  filter(scen %in% scenarios) %>% 
+  #                  mutate(scen = factor(scen, levels=scenarios)),
+  #                aes(x=Biomass, xend=Biomass, y=0, yend=F, colour=scen)) +
+  #   ggrepel::geom_text_repel(data=df_helper %>% 
+  #                              filter(scen %in% scenarios) %>% 
+  #                              mutate(scen = factor(scen, levels=scenarios)),
+  #                            aes(y=0, x=Biomass, label=format(Biomass/1000000,digits=2,nsmall=1), colour=scen),
+  #                            min.segment.length = 0, show.legend=FALSE) +
+  #   
+  #   geom_segment(data=df_helper %>% 
+  #                  filter(scen %in% scenarios) %>% 
+  #                  mutate(scen = factor(scen, levels=scenarios)),
+  #                aes(x=0, xend=Biomass, y=F, yend=F, colour=scen)) +
+  #   ggrepel::geom_text_repel(data=df_helper %>% 
+  #                              filter(scen %in% scenarios) %>% 
+  #                              mutate(scen = factor(scen, levels=scenarios)),
+  #                            aes(x=0, y=F, label=format(F,digits=2,nsmall=1), colour=scen),
+  #                            min.segment.length = 0, show.legend=FALSE)
+  # 
+  # p <- ggarrange(p1,p2, ncol=2, nrow=1)
+  # 
+  # jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_biomass_yield_F.jpg", sep="_")),
+  #      width=10, height=6, units="in", res=300)
   # print(p) 
   # dev.off()
   
-  # Plot of F vs biomass
-  p2 <-
-    df_om %>% 
-    filter(F < 1.5) %>% 
-    filter(scen %in% scenarios) %>% 
-    mutate(scen = factor(scen, levels=scenarios)) %>% 
-    
-    ggplot(aes(x=Biomass, y=F)) +
-    theme_bw() +
-    theme(legend.position=c(0.8, 0.8)) +
-    geom_line(aes(colour=scen)) +
-    geom_segment(data=df_helper %>% 
-                   filter(scen %in% scenarios) %>% 
-                   mutate(scen = factor(scen, levels=scenarios)),
-                 aes(x=Biomass, xend=Biomass, y=0, yend=F, colour=scen)) +
-    ggrepel::geom_text_repel(data=df_helper %>% 
-                               filter(scen %in% scenarios) %>% 
-                               mutate(scen = factor(scen, levels=scenarios)),
-                             aes(y=0, x=Biomass, label=format(Biomass/1000000,digits=2,nsmall=1), colour=scen),
-                             min.segment.length = 0, show.legend=FALSE) +
-    
-    geom_segment(data=df_helper %>% 
-                   filter(scen %in% scenarios) %>% 
-                   mutate(scen = factor(scen, levels=scenarios)),
-                 aes(x=0, xend=Biomass, y=F, yend=F, colour=scen)) +
-    ggrepel::geom_text_repel(data=df_helper %>% 
-                               filter(scen %in% scenarios) %>% 
-                               mutate(scen = factor(scen, levels=scenarios)),
-                             aes(x=0, y=F, label=format(F,digits=2,nsmall=1), colour=scen),
-                             min.segment.length = 0, show.legend=FALSE)
+  # oms <- FLStocks()
+  # oms[["Base"]] =vpaM
+  # oms[["M"]]    =vpaDDM
+  # oms[["MM"]]   =vpaDDMM
+  # oms[["MMM"]]  =vpaDDMMM
+  # 
+  # rfs=ldply(oms, function(x) { 
+  #   model.frame(FLQuants(x[,"2050"],
+  #                        biomass=function(x) stock(x),
+  #                        ssb    =function(x) ssb(  x),
+  #                        catch  =function(x) catch(x),
+  #                        f      =function(x) fbar( x)),drop=TRUE)[,-1]})
+  # 
+  # # reference points (at maximum catch)
+  # rfpts=ddply(rfs,.(.id), with, {  
+  #   flag=catch==max(catch)
+  #   data.frame(Bmsy  =biomass[flag],
+  #              SSBmsy=ssb[flag],
+  #              MSY   =catch[flag],
+  #              Fmsy  =f[flag],
+  #              Virgin=max(ssb),
+  #              B0    =max(biomass))}) %>% 
+  #   dplyr::rename(scen=.id)
   
-  p <- ggarrange(p1,p2, ncol=2, nrow=1)
-  
-  jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_biomass_yield_F.jpg", sep="_")),
-       width=10, height=6, units="in", res=300)
-  print(p) 
-  dev.off()
-  
-  oms <- FLStocks()
-  oms[["Base"]] =vpaM
-  oms[["M"]]    =vpaDDM
-  oms[["MM"]]   =vpaDDMM
-  oms[["MMM"]]  =vpaDDMMM
-  
-  rfs=ldply(oms, function(x) { 
-    model.frame(FLQuants(x[,"2050"],
-                         biomass=function(x) stock(x),
-                         ssb    =function(x) ssb(  x),
-                         catch  =function(x) catch(x),
-                         f      =function(x) fbar( x)),drop=TRUE)[,-1]})
-  
-  # reference points (at maximum catch)
-  rfpts=ddply(rfs,.(.id), with, {  
-    flag=catch==max(catch)
-    data.frame(Bmsy  =biomass[flag],
-               SSBmsy=ssb[flag],
-               MSY   =catch[flag],
-               Fmsy  =f[flag],
-               Virgin=max(ssb),
-               B0    =max(biomass))}) %>% 
-    dplyr::rename(scen=.id)
-  
-  # Make table
-  fileConn <-file(file.path(tablesdir, paste(section,mystk, "refpoints.txt", sep="_")))
-  rfpts %>% 
-    pander::pandoc.table(style="simple", big.mark=",", justify="left", split.tables=400) %>% 
-    capture.output() %>% writeLines(., con=fileConn)
-  close(fileConn)
-  
+  # rfpts %>% 
+  #   pander::pandoc.table(style="simple", big.mark=",", justify="left", split.tables=400)
 
   # clean up and save
   rm(dat, df, p, p1, p2, p3, p4, t, x, d1, d2, d3, d4, x)
@@ -1287,6 +1239,8 @@ mystk     <- "whb";
   } 
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
+  plot(oms)
+  
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   # reference points data.frame (equilibrium)
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
@@ -1307,6 +1261,68 @@ mystk     <- "whb";
                Virgin=max(ssb),
                B0    =max(biomass))}) %>% 
     dplyr::rename(scen=.id)
+  
+  # Make reference point table
+  fileConn <-file(file.path(tablesdir, paste(section,mystk, "refpoints.txt", sep="_")))
+  rfpts %>%
+    pander::pandoc.table(style="simple", big.mark=",", justify="left", split.tables=400) %>%
+    capture.output() %>% writeLines(., con=fileConn)
+  close(fileConn)
+  
+  # Plotting overview scenarios ========================================================
+  
+  # Plot of yield vs biomass
+  p1<-
+    rfs %>%
+    # filter(scen %in% scenarios) %>%
+    # mutate(scen = factor(scen, levels=scenarios)) %>%
+
+    ggplot(aes(x=biomass, y=catch)) +
+    theme_bw() +
+    theme(legend.position="none") +
+    geom_line(aes(colour=.id)) +
+    geom_segment(data=rfpts,
+                 aes(x=Bmsy, xend=Bmsy, y=0, yend=MSY, colour=scen)) +
+    ggrepel::geom_text_repel(data=rfpts,
+                             aes(y=0, x=Bmsy, label=format(Bmsy/1000000,digits=2,nsmall=1), colour=scen),
+                             min.segment.length = 0, show.legend=FALSE) +
+
+    geom_segment(data=rfpts ,
+                 aes(x=0, xend=Bmsy, y=MSY, yend=MSY, colour=scen)) +
+    ggrepel::geom_text_repel(data=rfpts,
+                             aes(x=0, y=MSY, label=format(MSY/1000000,digits=2,nsmall=1), colour=scen),
+                             min.segment.length = 0, show.legend=FALSE)
+
+  # Plot of F vs biomass
+  p2 <-
+    rfs %>%
+    filter(f < 1.5) %>%
+    # filter(scen %in% scenarios) %>%
+    # mutate(scen = factor(scen, levels=scenarios)) %>%
+
+    ggplot(aes(x=biomass, y=f)) +
+    theme_bw() +
+    theme(legend.position=c(0.8, 0.8)) +
+    geom_line(aes(colour=.id)) +
+    geom_segment(data=rfpts,
+                 aes(x=Bmsy, xend=Bmsy, y=0, yend=Fmsy, colour=scen)) +
+    ggrepel::geom_text_repel(data=rfpts,
+                             aes(y=0, x=Bmsy, label=format(Bmsy/1000000,digits=2,nsmall=1), colour=scen),
+                             min.segment.length = 0, show.legend=FALSE) +
+
+    geom_segment(data=rfpts,
+                 aes(x=0, xend=Bmsy, y=Fmsy, yend=Fmsy, colour=scen)) +
+    ggrepel::geom_text_repel(data=rfpts,
+                             aes(x=0, y=Fmsy, label=format(Fmsy,digits=2,nsmall=1), colour=scen),
+                             min.segment.length = 0, show.legend=FALSE)
+
+  p <- ggarrange(p1,p2, ncol=2, nrow=1)
+
+  jpeg(filename=file.path(figuresdir, paste(section,mystk, "om_biomass_yield_F.jpg", sep="_")),
+       width=10, height=6, units="in", res=300)
+  print(p)
+  dev.off()
+
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
   
   #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
