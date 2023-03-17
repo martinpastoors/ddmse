@@ -81,6 +81,8 @@ mystk     <- "whb"; mystkname <- "Blue whiting";                mylatin <- "Micr
 maxyear <- 2050
 
 load(file=file.path(dropboxdir,paste0("data/om/",mystk,"matPar.RData")))
+load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section0.RData", sep="_")))
+load(file = file.path(dropboxdir, "results", mystk, paste(mystk,"section5.RData", sep="_")))
 
 # ------------------------------------------------------------------------------
 # Operating model
@@ -103,7 +105,7 @@ Version 1.0 (15 March 2023)
 
 Version 1.1 (16 March 2023, fixed error in reference point table)
 
-Version 1.2 (17 March 2023; fixed error in figure 15)
+Version 1.2 (17 March 2023; fixed error in figure 15; added two scenarios)
 
 &nbsp;
 
@@ -679,9 +681,11 @@ knitr::include_graphics(path=
 
 \newpage
 
-**Stochastic projections at all** $F_{MSY}$'s from all scenarios
+**Stochastic projections at all $F_{MSY}$'s from all scenarios**
 
-Misspecification of Fmsy, i.e. using an Fmsy from one scenario and applying it to a different scenario has only limited impacts on the overall outcomes in terms of recruitment, biomass or yield. In the plot below, the scenarios for density dependence are shown in the columns and the Fmsy's are shown as the colours. For example, a valid combination is the Base case with the red curves (Fmsy=0.27) or the M scenario with the green curve. Overall, the misspecification does not results in noticeable differences in catch although they do have important difference for biomass.
+For the stochastic projections at all $F_{MSY}$'s, we added two F scenarios: one with F=0.1 and one with F=`r myparams[myparams$stock==mystk,"highf"]`.
+
+Misspecification of Fmsy, i.e. using an Fmsy from one scenario and applying it to a different scenario has only limited impacts on the overall outcomes in terms of recruitment, biomass or yield. In the plot below, the scenarios for density dependence are shown in the columns and the F's are shown as the colours. For example, a valid combination is the Base case with the yellow-brownish curve (Fmsy=`r format(rfpts[1,"Fmsy"], digits=2)`) or the M (mass) scenario with the green curve. The misspecification of Fmsy does not results in noticeable differences in catch although they do have important difference for biomass. Application of a low F (=0.1) is expected to lead to lower catches in all scenarios. 
 
 ```{r, echo=FALSE, fig.asp=1.0, fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
@@ -698,13 +702,13 @@ knitr::include_graphics(path=
 
 \newpage
 
-For the four scenarios, we plotted the Kobe phase plot for 2050 with the associated density functions for B/Bmsy and Catch/MSY. The results confirm the results that equilibrium catch is not really affected by the DD assumptions of the Fmsy applied, but that biomass is sensitive to the assumptions. Application of density dependent reference points when density dependency would not exist, is expected to lead to lower equilibrium biomass levels.  
+For the four Fmsy-scenarios and the two additional F scenarios, we plotted the Kobe phase plot for 2050 with the associated density functions for B/Bmsy and Catch/MSY. The results confirm the results that equilibrium catch is not really affected by the DD assumptions of the Fmsy applied, but that biomass is sensitive to the assumptions. Application of density dependent reference points when density dependency would not exist, is expected to lead to lower equilibrium biomass levels.  
 
 ```{r, echo=FALSE, out.width = "300px", fig.align="center", message=FALSE, warning=FALSE, cache=FALSE}
 
 fig_nums(
   name    = "kobe", level = 1, display = FALSE,
-  caption = "Kobe plot for 2050 for base case (no DD) for all $F_{MSY}$'s (red is from the right scenario). Topleft: base, topright: M, bottomleft: MM, bottomright: MMM")
+  caption = "Kobe plot for 2050 for base case (no DD) for all $F_{MSY}$'s (red is from the right scenario). Topleft: base, topright: M, bottomleft: MM, bottomright: MMM. White densities refer to the low and high F scenarios")
 
 knitr::include_graphics(path=
                     c(file.path(figuresdir,paste("05",mystk,"kobe base.jpg",sep="_")),
@@ -726,7 +730,7 @@ We then plotted the Kobe phase plot for 2050 with the associated density functio
 
 fig_nums(
   name    = "kobe2", level = 1, display = FALSE,
-  caption = "F Kobe plot for 2050 for base case (no DD) for all $F_{MSY}$'s (red is from the right scenario). Topleft: base, topright: M, bottomleft: MM, bottomright: MMM")
+  caption = "F Kobe plot for 2050 for base case (no DD) for all $F_{MSY}$'s (red is from the right scenario). Topleft: base, topright: M, bottomleft: MM, bottomright: MMM. White densities refer to the low and high F scenarios")
 
 knitr::include_graphics(path=
                     c(file.path(figuresdir,paste("05",mystk,"kobe FY base.jpg",sep="_")),

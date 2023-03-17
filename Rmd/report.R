@@ -75,7 +75,10 @@ myparams <- data.frame(
   m1scaler= c(8                            , 10                ), #10
   w50     = c(0.166                        , 0.08             ),
   matk2   = c(28                           , 63               ),
-  steepness=c(0.8                          , 0.5               ))
+  steepness=c(0.8                          , 0.5              ),
+  lowf     =c(0.1                          , 0.1              ),
+  highf    =c(1.5                          , 2.0              )
+)
 
 # save(myparams, file=file.path(dropboxdir, "data", "inputs", "myparams.RData"))
 
@@ -121,7 +124,7 @@ mystk     <- "whb";
     ts$tb=ts$tb/1e6
   }
   
-  save(.,
+  save(list=ls(),
        file = file.path(dropboxdir, "results", mystk, paste(mystk,"section0.RData", sep="_")))
   
   # ------------------------------------------------------------------------------
@@ -1460,17 +1463,17 @@ mystk     <- "whb";
   ts=transform(ts,.id=unique(eqCurves$.id)[an(iter)])
   
 
-  ggplot()+
-    geom_line(data=eqCurves,
-              aes(ssb,catch,col=.id))+
-    geom_point(data=subset(ts,year==2050),
-               aes(ssb,catch,col=.id))
+  # ggplot()+
+  #   geom_line(data=eqCurves,
+  #             aes(ssb,catch,col=.id))+
+  #   geom_point(data=subset(ts,year==2050),
+  #              aes(ssb,catch,col=.id))
 
-  ggplot()+
-    geom_line(data=subset(ts,year==2050),
-              aes(ssb,catch,col=.id))+
-    geom_point(data=subset(prj_df,year==2050),
-               aes(ssb,catch,col=.id))
+  # ggplot()+
+  #   geom_line(data=subset(ts,year==2050),
+  #             aes(ssb,catch,col=.id))+
+  #   geom_point(data=subset(prj_df,year==2050),
+  #              aes(ssb,catch,col=.id))
   
   
   
@@ -1481,8 +1484,11 @@ mystk     <- "whb";
   devRec=rlnorm(100,rec(prj[[1]])[,ac(2020:2050),,,,1]%=%0,0.3)
   base=fwdWindow(window(propagate(iter(prj[[1]],1),100),end=2020),end=2050,vpaM_eq)
   
-  prjs=mlply(data.frame(F=rfpts$Fmsy), 
-             .progress = "tk", 
+#  prjs=mlply(data.frame(F=rfpts$Fmsy), 
+  prjs = mlply(data.frame(F=c(rfpts$Fmsy,
+                              myparams[myparams$stock==mystk,"lowf"],
+                              myparams[myparams$stock==mystk,"highf"])),
+        # .progress = "tk", 
              function(F) {
 
     ## FMSY estimate by OM ######################################
@@ -1770,7 +1776,7 @@ mystk     <- "whb";
                                         run=ac(f))),
                        xlab=expression(B/B[MSY]),
                        ylab=expression(Catch/MSY),
-                       col=c("red","grey","grey","grey"),
+                       col=c("white", "red","grey","grey","grey", "white"),
                        xlim=xlim, ylim=ylim,
                        layer=geom_line(aes(ssb/bmsy,catch/msy),data=subset(rfs,.id=="Base")))  
   dev.off()
@@ -1784,7 +1790,7 @@ mystk     <- "whb";
                                         run=ac(f))),
                        xlab=expression(B/B[MSY]),
                        ylab=expression(Catch/MSY),
-                       col=c("grey","red","grey","grey"),
+                       col=c("white","grey","red","grey","grey","white"),
                        xlim=xlim, ylim=ylim,
                        layer=geom_line(aes(ssb/bmsy,catch/msy),data=subset(rfs,.id=="DD Mass")))  
   dev.off()
@@ -1795,7 +1801,7 @@ mystk     <- "whb";
   kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
                        xlab=expression(B/B[MSY]),
                        ylab=expression(Catch/MSY),
-                       col=c("grey","grey","red","grey"),
+                       col=c("white","grey","grey","red","grey","white"),
                        xlim=xlim, ylim=ylim,
                        layer=geom_line(aes(ssb/bmsy,catch/msy),data=subset(rfs,.id=="DD Mass, Mat")))  
   dev.off()
@@ -1806,7 +1812,7 @@ mystk     <- "whb";
   kobe:::kobePhaseMar2(subset(transmute(subset(sch,.id=="DD Mass, Mat, M"),stock=ssb/bmsy,harvest=catch/msy,run=ac(f))),
                        xlab=expression(B/B[MSY]),
                        ylab=expression(Catch/MSY),
-                       col=c("grey","grey","grey","red"),
+                       col=c("white","grey","grey","grey","red","white"),
                        xlim=xlim, ylim=ylim,
                        layer=geom_line(aes(ssb/bmsy,catch/msy),data=subset(rfs,.id=="DD Mass, Mat, M")))  
   dev.off()
@@ -1827,7 +1833,7 @@ mystk     <- "whb";
                 quadcol=c("yellow","yellow","green","red"),
                 xlab=expression(F/F[MSY]),
                 ylab=expression(Catch/MSY),
-                col=c("red","grey","grey","grey"),
+                col=c("white","red","grey","grey","grey","white"),
                 xlim=xlim, ylim=ylim,
                 layer=geom_line(aes(f/Fmsy,catch/msy),data=subset(rfs,.id=="Base")))
   dev.off()
@@ -1840,7 +1846,7 @@ mystk     <- "whb";
                                  harvest=catch/msy,
                                  run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
-                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
+                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("white","grey","grey","red","grey","white"),
                 xlim=xlim, ylim=ylim,
                 layer=geom_line(aes(f/Fmsy,catch/msy),data=subset(rfs,.id=="DD Mass"))) 
   dev.off()
@@ -1853,7 +1859,7 @@ mystk     <- "whb";
                                       harvest=catch/msy,
                                       run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
-                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","red","grey"),
+                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("white","grey","grey","red","grey","white"),
                 xlim=xlim, ylim=ylim,
                 layer=geom_line(aes(f/Fmsy,catch/msy),data=subset(rfs,.id=="DD Mass, Mat"))) 
   dev.off()
@@ -1866,7 +1872,7 @@ mystk     <- "whb";
                                  harvest=catch/msy,
                                  run    =ac(f))),
                 quadcol=c("yellow","yellow","green","red"),
-                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("grey","grey","grey","red"),
+                xlab=expression(F/F[MSY]),ylab=expression(Catch/MSY),col=c("white","grey","grey","grey","red","white"),
                 xlim=xlim, ylim=ylim,
                 layer=geom_line(aes(f/Fmsy,catch/msy),data=subset(rfs,.id=="DD Mass, Mat, M")))
         
